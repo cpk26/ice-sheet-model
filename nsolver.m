@@ -8,42 +8,22 @@ function [sol, it_hist, ierr, x_hist] = nsolver(x,f,fopts,tol,parms)
 % and is described in 'Solving Nonlinear Equations with Newton's
 % Method' (SIAM)
 %
-% function [sol, it_hist, ierr, x_hist] = nsold(x,f,tol,parms)
+% function [sol, it_hist, ierr, x_hist] = nsold(x,f,fopts,tol,parms)
 %
 % inputs:
 %        initial iterate = x
 %        function = f
+%        function options = fopts. Cell Array. Called f(x,fopts)
 %        tol = [atol, rtol] relative/absolute
 %                           error tolerances
-%        parms = [maxit, isham, rsham, jdiff, nl, nu]
+%        parms = [maxit, jdiff]
 %        maxit = maxmium number of iterations
 %                default = 40
-%        isham, rsham: The Jacobian matrix is
-%                computed and factored after isham
-%                updates of x or whenever the ratio
-%                of successive l2 norms of the
-%                 nonlinear residual exceeds rsham.
-%
-%            isham = -1, rsham = .5 is the default
-%            isham =  1, rsham = 0 is Newton's method,
-%            isham = -1, rsham = 1 is the chord method,
-%            isham =  m, rsham = 1 is the Shamanskii method with
-%                        m steps per Jacobian evaluation
-%
-%                       The Jacobian is computed and factored
-%                       whenever the stepsize
-%                       is reduced in the line search.
 %
 %       jdiff = 1: compute Jacobians with forward differences
 %       jdiff = 0: a call to f will provide analytic Jacobians
 %                         using the syntax [function,jacobian] = f(x)
-%                 defaults = [40, 1000, .5, 1]
-%
-%       nl, nu: lower and upper bandwidths of a banded Jacobian.
-%               If you include nl and nu in the parameter list,
-%               the Jacobian will be evaluated with a banded differencing
-%               scheme and stored as a sparse matrix.
-%
+%                 defaults = [40, 1]
 %
 %
 % output:
@@ -92,19 +72,13 @@ debug = 0;
 ierr = 0;
 maxarm = 20;
 maxit = 40;
-isham = -1;
-rsham = .5;
 jdiff = 1;
-iband = 0;
-if nargin >= 4 & length(parms) ~= 0
-    maxit = parms(1); isham = parms(2); rsham = parms(3); 
-        if length(parms) >= 4
-            jdiff = parms(4);
+if nargin >= 5 & length(parms) ~= 0
+    maxit = parms(1);  
+        if length(parms) >= 2
+            jdiff = parms(2);
         end
-        if length(parms) >= 6
-            nl = parms(5); nu = parms(6);
-            iband = 1;
-        end
+
     end
 rtol = tol(2); atol = tol(1);
 it_hist = [];
@@ -120,7 +94,6 @@ f0 = feval(f,x);
 fnrm = norm(f0);
 it_hist = [fnrm,0];
 fnrmo = 1;
-itsham = isham;
 stop_tol = atol+rtol*fnrm;
 %
 % main iteration loop
@@ -137,25 +110,15 @@ while(fnrm > stop_tol & itc < maxit)
     itc = itc+1;
 %
 % evaluate and factor the Jacobian
-% on the first iteration, every isham iterates, or
-% if the ratio of successive residual norm is too large
 %
-    if(itc == 1 | rat > rsham | itsham == 0 | armflag == 1)
-        itsham = isham;
-    jac_age = -1;
-    if jdiff == 1 
-            if iband == 0
-            [l, u] = diffjac(x,f,f0);
-            else
-            jacb = bandjac(f,x,f0,nl,nu); 
-            [l,u] = lu(jacb);
-            end
-        else
-            [fv,jac] = feval(f,x);
-        [l,u] = lu(jac);
-        end
-    end
-    itsham = itsham-1;
+
+if jdiff == 1
+    [l, u] = diffjac(x,f,f0);
+else
+    [~,jac] = feval(f,x);
+    [l,u] = lu(jac);
+end
+    
 %
 % compute the Newton direction 
 %
@@ -165,33 +128,30 @@ while(fnrm > stop_tol & itc < maxit)
 % Add one to the age of the Jacobian after the factors have been
 % used in a solve. A fresh Jacobian has an age of -1 at birth.
 %
-    jac_age = jac_age+1;
-    xold = x; fold = f0;
-    [step,iarm,x,f0,armflag] = armijo(direction,x,f0,f,maxarm);
+xold = x; fold = f0;
+[step,iarm,x,f0,armflag] = armijo(direction,x,f0,f,maxarm);
+
+
+
+% If the line search fails you're dead.
 %
-% If the line search fails and the Jacobian is old, update it.
-% If the Jacobian is fresh; you're dead.
-%
-    if armflag == 1  
-       if jac_age > 0
-          sol = xold;
-          x = xold; f0 = fold;    
-          disp('Armijo failure; recompute Jacobian.');
-       else
-          disp('Complete Armijo failure.');
-          sol = xold;
-          ierr = 2;
-          return
-       end
-    end
-    fnrm = norm(f0);
-    it_hist = [it_hist',[fnrm,iarm]']';
-    if nargout == 4, x_hist = [x_hist,x]; end
-    rat = fnrm/fnrmo;
-    if debug == 1, disp([itc fnrm rat]); end
-    outstat(itc+1, :) = [itc fnrm rat];
-% end while
+if armflag == 1
+    disp('Complete Armijo failure.');
+    sol = xold;
+    ierr = 2;
+    return
 end
+
+fnrm = norm(f0);
+it_hist = [it_hist',[fnrm,iarm]']';
+if nargout == 4, x_hist = [x_hist,x]; end
+rat = fnrm/fnrmo;
+if debug == 1, disp([itc fnrm rat]); end
+outstat(itc+1, :) = [itc fnrm rat];
+% end while
+
+end
+
 sol = x;
 if debug == 1, disp(outstat); end
 %
@@ -222,60 +182,6 @@ for j = 1:n
     jac(:,j) = dirder(x,zz,f,f0);
 end
 [l, u] = lu(jac);
-function jac = bandjac(f,x,f0,nl,nu)
-% BANDJAC  Compute a banded Jacobian f'(x) by forward differeneces.
-%
-% Inputs: f, x = function and point
-%         f0 = f(x), precomputed function value
-%         nl, nu = lower and upper bandwidth  
-%
-n = length(x);
-jac = sparse(n,n);
-dv = zeros(n,1);
-epsnew = 1.d-7;
-%
-% delr(ip)+1 = next row to include after ip in the
-%              perturbation vector pt.
-%
-% We'll need delr(1) new function evaluations.
-%
-% ih(ip), il(ip) = range of indices that influence f(ip).
-%
-for ip = 1:n
-    delr(ip) = min([nl+nu+ip,n]);  
-    ih(ip) = min([ip+nl,n]);
-    il(ip) = max([ip-nu,1]);
-end
-%
-% Sweep thought the delr(1) perturbations of f.
-%
-for is = 1:delr(1)
-    ist = is;
-%
-% Build the perturbation vector.
-%
-    pt = zeros(n,1);
-    while ist <= n
-        pt(ist) = 1;
-        ist = delr(ist)+1;
-    end
-%
-% Compute the forward difference.
-%
-    x1 = x+epsnew*pt;
-    f1 = feval(f,x1);
-    dv = (f1-f0)./epsnew;
-    ist = is;
-%
-% Fill the appropriate columns of the Jacobian.
-%
-    while ist <= n
-    ilt = il(ist); iht = ih(ist);
-    m = iht-ilt;
-    jac(ilt:iht,ist) = dv(ilt:iht);
-    ist = delr(ist)+1;
-    end
-end
 %
 %
 function z = dirder(x,w,f,f0)
