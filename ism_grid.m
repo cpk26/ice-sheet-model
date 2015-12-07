@@ -20,25 +20,24 @@ dy = abs(yt-yb)/(nJ-1); dygrid = ones(nIJ,1)*dy;
 hgrid = (1:nI*nJ)';
 ugrid = (1:(nI+1)*nJ)';
 vgrid = (1:nI*(nJ+1))';
-cgrid = (1:(nI-1)*(nJ-1))';
+cgrid = (1:(nI+1)*(nJ+1))';
 
 %One dimension finite difference operators
 dx_ij = @(k) (sparse([1:k,1:k]', [1:k,2:k+1]', [-ones(k,1); ones(k,1)]/dx, k,k+1));
 dy_ij = @(k) (sparse([1:k,1:k]', [1:k,2:k+1]', [ones(k,1); -ones(k,1)]/dy, k,k+1));
 
-%One dimensional centering operator
-c_ij = @(k) (sparse([1:k,1:k]', [1:k,2:k+1]', [ones(k,1); ones(k,1)]/2, k,k+1));
+dx_ij_per = @(k) (sparse([1:k+1,1:k+1]', [[1:k,1],[k,1:k]]', [-ones(k+1,1); ones(k+1,1)]/dx, k+1,k));
+dy_ij_per = @(k) (sparse([1:k+1,1:k+1]', [[1:k,1],[k,1:k]]', [-ones(k+1,1); ones(k+1,1)]/dy, k+1,k));
 
 
-%Two dimensional finite difference operators [u/v grids onto h/c]
-du_x = kron(dx_ij(nI),speye(nJ)); %derivative of u in x direction from u-grid onto h-grid
-dv_y = kron(speye(nI),dy_ij(nJ)); %derivative of v in y direction from v-grid onto h-grid
+%Two dimensional finite difference operators [u/v/h grids only]
+duh_x = kron(dx_ij(nI),speye(nJ)); %derivative of u in x direction from u-grid onto h-grid
+dvh_y = kron(speye(nI),dy_ij(nJ)); %derivative of v in y direction from v-grid onto h-grid
 
-du_y = kron(speye(nI+1),dy_ij(nJ-1)); %derivative of u in y direction  from u-grid onto c-grid
-dv_x = kron(dx_ij(nI-1), speye(nJ+1)); %derivative of v in x direction from v-grid  onto c-grid
+du_y = kron(speye(nI+1),dy_ij_per(nJ)); %derivative of u in y direction from u-grid onto c-grid 
+dv_x = kron(dx_ij_per(nI),speye(nJ+1)); %derivative of u in y direction from u-grid onto c-grid 
 
-
-dhu_x = -(du_x)'; %derivative of u in x direction from h-grid onto u-grid
+dhu_x = -(duh_x)'; %derivative of u in x direction from h-grid onto u-grid
 for r = 1:nJ     %Apply periodic boundary conditions
     for c = 1:nI
         tmp = zeros(1,nI*nJ);
@@ -47,16 +46,8 @@ for r = 1:nJ     %Apply periodic boundary conditions
     end
 end
 
-dhu_y = -(du_y)'; %derivative of u in y direction from h-grid onto u-grid [in progress]
-for r = 1:nJ     %Apply periodic boundary conditions
-    for c = 1:nI
-        tmp = zeros(1,nI*nJ);
-        if c == 1; tmp([r, r + (nI-1)*nJ]) = [1,-1]/dx; dh_x(r,:) = tmp; end
-        if c == nI; tmp([r, r + (nI-1)*nJ]) = [1,-1]/dx; dh_x(r + nI*nJ,:) = tmp; end
-    end
-end
 
-dhv_y = -(dv_y)'; %derivative of v in y direction from h-grid onto v-grid
+dhv_y = -(dvh_y)'; %derivative of v in y direction from h-grid onto v-grid
 for r = 1:nJ     %Apply periodic boundary conditions
     for c = 1:nI
         tmp = zeros(1,nI*nJ);
@@ -70,24 +61,16 @@ end
 
 
 
+%One dimensional centering operator
+c_ij = @(k) (sparse([1:k,1:k]', [1:k,2:k+1]', [ones(k,1); ones(k,1)]/2, k,k+1));
 
-%Node Connects ugrid
-nconnect = zeros((nI+1)* nJ,4);
-for c = 1:nI
-    for r = 1:nJ
-        nconnect(r+(c-1)*nJ,:) = [ r+(c-2)*nJ, r+(c)*nJ r-1+(c-1)*nJ  r+1+(c-1)*nJ  ]; 
-        if c == 1; nconnect(r+(c-1)*nJ,1) = r+(nI-1)*nJ; end
-        if c == nI; nconnect(r+(c-1)*nJ,2) = r; end
-        if r == 1; nconnect(r+(c-1)*nJ,3) = c*nJ; end
-        if r == nJ; nconnect(r+(c-1)*nJ,4) = 1+(c-1)*nJ; end
-    end
-end
+%Two dimensional centering operators
+c_ch = kron(c_ij(nI-1), c_ij(nJ-1))';
+%du_y = kron(speye(nI+1),dy_ij(nJ+1)); %derivative of u in y direction  from u-grid onto c-grid [In progress]
+%dv_x = kron(dx_ij(nI-1), speye(nJ+1)); %derivative of v in x direction from v-grid  onto c-grid
 
 
 
-%x/y derivate operators
-nddx = sparse([hgrid; hgrid],[nconnect(:,1); nconnect(:,2)],[-(2*dxgrid).^(-1); (2*dxgrid).^(-1)],nIJ,nIJ);
-nddy = sparse([hgrid; hgrid],[nconnect(:,3); nconnect(:,4)],[-(2*dygrid).^(-1); (2*dygrid).^(-1)],nIJ,nIJ);
 
 
 gg.nNodes = nIJ;
