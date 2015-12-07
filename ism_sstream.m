@@ -50,7 +50,7 @@ vv2=vv;
 end
 
 
-function [tbx, tby] = slidingLaw(u,v,C,Sx,Sy,oo)
+function [tbx, tby] = slidingLaw()
 
 switch oo.sL
     case 'ismip'
