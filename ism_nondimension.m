@@ -22,7 +22,7 @@ if ~isfield(ps,'t'), ps.t = ps.x/ps.u; end              %Time scale
 if ~isfield(ps,'B'), ps.B = pd.B; end                   %Ice Stiffness parameter
 if ~isfield(ps,'A'), ps.A = pd.A; end 
 if ~isfield(ps,'vis_i'),...                             %Ice viscosity 
-    ps.vis_i = ps.B/(ps.u/ps.x)^(1-1/pd.n_Glen); end;  
+    ps.vis_i = ps.B/(2*(ps.u/ps.x)^(1-1/pd.n_Glen)); end;  
 if ~isfield(ps,'C'),...                                 %Basal slipperiness
     ps.C = (ps.vis_i*ps.z)/(ps.x^2); end          
 
@@ -33,6 +33,7 @@ pp.u = ps.u;
 pp.A = pd.A;
 pp.g = pd.g;
 pp.rho_i = pd.rho_i;
+pp.n_rp = pd.n_rp;
 
 pp.c1 = (-2*pp.A*(pp.g*pp.rho_i)^pp.n_Glen)/(pp.n_Glen+2);          %SIA
 pp.c2 = ps.z^(pp.n_Glen+1) * (ps.z/ps.x)^pp.n_Glen * 1/ps.u;
