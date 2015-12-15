@@ -11,10 +11,10 @@ function [gg] = ism_grid(nI,nJ,xl,xr,yb,yt,oo)
 
 nIJ = nI*nJ; %Number of nodes
 x = linspace(xl, xr, nI); %Array of xCoords
-y = linspace(yt, yb, nJ); %Array of yCoords
+y = linspace(yb, yt, nJ); %Array of yCoords
 [xx, yy] = meshgrid(x, y); %Matrices of coordinates
-dx = abs(xr-xl)/(nI-1); dxgrid = ones(nIJ,1)*dx; %Grid spacing
-dy = abs(yt-yb)/(nJ-1); dygrid = ones(nIJ,1)*dy;
+dx = abs(xr-xl)/(nI-1);   %Grid spacing
+dy = abs(yt-yb)/(nJ-1); 
 
 % grid point labels [ labeled inline with Matlab indexing convention, so element r,c becomes r+(c-1)*nJ ]
 hgrid = (1:nI*nJ)';

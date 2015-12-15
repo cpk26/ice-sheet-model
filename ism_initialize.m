@@ -16,7 +16,6 @@ function [aa,vv] = ism_initialize(b,s, u, v, C, gg,pp,oo)
 %
 
 if nargin<5, oo = struct; end
-if ~isfield(pp,'u_b'), pp.u_b = 100; end
 if ~isfield(pp,'l_c'), pp.l_c = 1; end
 if ~isfield(pp,'phi_s'), pp.phi_s = -inf; end
 if ~isfield(oo,'prob'), oo.prob = 1; end

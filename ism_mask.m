@@ -10,10 +10,12 @@ function [gg] = ism_mask(gg,dd,oo)
 % 16 October 2015 
 
 
-A = (dd.H > 0);
+A = (dd.h > 0);
 B = (dd.mask == 1);
 [C1, C2] = gradient(single(A)); C = C1 | C2;
 [D1, D2] = gradient(single(B)); D = D1 | D2;
+E = dd.mask > 0; E(:,2:end-1) = 0;
+F = dd.mask > 0; F(2:end-1,:) = 0;
 
 %Assign nodes as ice margin, ice interior, interior boundary, or exterior to the problem. 
 %Nodes belong to only one category.
@@ -21,28 +23,39 @@ gg.nin = A & B & ~C & ~D;
 gg.nmgn = A & B & C;                    
 gg.nbnd = A & B & D & ~C;
 gg.next = ~(gg.nin | gg.nmgn | gg.nbnd);
+clear A B C D
+
+%Determine nodes on the bottom and right hand sides of the u/v grids which periodic BC apply to.
+AA = (E & fliplr(E)); gg.unperBC = reshape((gg.c_hu*AA(:) == 1),gg.nJ, gg.nI+1); gg.unperBC(:,1:end-1) = 0; %u-grid
+BB = (F & flipud(F)); gg.vnperBC = reshape((gg.c_hv*BB(:) == 1),gg.nJ+1, gg.nI); gg.vnperBC(2:end,:) = 0;  %v-grd
 
 %Sampling Operators
-S_h = spdiags([dd.mask(:) > 0],0,gg.nIJ,gg.nIJ); S_h = S_h(any(S_h,2),:); %H-grid
+S_h = spdiags([dd.mask(:) > 0],0,gg.nIJ,gg.nIJ); S_h = S_h(any(S_h,2),:);   %H-grid
 
-%Multiplication by first/last columns/rows of mask is to handle periodic BC in
-%centering operator
-A = conv2(dd.mask, [1 1]/2) > 0;                    % U-grid;
-S_u = spdiags(A(:) > 0,0,(gg.nI+1)*(gg.nJ),(gg.nI+1)*(gg.nJ)); S_u = S_u(any(S_u,2),:); 
+AA = conv2(dd.mask, [1 1]/2) > 0;                                           % U-grid;
+S_u = spdiags(AA(:) > 0,0,(gg.nI+1)*(gg.nJ),(gg.nI+1)*(gg.nJ)); S_u = S_u(any(S_u,2),:);
 
-A = conv2(dd.mask, [1 1]'/2) > 0;                   % V-grid;
-S_v = spdiags(A(:) > 0, 0,(gg.nI)*(gg.nJ+1),(gg.nI)*(gg.nJ+1)); S_v = S_v(any(S_v,2),:); 
+BB = zeros(gg.nJ, gg.nI+1);             %First/last column u-grid nodes with periodic BC
+for j = 1:gg.nJ; if abs(AA(j,1)) == abs(AA(j,end)); BB(j,1) = 1; end; end;          %First Column only
+CC = spdiags(BB(:),0,(gg.nI+1)*(gg.nJ),(gg.nI+1)*(gg.nJ)); DD = CC(any(CC,2),:);    %Reformat, isolate entries
+S_u_perBC = DD - circshift(DD,(gg.nI)*gg.nJ,2);                                           %Add corresponding node (-)
 
-A = padarray(dd.mask,[1,1], 'symmetric'); B = conv2(A,[1 1; 1 1]/4, 'valid'); %C-grid; need symmetric padding
-S_c = spdiags(B(:) == 1,[0],(gg.nI+1)*(gg.nJ+1),(gg.nI+1)*(gg.nJ+1)); S_c = S_c(any(S_c,2),:); 
+AA = conv2(dd.mask, [1 1]'/2) > 0;                                          % V-grid;
+S_v = spdiags(AA(:) > 0, 0,(gg.nI)*(gg.nJ+1),(gg.nI)*(gg.nJ+1)); S_v = S_v(any(S_v,2),:); 
+
+BB = zeros(gg.nJ+1, gg.nI);             %Top/bottom row v-grid nodes with periodic BC
+for j = 1:gg.nI; if abs(AA(1,j)) == abs(AA(end,j)); BB(1,j) = 1; end; end;          %Top row only
+CC = spdiags(BB(:),0,(gg.nI)*(gg.nJ+1),(gg.nI)*(gg.nJ+1)); DD = CC(any(CC,2),:);    %Reformat, isolate entries
+S_v_perBC = DD - circshift(DD,gg.nJ,2);                                  %Add corresponding node (-)
+
+AA = padarray(dd.mask,[1,1], 'symmetric'); BB = conv2(AA,[1 1; 1 1]/4, 'valid'); %C-grid; need symmetric padding
+S_c = spdiags(BB(:) == 1,[0],(gg.nI+1)*(gg.nJ+1),(gg.nI+1)*(gg.nJ+1)); S_c = S_c(any(S_c,2),:); 
 
 gg.S_h = S_h;
 gg.S_u = S_u;
+gg.S_u_perBC = S_u_perBC;
 gg.S_v = S_v;
+gg.S_v_perBC = S_v_perBC;
 gg.S_c = S_c;
-end
 
-%A = reshape(c_hv*dd.mask(:),nJ+1,nI); A(1,:) = A(1,:).*mask(1,:); A(end,:) = A(end,:).*mask(end,:); 
-%A = reshape(gg.c_hu*dd.mask(:),gg.nJ,gg.nI+1); A(:,1) = A(:,1).*dd.mask(:,1); A(:,end) = A(:,end).*dd.mask(:,end); 
-% A = conv2(dd.mask, [1 1]/2) > 0; S_u = diag(A(:) > 0); S_u = S_u(any(S_u,2),:); % U-grid; zero padding is fine
-% A = conv2(dd.mask, [1 1]'/2) > 0; S_v = diag(A(:) > 0) ; S_v = S_v(any(S_v,2),:); %V-grid; zero padding is fine
+end

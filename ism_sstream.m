@@ -1,4 +1,4 @@
-function [vv2, FE1, FE2] = ism_sstream(vv,aa,pp,gg,oo )
+function [vv2] = ism_sstream(vv,aa,pp,gg,oo )
 %% Shallow Stream Model 
 % Inputs:
 %   vv      struct containing initial solution variables
@@ -10,49 +10,104 @@ function [vv2, FE1, FE2] = ism_sstream(vv,aa,pp,gg,oo )
 %   vv2     struct containing new solution variables
 %   J       Jacobian matrix
 
+numIter = 200;
+ssa_norm = zeros(numIter,1);
+n = pp.n_Glen;                              %Ice Flow 
+
+
 %% Variables (Non-Dimensionalized)
 s = aa.s; s_diag = spdiags(s(:),0,gg.nIJ,gg.nIJ);      %Topography
-h = aa.h; h_diag = spdiags(s(:),0,gg.nIJ,gg.nIJ);
+h = aa.h; h_diag = spdiags(h(:),0,gg.nIJ,gg.nIJ);
+Cslip = aa.C; Cslip_diag = spdiags(Cslip(:),0,gg.nIJ,gg.nIJ);
+
 %Use gradient instead of gg.nddx/y 
 %since periodic BC conditions do not apply
 [Sx,Sy] = gradient(s, gg.dx, gg.dy);        
-Sx = Sx(:); Sy = Sy(:); h = h(:);
+Sx = Sx(:); Sy = Sy(:); 
 
-u = vv.u;                                   %Velocities
-v = vv.v;             
+u = vv.u;                                       %Initial iterate velocity 
+v = vv.v;
 
-exx = gg.du_x*u;                            %Strain Rates
+
+for j = 1:numIter
+
+exx = gg.du_x*u;                                %Strain Rates
 eyy = gg.dv_y*v;
 exy = 0.5*(gg.du_y*u + gg.dv_x*v);
-
 edeff = sqrt(exx.^2 + eyy.^2 + exx.*eyy + exy.^2 + pp.n_rp.^2);
 
-n = pp.n_Glen;                              %Ice Flow 
-B = pp.c4;
-C = aa.C;
-nEff = 0.5 * B * edeff.^(1-n)/n; nEff_diag = spdiags(nEff(:),0,gg.nIJ,gg.nIJ);                                  
+nEff =  edeff.^((1-n)/n);        %Effective Viscosity [dimensionless]
+nEff_diag = spdiags(nEff(:),0,gg.nIJ,gg.nIJ);                                  
 
 %% Field equations for velocities
 
-A1 = gg.S_u*gg.dh_x*2*nEff_diag*h_diag*gg.du_x*(gg.S_u');
+
+A1 = gg.S_u*gg.dh_x*4*nEff_diag*h_diag*gg.du_x*gg.S_u';     %LHS SSA 
+A2 = gg.S_u*gg.dhu_y*nEff_diag*h_diag*gg.du_y*gg.S_u';
+A3 = pp.c3*gg.S_u*gg.c_hu*Cslip_diag*gg.c_uh*gg.S_u';
+AA = A1 + A2 - A3;
+
+
+B1 = 2*gg.S_u*gg.dh_x*nEff_diag*h_diag*gg.dv_y*gg.S_v';
+B2 = 2*gg.S_u*gg.dhu_y*nEff_diag*h_diag*gg.dv_x*gg.S_v';
+BB =  B1+B2;
+
+C1 = 2*gg.S_v*gg.dh_y*nEff_diag*h_diag*gg.du_x*gg.S_u';
+C2 = gg.S_v*gg.dhv_x*nEff_diag*h_diag*gg.du_y*gg.S_u';
+CC = C1 + C2;
+
+
+D1 = 4*gg.S_v*gg.dh_y*nEff_diag*h_diag*gg.dv_y*gg.S_v';
+D2 = 2*gg.S_v*gg.dhv_x*nEff_diag*h_diag*gg.dv_x*gg.S_v';
+D3 = pp.c3*gg.S_v*gg.c_hv*Cslip_diag*gg.c_vh*gg.S_v';
+DD = D1 + D2 - D3;
+
+LL = [AA BB; CC DD];
+
+E1 = gg.S_u_perBC;                                          %Add Periodic Boundary Conditions
+E4 = gg.S_v_perBC; 
+E2 = zeros(size(E1,1), (gg.nJ+1)*gg.nI);
+E3 = zeros(size(E4,1), gg.nJ*(gg.nI+1));
+
+EE = [E1 E2; E3 E4];
+
+LL2 = [LL;EE];                                              %Combine
+
+f1a = pp.c4*gg.c_hu*h_diag*Sx;                              %RHS SSA
+f1b = pp.c4*gg.c_hv*h_diag*Sy;
+f3 = zeros(size(EE,1),1);                                   %Periodic Boundary Conditions
+
+FF = [f1a;f1b];
+FF2 = [f1a;f1b;f3];
+
+
+% tmp = LL*[u;v];
+% tmp2 = FF - tmp;
+% u_err = tmp2(1:(gg.nI+1)*gg.nJ); u_err = reshape(u_err,gg.nJ, gg.nI+1);
+% v_err = tmp2((gg.nI+1)*gg.nJ+1:end); v_err = reshape(u_err,gg.nJ+1, gg.nI);
+% tmp3 = reshape(((gg.c_uh*u_err(:)).^2 + (gg.c_vh*v_err(:)).^2),gg.nJ, gg.nI);
+
+
+U = LL2\FF2;
+u = gg.S_u*U(1:(gg.nI+1)*gg.nJ);
+v = gg.S_v*U((gg.nI+1)*gg.nJ+1:end);
+
+ssa_norm(j) = sum(sum(abs(FF2-LL2*U).^2));
+    
+end
+
+vv.u = u;
+vv.v = v;
 
 
 
-
-TMP1 = 2*h.*vEff.*exx + h.*vEff.*eyy; TMP1 = gg.nddx*TMP1;
-TMP2 = h.*vEff.*exy; TMP2 = gg.nddy*TMP2;
-[TMP3, ~] = slidingLaw(u,v,C,Sx,Sy,oo);
-TMP4 = -pp.c5*h.*Sx;
-FE1 = TMP1+TMP2+TMP3-TMP4;
-
-
-TMP5 = 2*h.*vEff.*eyy + h.*vEff.*exx; TMP5 = gg.nddy*TMP5;
-TMP6 = h.*vEff.*eyx; TMP6 = gg.nddx*TMP6;
-[~, TMP7] = slidingLaw(u,v,C,Sx,Sy,oo);
-TMP8 = -pp.c2*h.*Sy;
-FE2 = TMP5+TMP6+TMP7-TMP8;
 
 vv2=vv;
+
+
+
+
+
 end
 
 

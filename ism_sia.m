@@ -1,4 +1,4 @@
-function [ vv ] = ism_sia(s,h,pp,gg,oo )
+function [ vv ] = ism_sia(s,h,C,pp,gg,oo )
 %% Shallow ice approximation model
 % Inputs:
 %   s       surface elevation
@@ -17,16 +17,24 @@ Sx = Sx(:);
 Sy = Sy(:); 
 Sg = sqrt(Sx.^2 + Sy.^2); 
 h = h(:); 
+C = C(:);
 
 n = pp.n_Glen;                                  %Ice Flow Parameters
-           
-u = pp.c3 * h.^(n+1) .* Sg.^(n-1) .* Sx;        %Velocities (h-grid)
-v = pp.c3 * h.^(n+1) .* Sg.^(n-1) .* Sy;        
 
-u = gg.S_u * gg.c_hu*u(:);                            %Transfer onto u/v grids
+ubas = -pp.c1.* C.^-1 .* h.* Sx;                  %Velocities (h-grid)
+udef = -pp.c2 .* h.^(n+1) .* Sg.^(n-1) .* Sx; 
+u = ubas + udef;
+
+vbas = -pp.c1.* C.^-1 .* h .* Sy;
+vdef = -pp.c2 .* h.^(n+1) .* Sg.^(n-1) .* Sy; 
+v = vbas(:) + vdef;        
+
+%u(u > pp.u_max) = pp.u_max + sqrt(u(u > pp.u_max)-pp.u_max);                     %Limit ice velocities
+%v(v > pp.u_max) = pp.u_max + sqrt(v(v > pp.u_max)-pp.u_max);
+
+u = gg.S_u * gg.c_hu*u(:);                      %Transfer onto u/v grids
 v = gg.S_v * gg.c_hv*v(:);
 
-vv.U = [u;v];
 vv.u = u;
 vv.v = v;
 
