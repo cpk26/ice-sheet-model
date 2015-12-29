@@ -56,8 +56,6 @@ dh_y = kron(speye(nI),dy_ij_per(nJ)); %derivative of h in y direction from h-gri
 dhu_y = c_vu*dh_y; %derivative of h in y direction from h-grid onto u-grid
 dhv_x = c_uv*dh_x; %derivative of h in x direction from h-grid onto v-grid
 
-
-
 gg.nIJ = nIJ; %Grid Details
 gg.nI = nI;
 gg.nJ = nJ;
@@ -89,21 +87,3 @@ gg.c_hv = c_hv;
 
 end
 
-
-
-% dh_x = -(du_x)'; %derivative of h in x direction from h-grid onto u-grid
-% for r = 1:nJ     %Apply periodic boundary conditions
-%     for c = 1:nI
-%         if c == 1; tmp = zeros(1,nI*nJ); tmp([r, r + (nI-1)*nJ]) = [1,-1]/dx; dh_x(r,:) = tmp; end
-%         if c == nI; tmp = zeros(1,nI*nJ); tmp([r, r + (nI-1)*nJ]) = [1,-1]/dx; dh_x(r + nI*nJ,:) = tmp; end
-%     end
-% end
-
-
-% dh_y = -(dv_y)'; %derivative of h in y direction from h-grid onto v-grid
-% for r = 1:nJ     %Apply periodic boundary conditions
-%     for c = 1:nI
-%         if r == 1; tmp = zeros(1,nI*nJ); tmp([1 + nJ*(c-1), nJ*c]) = [-1,1]/dy; dh_y(1+(c-1)*(nJ+1),:) = tmp; end
-%         if r == nJ; tmp = zeros(1,nI*nJ); tmp([1 + nJ*(c-1), nJ*c]) = [-1,1]/dy; dh_y(c*(nJ+1),:) = tmp; end
-%     end
-% end

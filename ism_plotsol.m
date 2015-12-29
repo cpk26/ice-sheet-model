@@ -31,33 +31,33 @@ vv2.U = U;
 
 figure()                                                %Plot Velocities
 subplot(3,1,1)
-imagesc(x,y,U);
+imagesc(U);
 title('Velocity');
 colorbar()
 
 subplot(3,1,2)
-imagesc(x,y,u_h);
+imagesc(u_h);
 title('X component of velocity');
 colorbar()
 
 subplot(3,1,3)
-imagesc(x,y,v_h);
+imagesc(v_h);
 title('Y component of velocity');
 colorbar()
 
 figure()                                                %Plot Topography
 subplot(3,1,1)
-imagesc(x,y,s)
+imagesc(s)
 title('Surface Elevation');
 colorbar()
 
 subplot(3,1,2)
-imagesc(x,y,b)
+imagesc(b)
 title('Bed Elevation');
 colorbar()
 
 subplot(3,1,3)
-imagesc(x,y,h)
+imagesc(h)
 title('Ice Thickness');
 colorbar()
 

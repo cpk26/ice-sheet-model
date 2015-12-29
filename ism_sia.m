@@ -17,7 +17,7 @@ Sx = Sx(:);
 Sy = Sy(:); 
 Sg = sqrt(Sx.^2 + Sy.^2); 
 h = h(:); 
-C = C(:);
+C = C(:) + pp.C_rp;                             %Regularziation to avoid C=0 -> InF
 
 n = pp.n_Glen;                                  %Ice Flow Parameters
 
@@ -28,9 +28,6 @@ u = ubas + udef;
 vbas = -pp.c1.* C.^-1 .* h .* Sy;
 vdef = -pp.c2 .* h.^(n+1) .* Sg.^(n-1) .* Sy; 
 v = vbas(:) + vdef;        
-
-%u(u > pp.u_max) = pp.u_max + sqrt(u(u > pp.u_max)-pp.u_max);                     %Limit ice velocities
-%v(v > pp.u_max) = pp.u_max + sqrt(v(v > pp.u_max)-pp.u_max);
 
 u = gg.S_u * gg.c_hu*u(:);                      %Transfer onto u/v grids
 v = gg.S_v * gg.c_hv*v(:);
