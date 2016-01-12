@@ -27,11 +27,11 @@ aa.s = s;
 aa.b = b;
 aa.h = max(s-b,0);
 
-if oo.pT == 1
+if strcmp(oo.pT, 'forward')
 aa.C = C(:);                   %Forward Problem
 vv.u = u(:);
 vv.v = v(:);
-else
+elseif strcmp(oo.pT, 'inverse')
 vv.C = C(:);                   %Inverse Problem
 aa.u = u(:);
 aa.v = v(:); 

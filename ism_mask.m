@@ -36,18 +36,19 @@ S_h = spdiags([dd.mask(:) > 0],0,gg.nIJ,gg.nIJ); S_h = S_h(any(S_h,2),:);
 AA = conv2(dd.mask, [1 1]/2) > 0;                                           
 S_u = spdiags(AA(:) > 0,0,(gg.nI+1)*(gg.nJ),(gg.nI+1)*(gg.nJ)); S_u = S_u(any(S_u,2),:);
 
-%U-grid nodes which periodic BC apply to. Of each pair, one is positive, the other
+%u-grid nodes which periodic BC apply to. Of each pair, one is positive, the other
 %is negative
 BB = zeros(gg.nJ, gg.nI+1);                              %First/last column u-grid nodes with periodic BC
 for j = 1:gg.nJ; if abs(AA(j,1)) == abs(AA(j,end)); BB(j,1) = 1; end; end;          %First Column only
 CC = spdiags(BB(:),0,(gg.nI+1)*(gg.nJ),(gg.nI+1)*(gg.nJ)); DD = CC(any(CC,2),:);    %Reformat, isolate entries
-S_u_perBC = DD - circshift(DD,(gg.nI)*gg.nJ,2);                                     %Add corresponding node (-)
+S_u_perBC = DD - circshift(DD,(gg.nI)*gg.nJ,2);   %Add corresponding node (-)
+
 
 % V-grid;
 AA = conv2(dd.mask, [1 1]'/2) > 0;                                          
 S_v = spdiags(AA(:) > 0, 0,(gg.nI)*(gg.nJ+1),(gg.nI)*(gg.nJ+1)); S_v = S_v(any(S_v,2),:); 
 
-%V-grid nodes which periodic BC apply to. Of each pair, one is positive, the other
+%v-grid nodes which periodic BC apply to. Of each pair, one is positive, the other
 %is negative
 BB = zeros(gg.nJ+1, gg.nI);             %Top/bottom row v-grid nodes with periodic BC
 for j = 1:gg.nI; if abs(AA(1,j)) == abs(AA(end,j)); BB(1,j) = 1; end; end;          %Top row only
@@ -58,11 +59,38 @@ S_v_perBC = DD - circshift(DD,gg.nJ,2);                                  %Add co
 AA = padarray(dd.mask,[1,1], 'symmetric'); BB = conv2(AA,[1 1; 1 1]/4, 'valid');  %need symmetric padding
 S_c = spdiags(BB(:) == 1,[0],(gg.nI+1)*(gg.nJ+1),(gg.nI+1)*(gg.nJ+1)); S_c = S_c(any(S_c,2),:); 
 
+
+%% Periodic Boundary Conditions
+%Determine whether whether periodic BC apply within the mask
+
+perBC = any(S_u_perBC(:)) || any(S_v_perBC(:));
+
+if perBC
+%List of indices in U velocity vector for u/v and +/- velocity sets
+[u_BP1,~] = find(S_u_perBC' == 1);   %half of the u-grid points with periodic bc, 
+[u_BP2,~] = find(S_u_perBC' == -1);  %corresponding half to the above points
+
+[v_BP1,~] = find(S_v_perBC' == 1);   %v-grid points with periodic bc, set A
+[v_BP2,~] = find(S_v_perBC' == -1);  %corresponding half to the above points
+
+v_BP1 = v_BP1 + (gg.nI+1)*gg.nJ; %Offset by number of points in u-grid
+v_BP2 = v_BP2 + (gg.nI+1)*gg.nJ; 
+
+else
+u_BP1 = []; u_BP2 = [];
+v_BP1 = []; v_BP2 = [];
+end
+
+
 gg.S_h = S_h;
 gg.S_u = S_u;
-gg.S_u_perBC = S_u_perBC;
 gg.S_v = S_v;
-gg.S_v_perBC = S_v_perBC;
 gg.S_c = S_c;
 
+gg.S_u_perBC = S_u_perBC;
+gg.S_v_perBC = S_v_perBC;
+gg.u_BP1 = u_BP1;
+gg.u_BP2 = u_BP2;
+gg.v_BP1 = v_BP1;
+gg.v_BP2 = v_BP2;
 end

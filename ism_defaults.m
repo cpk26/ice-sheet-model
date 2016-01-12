@@ -23,8 +23,9 @@ if ~isfield(pd,'n_rp'), pd.n_rp = 10^-5/(pd.ty); end;              % Effective V
 if ~isfield(pd,'C_rp'), pd.C_rp = 10^6; end;                       % Basal Slipperiness regularation parameter for SIA (to avoid vel=Inf)
 
 
-if ~isfield(oo,'fm'), oo.pT = 1; end                               % problem type: [1] for forward model, [2] for inverse problem
-if ~isfield(oo,'sL'), oo.sL = 'ismip'; end                         %Sliding Law: ismip                                           
+if ~isfield(oo,'fm'), oo.pT = 'forward'; end                       %problem type: 'forward' or 'inverse'
+if ~isfield(oo,'sL'), oo.sL = 'ismip'; end                         %Sliding Law: ismip 
+if ~isfield(oo,'norm'), oo.norm = 2; end                           %solution norm for testing convergence. see norm()
                                                                    
 
 end
