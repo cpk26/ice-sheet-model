@@ -9,12 +9,27 @@ function [gg] = ism_grid(nI,nJ,xl,xr,yb,yt,oo)
 %
 % Dec 8, 2015: based on nevis_grid
 
-nIJ = nI*nJ; %Number of nodes
-x = linspace(xl, xr, nI); %Array of xCoords
-y = linspace(yb, yt, nJ); %Array of yCoords
+nIJ = nI*nJ;            %Number of nodes
+
+Lx = abs(xr-xl);        %Domain dimensions (u,v grids)
+Ly = abs(yt-yb);
+dx = abs(Lx)/(nI-1);    %Grid spacing
+dy = abs(Ly)/(nJ-1); 
+
+xl_h = xl + dx/2;       %min x coordinate (h-grid)
+xr_h = xr-dx/2;         %max x coordinate
+yb_h = yb + dy/2;       %min y coordinate
+yt_h = yt - dy/2;       %max y coordinate
+
+Lx_h = abs(xr_h-xl_h);   %Domain dimensions (h grid)
+Ly_h = abs(yt_h-yb_h);   %Domain dimensions (h grid)
+
+x = linspace(xl_h,xr_h,nI);  %array of x coords (h-grid)
+y = linspace(yt_h,yb_h,nJ);  %array of y coords
+
 [xx, yy] = meshgrid(x, y); %Matrices of coordinates
-dx = abs(xr-xl)/(nI-1);   %Grid spacing
-dy = abs(yt-yb)/(nJ-1); 
+
+
 
 % grid point labels [ labeled inline with Matlab indexing convention, so element r,c becomes r+(c-1)*nJ ]
 hgrid = (1:nI*nJ)';
@@ -65,6 +80,11 @@ gg.xx = xx;
 gg.yy = yy;
 gg.dx = dx;
 gg.dy = dy;
+gg.Lx = Lx;
+gg.Ly = Ly;
+gg.Lx_h = Lx_h;
+gg.Ly_h = Ly_h;
+
 
 gg.du_x = du_x; %Finite Difference Operators
 gg.dv_y = dv_y;

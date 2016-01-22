@@ -32,7 +32,7 @@ v = vbas(:) + vdef;
 u = gg.S_u * gg.c_hu*u(:);                      %Transfer onto u/v grids
 v = gg.S_v * gg.c_hv*v(:);
 
-vv.u = u;
+vv.u = u;                                       %Non-dimensional velocity
 vv.v = v;
 
 

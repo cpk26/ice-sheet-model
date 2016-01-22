@@ -40,9 +40,15 @@ pp.C_rp = pd.C_rp;
 pp.c1 = ps.e*ps.sigma/(ps.u);                         %SIA
 pp.c2 = pp.A*ps.z*(ps.sigma^pd.n_Glen)*(ps.e^(pd.n_Glen))/(2*ps.u);
 
-pp.c3 = (ps.x^2)/(ps.z*ps.vis_i);                                %SSTREAM
+pp.c3 = (ps.x^2)/(ps.z*ps.vis_i);                     %SSTREAM
 pp.c4 = (ps.x*ps.z*pp.rho_i*pp.g)/(ps.vis_i*ps.u);
 
+
+pp.c5 = pd.min_wavelength/ps.x;           %Inversion
+pp.c6 = (ps.vis_i * ps.z)/(ps.x^2);
+pp.c7 = ps.u;
+pp.c8 = (ps.x^2)*ps.u;
+pp.c9 = (ps.x^2)*ps.u^2;
 
 
 end
