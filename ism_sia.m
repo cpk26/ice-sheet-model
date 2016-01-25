@@ -8,6 +8,12 @@ function [ vv ] = ism_sia(s,h,C,pp,gg,oo )
 %   oo      options
 % Outputs:
 %   vv     struct containing new solution variables
+%
+%Because our main forward/inverse model uses the SSA approximation, we only
+%calculate the surface velocity using the basal sliding component of the SIA
+%approximation, ignoring the contribution to velocity from internal deformation.
+%See the Greve + Blatter book, 'Dynamics of Ice Sheets and Glaciers'.
+
 
 %Use gradient instead of gg operators as periodic BC do not apply to the
 %topography of the the ISMIP-C experiment
@@ -15,19 +21,11 @@ function [ vv ] = ism_sia(s,h,C,pp,gg,oo )
 [Sx,Sy] = gradient(s, gg.dx, gg.dy);            %Topography   
 Sx = Sx(:); 
 Sy = Sy(:); 
-Sg = sqrt(Sx.^2 + Sy.^2); 
 h = h(:); 
 C = C(:) + pp.C_rp;                             %Regularziation to avoid C=0 -> InF
 
-n = pp.n_Glen;                                  %Ice Flow Parameters
-
-ubas = -pp.c1.* C.^-1 .* h.* Sx;                  %Velocities (h-grid)
-udef = -pp.c2 .* h.^(n+1) .* Sg.^(n-1) .* Sx; 
-u = ubas + udef;
-
-vbas = -pp.c1.* C.^-1 .* h .* Sy;
-vdef = -pp.c2 .* h.^(n+1) .* Sg.^(n-1) .* Sy; 
-v = vbas(:) + vdef;        
+u = -pp.c1.* C.^-1 .* h .* Sx;                  %Velocities (h-grid)
+v = -pp.c1.* C.^-1 .* h .* Sy;
 
 u = gg.S_u * gg.c_hu*u(:);                      %Transfer onto u/v grids
 v = gg.S_v * gg.c_hv*v(:);
