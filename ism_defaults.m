@@ -24,7 +24,7 @@ if ~isfield(pd,'C_rp'), pd.C_rp = 10^6; end;                       % Basal Slipp
 if ~isfield(pd, 'min_wavelength'), pd.min_wavelength = 1000; end;  %For fourier series basis during inversion 
 
 
-if ~isfield(oo,'fm'), oo.pT = 'forward'; end                       %problem type: 'forward' or 'inverse'
+if ~isfield(oo,'pT'), oo.pT = 'forward'; end                       %problem type: 'forward' or 'inverse'
 if ~isfield(oo,'sL'), oo.sL = 'ismip'; end                         %Sliding Law: ismip 
 if ~isfield(oo,'norm'), oo.norm = 2; end                           %solution norm for testing convergence. see norm()
                                                                    

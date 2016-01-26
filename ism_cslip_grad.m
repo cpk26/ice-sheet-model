@@ -11,14 +11,14 @@ function [vv] = ism_cslip_grad(vv, pp, gg, oo)
 
 n_x = vv.n_x;           %Number of coefficients (x/y dirs)
 n_y = vv.n_y;
-m = 0:1:gg.nI-1; n = gg.nJ-1:-1:0;  %switch to generic domain
+m = 0:1:gg.nI-1; n = 0:1:gg.nJ-1;  %switch to generic domain
 [xx,yy] = meshgrid(m,n); 
 
 %IS n defined correclty?
 
 
 DP = gg.S_h * (gg.c_uh*gg.S_u'*(vv.u.*vv.lambda) + gg.c_vh*gg.S_v'*(vv.v.*vv.mu));
-BB = gg.S_h*sqrt(vv.C(:));
+BB = idct2(vv.acoeff); BB = gg.S_h*BB(:);
 
 agrad = zeros(size(vv.acoeff));
 

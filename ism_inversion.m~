@@ -39,7 +39,7 @@ vv2.u = ii.u; vv2.v = ii.v;
 
 
 inv_norm = zeros(oo.inv_iter+1,1);            %Store velocity misfit
-inv_norm(1) = ism_vel_misfit(vv2.u,vv2.v,aa,pp,gg, oo);
+inv_norm(1) = ism_inversion_misfit(vv2.u,vv2.v,aa,pp,gg, oo);
 
 %% Iterate
 for j = 1:oo.inv_iter
@@ -51,11 +51,13 @@ fprintf('Inversion iteration: %i of %i \n',[j,oo.inv_iter])
 [vv2] = ism_cslip_grad(vv2, pp, gg, oo);
 
 %% newton-raphson step 
-[vv2] = ism_acoeff_nrs(vv2,aa, pp, gg, oo);
+[vv2] = ism_acoeff_linesearch(vv2,aa, pp, gg, oo);
 
-inv_norm(j+1) = ism_vel_misfit(vv2.u,vv2.v,aa,pp,gg, oo);
+inv_norm(j+1) = ism_inversion_misfit(vv2.u,vv2.v,aa,pp,gg, oo);
 end
 
-disp('Inversion Complete')
+
+pause()
+
 
 end
