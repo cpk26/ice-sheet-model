@@ -12,10 +12,14 @@ function [vv] = ism_cslip_dct(vv,pp,gg,oo )
 %Sw
 
 n_x = vv.n_x;               %Number of coefficients (x/y dirs)
-n_y = vv.n_y;   
-Lx = gg.Lx;                 %Length of Domain (x/y dimensions)
-Ly = gg.Ly;
-FF = sqrt(vv.C(:));         %Function to transform
+n_y = vv.n_y;
+x = linspace(0,1,gg.nI); x(1) = []; x(end) = []; %switch to generic domain
+y = linspace(1,0,gg.nJ); y(1) = []; y(end) = [];
+[xx,yy] = meshgrid(x,y); 
+dx = abs(xx(1,2) - xx(1,1));
+dy = abs(yy(1,1) - yy(2,1));
+xx = xx(:); yy = yy(:);
+FF = sum(sqrt(vv.C(:)));         %Function to transform
 
 acoeff = zeros(n_x+1,n_y+1);
 
@@ -25,22 +29,16 @@ for j=0:n_x
     for k = 0:n_y
         
         if j == 0 && k == 0
-            acoeff(j+1,k+1) = (1/(Lx*Ly)) * sum(FF)*gg.dx*gg.dy;
+            acoeff(j+1,k+1) = sum(FF)*dx*dy;
             
         elseif k == 0
-            AA = 2/(Lx*Ly);
-            BB = sum(FF.*cos(pi*j*gg.xx(:)/Lx))*gg.dx*gg.dy;
-            acoeff(j+1,k+1) = AA*BB;
+            acoeff(j+1,k+1) = 2*sum(FF.*cos(pi*j*xx))*dx*dy;
             
         elseif j == 0
-            AA = 2/(Lx*Ly);
-            BB = sum(FF.*cos(pi*k*gg.yy(:)/Ly))*gg.dx*gg.dy;
-            acoeff(j+1,k+1) = AA*BB;
+            acoeff(j+1,k+1) = 2*sum(FF.*cos(pi*k*yy))*dx*dy;
             
         else
-            AA = 4/(Lx*Ly);
-            BB = sum(FF.*cos(pi*j*gg.xx(:)/Lx).*cos(pi*k*gg.yy(:)/Ly))*gg.dx*gg.dy;
-            acoeff(j+1,k+1) = AA*BB;
+            acoeff(j+1,k+1) = 4*sum(FF.*cos(pi*j*xx).*cos(pi*k*yy))*dx*dy;
             
         end      
     end

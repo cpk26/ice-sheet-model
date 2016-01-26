@@ -1,6 +1,6 @@
 
 function [vv2] = ism_acoeff_linesearch(vv,aa, pp, gg, oo)
-%% Armijo Line search to update inversion alpha coefficients 
+%% Newton-Raphson step to update inversion alpha coefficients 
 % Based on code from C.T. Kelley, from SIAM's 'Solving Nonlinear Equations
 % with Newton's Method'
 % Inputs:
@@ -12,8 +12,9 @@ function [vv2] = ism_acoeff_linesearch(vv,aa, pp, gg, oo)
 % Outputs:
 %   vv2     updated struct with new alpha coefficients
 
+disp('Newton-Raphson Step')
 
-if ~isfield(vv,'tau'), vv.tau = 1; end;        %Initial step coefficient
+if ~isfield(vv,'tau'), vv.tau = -1; end;        %Initial step coefficient
 
 %% Paramaters
 vv2 = vv;               
@@ -29,25 +30,25 @@ n_y = vv.n_y;
 [mft0] = ism_inversion_misfit(vv.u,vv.v,aa,pp,gg, oo);  %Initial misfit
 
 tau = vv.tau; taum = 1; tauc = tau;     %Step coefficient. 'm': previous step; 'c': current step
-newtonStep = mft0/sum(vv.agrad);
+step = mft0/norm(vv.agrad(:),1) * vv.agrad / norm(vv.agrad(:),1);
 
 %% Initial step
-vv2.acoeff = vv2.acoeff - tau*newtonStep*vv.agrad;
-[vv2] = ism_cslip_idct(vv2,pp,gg,oo );      %Calculate new slipperiness field
+vv2.acoeff = vv2.acoeff - tau*step;
+vv2.C = idct2(vv2.acoeff);       %Calculate new slipperiness field
 
 [ii] = ism_sia(aa.s,aa.h,vv2.C, pp,gg,oo);  %Calculate corresponding velocities 
 vv2.u = ii.u; vv2.v = ii.v;                 %SIA                                        
 [vv2] = ism_sstream(vv2,aa,pp,gg,oo );      %SSA 
 
 [mft] = ism_inversion_misfit(vv2.u,vv2.v,aa,pp,gg, oo); %Current misfit
-
 mft0_2 = mft0*mft0; mftc_2 = mft*mft; mftm_2 = mft*mft; %Misfit squared; 'm': previous step; 'c': current step
 
 
 %% Iterate step size coefficient
 %mft >= (1 - alpha*tau) * mft0
 
-while mft >= (1 - alpha*tau) * mft0;    %stopping conditions
+while mft >=  mft0;    %stopping conditions
+    fprintf('Line search iteration: %i \n',iarm+1)
     %% Apply the three point parabolic model.
     tau = sigma*tau;
 %     if iarm == 0
@@ -57,14 +58,13 @@ while mft >= (1 - alpha*tau) * mft0;    %stopping conditions
 %     end
 
     %% Update vv2.coeff; keep the books on tau.
-    newtonStep = mft0/sum(vv.agrad);
-    vv2.acoeff = vv.acoeff - tau*newtonStep*vv.agrad; %stepping from the original acoeff.
+    step = mft0/norm(vv.agrad(:),1) * vv.agrad / norm(vv.agrad(:),1);
+    vv2.acoeff = vv.acoeff - tau*step; %stepping from the original acoeff.
     taum = tauc;
     tauc = tau;
 
     %% Calculate misfit based on current step size
-    vv2.acoeff = vv2.acoeff - tau*newtonStep*vv.agrad;
-    [vv2] = ism_cslip_idct(vv2,pp,gg,oo );      %Calculate new slipperiness field
+    vv2.C = idct2(vv2.acoeff);      %Calculate new slipperiness field
     [ii] = ism_sia(aa.s,aa.h,vv2.C, pp,gg,oo);  %Calculate corresponding velocities 
     vv2.u = ii.u; vv2.v = ii.v;                 %SIA                                        
     [vv2] = ism_sstream(vv2,aa,pp,gg,oo );      %SSA 
@@ -79,10 +79,12 @@ while mft >= (1 - alpha*tau) * mft0;    %stopping conditions
         armflag = 1;
         return;
     end
+    
     disp(iarm)
 end
-
-vv2.tau = 2*tau; %Starting tau for line search for next gradient
+fprintf('Misfit: %i \n', mft)
+disp('Completed')
+vv2.tau = tau; %Save tau as initial starting point for subsequent line search
 
 end   
 

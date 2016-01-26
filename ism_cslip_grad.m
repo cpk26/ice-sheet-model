@@ -11,21 +11,27 @@ function [vv] = ism_cslip_grad(vv, pp, gg, oo)
 
 n_x = vv.n_x;           %Number of coefficients (x/y dirs)
 n_y = vv.n_y;
-Lx = gg.Lx;             %Length of Domain (x/y dimensions)
-Ly = gg.Ly;
+m = 0:1:gg.nI-1; n = gg.nJ-1:-1:0;  %switch to generic domain
+[xx,yy] = meshgrid(m,n); 
+
+%IS n defined correclty?
+
 
 DP = gg.S_h * (gg.c_uh*gg.S_u'*(vv.u.*vv.lambda) + gg.c_vh*gg.S_v'*(vv.v.*vv.mu));
 BB = gg.S_h*sqrt(vv.C(:));
 
-agrad = zeros((n_x+1)*(n_y+1),1);
+agrad = zeros(size(vv.acoeff));
 
-for j=0:n_x;
-for k = 0:n_y
-        
-aInd = (j+1) + k*n_y;
-agrad(aInd) = -2*pp.c8*sum(cos(pi*j*gg.xx(:)/Lx).*cos(pi*k*gg.yy(:)/Ly).*BB.*DP*gg.dx*gg.dy);
-        
-       
+for j = 0:n_x-1;
+for k = 0:n_y-1;
+
+if k == 0; a1 = 1/sqrt(gg.nJ); else a1 = sqrt(2/gg.nJ); end
+if j == 0; a2 = 1/sqrt(gg.nI); else a1 = sqrt(2/gg.nI); end
+
+AA = a1*a2*cos(pi*(2*xx+1)*j/(2*gg.nI)).*cos(pi*(2*yy+1)*k/(2*gg.nJ));
+AA = gg.S_h*AA(:);
+agrad(j+1,k+1) = -2*pp.c8*sum(AA.*BB.*DP*gg.dx*gg.dy);
+         
 end
 end
 

@@ -31,7 +31,7 @@ mu = gg.S_v'*lm((gg.nI+1)*gg.nJ+1:end);
 
 vv.lambda = lambda;
 vv.mu = mu;
-
+vv.adjoint_norm = norm(RHS-LHS*lm,oo.norm);
 vv2=vv;
 
 end

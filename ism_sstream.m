@@ -11,7 +11,7 @@ function [vv2] = ism_sstream(vv,aa,pp,gg,oo )
 %   J       Jacobian matrix
 
 numIter = 10;
-iter_norm = zeros(numIter,1);
+sstream_norm = zeros(numIter,1);
 n = pp.n_Glen;                              %Ice Flow 
 
 
@@ -51,13 +51,13 @@ for j = 1:numIter
     u = gg.S_u*U(1:(gg.nI+1)*gg.nJ);    %u,v velocity fields
     v = gg.S_v*U((gg.nI+1)*gg.nJ+1:end);
     
-    iter_norm(j) = norm(RHS-LHS*Um,oo.norm); %iteration norm (using Um)
+    sstream_norm(j) = norm(RHS-LHS*Um,oo.norm); %iteration norm (using Um)
     
 end
 
 vv.u = u;
 vv.v = v;
-vv.iter_norm = iter_norm;
+vv.sstream_norm = sstream_norm;
 
 vv2=vv;
 
