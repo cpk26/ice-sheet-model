@@ -24,9 +24,9 @@ Cslip_diag = spdiags(C(:),0,gg.nIJ,gg.nIJ);
 Sx = Sx(:); Sy = Sy(:); 
 
 
-exx = gg.du_x*u;                                %Strain Rates
-eyy = gg.dv_y*v;
-exy = 0.5*(gg.du_y*u + gg.dv_x*v);
+exx = gg.du_x*(gg.S_u'*u);                                %Strain Rates
+eyy = gg.dv_y*(gg.S_v'*v);
+exy = 0.5*(gg.du_y*(gg.S_u'*u) + gg.dv_x*(gg.S_v'*v));
 edeff = sqrt(exx.^2 + eyy.^2 + exx.*eyy + exy.^2 + pp.n_rp.^2);
 
 nEff =  edeff.^((1-n)/n);        %Effective Viscosity [dimensionless]
@@ -56,8 +56,8 @@ DD = D1 + D2 - D3;
 
 LHS = [AA BB; CC DD];
 
-f1a = pp.c4*gg.c_hu*h_diag*Sx;                              %RHS SSA
-f1b = pp.c4*gg.c_hv*h_diag*Sy;
+f1a = gg.S_u*pp.c4*gg.c_hu*h_diag*Sx;                              %RHS SSA
+f1b = gg.S_v*pp.c4*gg.c_hv*h_diag*Sy;
 
 RHS = [f1a;f1b];
 

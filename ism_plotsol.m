@@ -16,7 +16,7 @@ U = sqrt(u_h.^2 + v_h.^2);
 
 u_h = u_h*ps.u*pd.ty;                                  %Dimensionalize [m/yr]
 v_h = v_h*ps.u*pd.ty;
-U = U*ps.u;
+U = U*ps.u*pd.ty;
 
 h = dd.h;                                               %Topography
 b = dd.b;
@@ -34,6 +34,7 @@ subplot(3,1,1)
 imagesc(U);
 title('Velocity');
 colorbar()
+
 
 subplot(3,1,2)
 imagesc(u_h);

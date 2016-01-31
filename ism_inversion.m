@@ -33,8 +33,7 @@ vv2.acoeff = acoeff;
 vv2.C = idct2(acoeff).^2;                   %reconstruct basal slipperiness
 
 %% Solve forward problem for initial guess
-[ii] = ism_sia(aa.s,aa.h,vv2.C, pp,gg,oo);  %SIA 
-vv2.u = ii.u; vv2.v = ii.v;
+[vv2] = ism_sia(aa.s,aa.h,vv2.C,vv2,pp,gg,oo);  %SIA 
 [vv2] = ism_sstream(vv2,aa,pp,gg,oo );      %SSA 
 
 

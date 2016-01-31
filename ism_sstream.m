@@ -34,22 +34,60 @@ v = vv.v;
 for j = 1:numIter
 
     [LHS, RHS] = ism_sstream_fieldeq(u,v,C,aa,pp,gg,oo);      %Field Equations
-    U = zeros(size(LHS,2),1);                   %Unmodified velocity vector
+    U = Inf(size(LHS,2),1);                   %Unmodified velocity vector
     
-    LHS(:, gg.u_BP1) = LHS(:, gg.u_BP1) + LHS(:, gg.u_BP2); % Apply Periodic BC
-    LHS(:, gg.v_BP1) = LHS(:, gg.v_BP1) + LHS(:, gg.v_BP2); 
-    LHS(:,[gg.u_BP2, gg.v_BP2]) = [];
+    %% Remap indices [from whole region, to masked area]
+    A = sum(gg.S_u); A2 = cumsum(A);  
+    vOff = sum(A);                      %offset to v values [number of u values]
+    nfxd_uind2 = A2(gg.nfxd_uind);
+    
+    A = sum(gg.S_v); A2 = cumsum(A); 
+    nfxd_vind2 = A2(gg.nfxd_vind);
+    
+    
+    
+    
+    %% Boundary Conditions
+    
+    %Need to figure out map from nfxd_u/v ind > new mapping
+    %something like A = cumsum(S_u); indNew = A(indOld)??
+    
+    
+    %Apply BC
+    DEL = [];
+    if any(gg.nfxd(:))
+    RHS = RHS - LHS(:,nfxd_uind2)*aa.nfxd_uval;
+    RHS = RHS - LHS(:,nfxd_vind2)*aa.nfxd_vval;    
+    DEL = union(gg.nfxd_uind, gg.nfxd_vind);
+    end
+    
+    if any(gg.nperbc(:))
+    LHS(:, gg.nperbc_u1ind) = LHS(:, gg.nperbc_u1ind) + LHS(:, gg.nperbc_u2ind); % Apply Periodic BC
+    LHS(:, gg.nperbc_v1ind) = LHS(:, gg.nperbc_v1ind) + LHS(:, gg.nperbc_v2ind); 
+    DEL = union(DEL, [gg.nperbc_u2ind; gg.nperbc_v2ind]);
+    end
 
+    LHS(:,DEL) = [];
+    
+    %Solve 
     Um = LHS\RHS;               %Solve modified field equations
     
-    U(gg.u_BP2) = NaN;          %Return to unmodified velocity vector             
-    U(gg.v_BP2) = NaN;
+    %Return to original velocity vector
+    U(DEL) = NaN;
     U(~isnan(U)) = Um;
-    U(gg.u_BP2) = U(gg.u_BP1);
-    U(gg.v_BP2) = U(gg.v_BP1);
     
-    u = gg.S_u*U(1:(gg.nI+1)*gg.nJ);    %u,v velocity fields
-    v = gg.S_v*U((gg.nI+1)*gg.nJ+1:end);
+    if any(gg.nfxd(:))
+        U(nfxd_uind2) = aa.nfxd_uval;
+        U(nfxd_vind2) = aa.nfxd_vval;
+    end
+    
+    if any(gg.nperbc)
+        U(gg.nperbc_u2ind) = U(gg.nperbc_u1ind);
+        U(gg.nperbc_v2ind) = U(gg.nperbc_v1ind);
+    end
+    
+    u = U(1:vOff);    %u,v velocity fields
+    v = U(vOff+1:end);
     
     sstream_norm(j) = norm(RHS-LHS*Um,oo.norm); %iteration norm (using Um)
     

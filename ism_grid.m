@@ -29,6 +29,9 @@ y = linspace(yt_h,yb_h,nJ);  %array of y coords
 
 [xx, yy] = meshgrid(x, y); %Matrices of coordinates
 
+x_u = linspace(xl,xr,nI+1); [xx_u,yy_u] = meshgrid(x_u, y);
+y_v = linspace(yt,yb,nJ+1); [xx_v,yy_v] = meshgrid(x, y_v);
+
 
 
 % grid point labels [ labeled inline with Matlab indexing convention, so element r,c becomes r+(c-1)*nJ ]
@@ -78,6 +81,10 @@ gg.x = x;
 gg.y = y;
 gg.xx = xx;
 gg.yy = yy;
+gg.xx_u = xx_u;
+gg.yy_u = yy_u;
+gg.xx_v = xx_v;
+gg.yy_v = yy_v;
 gg.dx = dx;
 gg.dy = dy;
 gg.Lx = Lx;

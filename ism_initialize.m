@@ -1,4 +1,4 @@
-function [aa,vv] = ism_initialize(b,s, u, v, C, gg,pp,oo)
+function [aa,vv] = ism_initialize(b,s, u, v, C, dd,gg,pp,oo)
 % Assign default prescribed fields and boundary conditions and initial
 % conditions [ probably need to change initial hs and phi ]
 % Inputs
@@ -16,9 +16,8 @@ function [aa,vv] = ism_initialize(b,s, u, v, C, gg,pp,oo)
 %
 
 if nargin<5, oo = struct; end
-if ~isfield(pp,'l_c'), pp.l_c = 1; end
-if ~isfield(pp,'phi_s'), pp.phi_s = -inf; end
-if ~isfield(oo,'prob'), oo.prob = 1; end
+if ~isfield(dd,'nfxd'), dd.nfxd = []; end
+
 
 %% put fields and variables in structs
 
@@ -26,6 +25,27 @@ if ~isfield(oo,'prob'), oo.prob = 1; end
 aa.s = s;
 aa.b = b;
 aa.h = max(s-b,0);
+
+%Fixed Boundary Conditions. 
+if ~isempty(dd.nfxd)
+
+i = 1; aa.nfxd_uval = NaN(numel(gg.nfxd_uind),1);
+for p = gg.nfxd_uind'
+[r,c] = ind2sub(size(gg.xx_u),p);
+aa.nfxd_uval(i) = nanmean(dd.vx(r, max(c-1,1):min(c+1,gg.nI)));  
+i=i+1;
+end;
+ 
+offset = (gg.nI+1)*gg.nJ;
+i = 1; aa.nfxd_vval = NaN(numel(gg.nfxd_vind),1);
+for p = gg.nfxd_vind'
+[r,c] = ind2sub(size(gg.xx_v),p);
+aa.nfxd_vval(i) = nanmean(dd.vy(min(r-1,1):max(r+1,gg.nJ), c));
+i=i+1;
+end;
+
+end
+
 
 if strcmp(oo.pT, 'forward')
 aa.C = C(:);                   %Forward Problem

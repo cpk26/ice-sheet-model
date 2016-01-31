@@ -1,4 +1,4 @@
-function [ vv ] = ism_sia(s,h,C,pp,gg,oo )
+function [ vv ] = ism_sia(s,h,C,vv,pp,gg,oo )
 %% Shallow ice approximation model
 % Inputs:
 %   s       surface elevation
@@ -24,11 +24,11 @@ Sy = Sy(:);
 h = h(:); 
 C = C(:) + pp.C_rp;                             %Regularziation to avoid C=0 -> InF
 
-u = -pp.c1.* C.^-1 .* h .* Sx;                  %Velocities (h-grid)
-v = -pp.c1.* C.^-1 .* h .* Sy;
+u = -pp.c1 * (gg.S_h * C.^-1) .* (gg.S_h * (h .* Sx));                  %Velocities (h-grid)
+v = -pp.c1 * (gg.S_h * C.^-1) .* (gg.S_h * (h .* Sy));
 
-u = gg.S_u * gg.c_hu*u(:);                      %Transfer onto u/v grids
-v = gg.S_v * gg.c_hv*v(:);
+u = gg.S_u * gg.c_hu*gg.S_h'*u(:);                      %Transfer onto u/v grids
+v = gg.S_v * gg.c_hv*gg.S_h'*v(:);
 
 vv.u = u;                                       %Non-dimensional velocity
 vv.v = v;

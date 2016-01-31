@@ -37,8 +37,8 @@ step = mft0/norm(vv.agrad(:),1) * vv.agrad / norm(vv.agrad(:),1);
 vv2.acoeff = vv.acoeff - tau*step;
 vv2.C = idct2(vv2.acoeff);       %Calculate new slipperiness field
 
-[ii] = ism_sia(aa.s,aa.h,vv2.C, pp,gg,oo);  %Calculate corresponding velocities 
-vv2.u = ii.u; vv2.v = ii.v;                 %SIA                                        
+[ii] = ism_sia(aa.s,aa.h,vv2.C,vv2, pp,gg,oo);  %Calculate corresponding velocities 
+                %SIA                                        
 [vv2] = ism_sstream(vv2,aa,pp,gg,oo );      %SSA 
 
 [mft] = ism_vel_misfit(vv2.u,vv2.v,aa,pp,gg, oo); %Current misfit
@@ -66,8 +66,7 @@ while mft >=  mft0;    %stopping conditions
 
     %% Calculate misfit based on current step size
     vv2.C = idct2(vv2.acoeff).^2;      %Calculate new slipperiness field
-    [ii] = ism_sia(aa.s,aa.h,vv2.C, pp,gg,oo);  %Calculate corresponding velocities 
-    vv2.u = ii.u; vv2.v = ii.v;                 %SIA                                        
+    [vv2] = ism_sia(aa.s,aa.h,vv2.C,vv2,pp,gg,oo);  %Calculate corresponding velocities 
     [vv2] = ism_sstream(vv2,aa,pp,gg,oo );      %SSA 
     [mft] = ism_vel_misfit(vv2.u,vv2.v,aa,pp,gg, oo); %Current misfit
     
