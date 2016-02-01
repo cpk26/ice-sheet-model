@@ -15,7 +15,7 @@ function [ vv ] = ism_inverse_sia(s,h,u_obs,v_obs,vv,pp,gg,oo )
 
 [Sx,Sy] = gradient(s, gg.dx, gg.dy);            %Topography   
 Sx = Sx(:); 
-Sy = Sy(:); 
+Sy = -Sy(:); 
 Sg = Sx.^2 + Sy.^2; 
 h = h(:); 
 

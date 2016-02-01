@@ -21,7 +21,7 @@ Cslip_diag = spdiags(C(:),0,gg.nIJ,gg.nIJ);
 %Use gradient instead of gg.nddx/y 
 %since periodic BC conditions do not apply
 [Sx,Sy] = gradient(s, gg.dx, gg.dy);        
-Sx = Sx(:); Sy = Sy(:); 
+Sx = Sx(:); Sy = -Sy(:); 
 
 
 exx = gg.du_x*(gg.S_u'*u);                                %Strain Rates

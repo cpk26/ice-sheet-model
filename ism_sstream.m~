@@ -21,17 +21,17 @@ u = vv.u;                                   %Initial iterate velocity
 v = vv.v;
 
 %% Remap indices [from whole region, to masked area]
+%Fixed Nodes
+A = sum(gg.S_u); A2 = cumsum(A); 
+vOff = sum(A);                      %offset to v values [number of u values]
+nfxd_uind = A2(gg.nfxd_uind);       %Fixed nodes (u-grid)                      
+nperBC_u1ind  = A2(gg.nfxd_uind);   %Periodic BC nodes (u-
+nperBC_u2ind  = A2(gg.nfxd_uind);
 
-A = sum(gg.S_u); A2 = cumsum(A);            %U-grid
-nfxd_uind = A2(gg.nfxd_uind);               %Fixed nodes                   
-nperbc_u1ind  = A2(gg.nperbc_u1ind);           %Periodic BC nodes
-nperbc_u2ind  = A2(gg.nperbc_u2ind);
-vOff = sum(A);                              %offset to v values [number of u values]
-
-A = sum(gg.S_v); A2 = cumsum(A);            %V-grid
-nfxd_vind = A2(gg.nfxd_vind) + vOff;        %Fixed nodes   
-nperbc_v1ind = A2(gg.nperbc_v1ind) + vOff;  %Periodic BC nodes
-nperbc_v2ind = A2(gg.nperbc_v2ind) + vOff;
+A = sum(gg.S_v); A2 = cumsum(A);
+nfxd_vind = A2(gg.nfxd_vind) + vOff; %Fixed nodes (v-grid)  
+nperBC_v1ind = A2(nperBC_v1ind) + vOff;
+nperBC_v2ind = A2(nperBC_v2ind) + vOff;
 
 %Periodic BC Nodes
 
@@ -54,9 +54,9 @@ for j = 1:numIter
     end
     
     if any(gg.nperbc(:))
-    LHS(:, nperbc_u1ind) = LHS(:, nperbc_u1ind) + LHS(:, nperbc_u2ind); % Apply Periodic BC
-    LHS(:, nperbc_v1ind) = LHS(:, nperbc_v1ind) + LHS(:, nperbc_v2ind); 
-    DEL = union(DEL, [nperbc_u2ind; nperbc_v2ind]);
+    LHS(:, gg.nperbc_u1ind) = LHS(:, gg.nperbc_u1ind) + LHS(:, gg.nperbc_u2ind); % Apply Periodic BC
+    LHS(:, gg.nperbc_v1ind) = LHS(:, gg.nperbc_v1ind) + LHS(:, gg.nperbc_v2ind); 
+    DEL = union(DEL, [gg.nperbc_u2ind; gg.nperbc_v2ind]);
     end
 
     LHS(:,DEL) = [];
@@ -74,8 +74,8 @@ for j = 1:numIter
     end
     
     if any(gg.nperbc)
-        U(nperbc_u2ind) = U(nperbc_u1ind);
-        U(nperbc_v2ind) = U(nperbc_v1ind);
+        U(gg.nperbc_u2ind) = U(gg.nperbc_u1ind);
+        U(gg.nperbc_v2ind) = U(gg.nperbc_v1ind);
     end
     
     u = U(1:vOff);    %u,v velocity fields

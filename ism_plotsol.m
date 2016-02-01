@@ -29,7 +29,7 @@ vv2.u = u_h;                                            %Dimensionalized solutio
 vv2.v = v_h;
 vv2.U = U;
 
-figure()                                                %Plot Velocities
+figure()                                                %Plot Solution Velocities
 subplot(3,1,1)
 imagesc(U);
 title('Velocity');
