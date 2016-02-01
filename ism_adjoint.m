@@ -10,28 +10,35 @@ function [vv2] = ism_adjoint(vv,aa,pp,gg,oo )
 %   vv2     struct containing new solution variables
 
 
-%% Variables (Non-Dimensionalized)     
-[LHS, RHS] = ism_adjoint_fieldeq(vv,aa,pp,gg,oo);      %Field Equations
-lm = zeros(size(LHS,2),1);
+%% Remap indices [from whole region, to masked area]
 
-bndry_ugrid = zeros(1,gg.nJ*(gg.nI+1));     %Boundary Conditions (lamdba = mu = 0)
-bndry_vgrid = zeros(1,(gg.nJ+1)*gg.nI);
+A = sum(gg.S_u); A2 = cumsum(A);            %U-grid
+nbnd_uind = A2(gg.nbnd_uind);               %Boundary nodes                   
+vOff = sum(A);                              %offset to v values [number of u values]
 
-bndry_ugrid([1:gg.nJ,end-gg.nJ-1:end]) = 1;               %Lateral Boundaries (u-grid)
-bndry_vgrid([1:gg.nJ+1:end,gg.nJ+1:gg.nJ+1:end]) = 1;   %Top/bottom Boundaries (v-grid)
+A = sum(gg.S_v); A2 = cumsum(A);            %V-grid
+nbnd_vind = A2(gg.nbnd_vind) + vOff;        %Boundary nodes 
 
-bndryPts = logical([bndry_ugrid, bndry_vgrid]);        %Combine into one vector 
+%% Boundary Conditions    
+[LHS, RHS] = ism_adjoint_fieldeq(vv,aa,pp,gg,oo);       %Field Equations
+L = NaN(size(LHS,2),1);                               %Unmodified solution vector 
+
+DEL = union(nbnd_uind,nbnd_vind);                       %lambda,mu = 0
     
-LHS(:,bndryPts) = [];   %Apply boundary conditions
-lm_mod = LHS\RHS;       %Solve
+LHS(:,DEL) = [];                                        %Apply boundary conditions
 
-lm(~bndryPts) = lm_mod; %Return to lm vector
-lambda = gg.S_u'*lm(1:(gg.nI+1)*gg.nJ);    %lamba,mu fields
-mu = gg.S_v'*lm((gg.nI+1)*gg.nJ+1:end);
+Lm = LHS\RHS;                                           %Solve
+
+L(DEL) = 0;                                           %Return to L vector
+L(isnan(L)) = Lm;
+
+
+lambda = L(1:vOff);                             %lamba,mu fields
+mu = L(vOff+1:end);
 
 vv.lambda = lambda;
 vv.mu = mu;
-vv.adjoint_norm = norm(RHS-LHS*lm_mod,oo.norm);
+vv.adjoint_norm = norm(RHS-LHS*Lm,oo.norm);
 vv2=vv;
 
 end

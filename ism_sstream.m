@@ -24,7 +24,7 @@ v = vv.v;
 
 A = sum(gg.S_u); A2 = cumsum(A);            %U-grid
 nfxd_uind = A2(gg.nfxd_uind);               %Fixed nodes                   
-nperbc_u1ind  = A2(gg.nperbc_u1ind);           %Periodic BC nodes
+nperbc_u1ind  = A2(gg.nperbc_u1ind);        %Periodic BC nodes
 nperbc_u2ind  = A2(gg.nperbc_u2ind);
 vOff = sum(A);                              %offset to v values [number of u values]
 
@@ -47,10 +47,12 @@ for j = 1:numIter
     
     %Apply BC
     DEL = [];
+    DEL2 = [];
     if any(gg.nfxd(:))
     RHS = RHS - LHS(:,nfxd_uind)*aa.nfxd_uval;
     RHS = RHS - LHS(:,nfxd_vind)*aa.nfxd_vval;    
     DEL = union(nfxd_uind, nfxd_vind);
+    DEL2 = DEL;
     end
     
     if any(gg.nperbc(:))
@@ -60,6 +62,8 @@ for j = 1:numIter
     end
 
     LHS(:,DEL) = [];
+    %LHS(DEL2,:) = [];
+    %RHS(DEL2,:) = [];
     
     %Solve 
     Um = LHS\RHS;               %Solve modified field equations

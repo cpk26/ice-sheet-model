@@ -7,7 +7,7 @@ function [ msft ] = ism_inversion_misfit(u,v,aa,pp,gg, oo)
 % Outputs:
 %   misfit  Least squares misfit
 
-msft = pp.c9*0.5*sum( (aa.u-u).^2 + (aa.v-v).^2 )*gg.dx*gg.dy;
+msft = pp.c9*0.5*sum( gg.c_uh*gg.S_u'*(aa.u-u).^2 + gg.c_vh*gg.S_v'*(aa.v-v).^2 )*gg.dx*gg.dy;
 
 
 end

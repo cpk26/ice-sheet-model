@@ -35,27 +35,6 @@ else
 aa.nfxd_uval = []; aa.nfxd_vval = [];
 end
 
-
-% if ~isempty(dd.nfxd)
-% 
-% i = 1; aa.nfxd_uval = NaN(numel(gg.nfxd_uind),1);
-% for p = gg.nfxd_uind'
-% [r,c] = ind2sub(size(gg.xx_u),p);
-% aa.nfxd_uval(i) = nanmean(dd.vx(r, max(c-1,1):min(c+1,gg.nI)));  
-% i=i+1;
-% end;
-%  
-% offset = (gg.nI+1)*gg.nJ;
-% i = 1; aa.nfxd_vval = NaN(numel(gg.nfxd_vind),1);
-% for p = gg.nfxd_vind'
-% [r,c] = ind2sub(size(gg.xx_v),p);
-% aa.nfxd_vval(i) = nanmean(dd.vy(min(r-1,1):max(r+1,gg.nJ), c));
-% i=i+1;
-% end;
-% 
-% end
-
-
 if strcmp(oo.pT, 'forward')
 aa.C = C(:);                   %Forward Problem
 vv.u = u(:);

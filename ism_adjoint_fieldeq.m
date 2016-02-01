@@ -17,14 +17,13 @@ h = aa.h; h_diag = spdiags(h(:),0,gg.nIJ,gg.nIJ);
 Cslip_diag = spdiags(vv.C(:),0,gg.nIJ,gg.nIJ);
 u = vv.u; v = vv.v;
 
-exx = gg.du_x*u;                                %Strain Rates
-eyy = gg.dv_y*v;
-exy = 0.5*(gg.du_y*u + gg.dv_x*v);
+exx = gg.du_x*(gg.S_u'*u);                                %Strain Rates
+eyy = gg.dv_y*(gg.S_v'*v);
+exy = 0.5*(gg.du_y*(gg.S_u'*u) + gg.dv_x*(gg.S_v'*v));
 edeff = sqrt(exx.^2 + eyy.^2 + exx.*eyy + exy.^2 + pp.n_rp.^2);
 
 nEff =  edeff.^((1-n)/n);        %Effective Viscosity [dimensionless]
-nEff_diag = spdiags(nEff(:),0,gg.nIJ,gg.nIJ);     
-
+nEff_diag = spdiags(nEff(:),0,gg.nIJ,gg.nIJ);              
 
 A1 = gg.S_u*gg.dh_x * (pp.c6 * 4 * nEff_diag*h_diag) * gg.du_x*gg.S_u';   %LHS Adjoint equations
 A2 = gg.S_u*gg.dhu_y * (pp.c6 * nEff_diag*h_diag) * gg.du_y*gg.S_u';
