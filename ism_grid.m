@@ -64,19 +64,19 @@ c_hv = kron(speye(nI),c_ij_per(nJ));
 du_x = kron(dx_ij(nI),speye(nJ)); %derivative of u in x direction from u-grid onto h-grid
 dv_y = kron(speye(nI),dy_ij(nJ)); %derivative of v in y direction from v-grid onto h-grid
 
-du_y = c_ch*kron(speye(nI+1),dy_ij_per(nJ)); %derivative of u in y direction from u-grid onto h-grid 
-dv_x = c_ch*kron(dx_ij_per(nI),speye(nJ+1)); %derivative of v in x direction from v-grid onto h-grid 
-
+du_y = kron(speye(nI+1),dy_ij_per(nJ)); %derivative of u in y direction from u-grid onto c-grid 
+dv_x = kron(dx_ij_per(nI),speye(nJ+1)); %derivative of v in x direction from v-grid onto c-grid 
 
 dh_x = kron(dx_ij_per(nI),speye(nJ)); %derivative of h in x direction from h-grid onto u-grid
 dh_y = kron(speye(nI),dy_ij_per(nJ)); %derivative of h in y direction from h-grid onto v-grid
 
-dhu_y = c_vu*dh_y; %derivative of h in y direction from h-grid onto u-grid
-dhv_x = c_uv*dh_x; %derivative of h in x direction from h-grid onto v-grid
 
 gg.nIJ = nIJ; %Grid Details
 gg.nI = nI;
 gg.nJ = nJ;
+gg.nu = gg.nJ*(gg.nI+1);
+gg.nv = (gg.nJ+1)*gg.nI;
+gg.nc = (gg.nJ+1)*(gg.nI+1);
 gg.x = x;
 gg.y = y;
 gg.xx = xx;
@@ -99,8 +99,6 @@ gg.du_y = du_y;
 gg.dv_x = dv_x;
 gg.dh_x = dh_x;
 gg.dh_y = dh_y;
-gg.dhu_y = dhu_y;
-gg.dhv_x = dhv_x;
 
 
 gg.c_ch = c_ch; %Centering (Interpolation) Operators

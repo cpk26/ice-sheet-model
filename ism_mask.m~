@@ -11,18 +11,21 @@ function [gg] = ism_mask(gg,dd,oo)
 
 if ~isfield(dd,'nfxd'), dd.nfxd = zeros(size(dd.mask)); end;
 
+
+
+
 %% Assign nodes to categories, relevant for Boundary conditions (h-grid)
 gg.nbnd = bwperim(dd.mask,4);                      %Boundary Cells
 gg.nin = dd.mask & ~gg.nbnd;                       %Interior Cells
 gg.nfxd = dd.nfxd;                                 %Fixed Cells (Direchlet BC)
 gg.nmgn = zeros(size(dd.mask));                    %Ice Margin Cells
-[i,j] = find(gg.nbnd); 
+[i,j] = find(gg.nbnd); %Note: finite diff gradient() algorithm is not a suitable substitute.
 for p=1:numel(i), 
 A1 = max(i(p)-1,1); A2 = min(i(p)+1,gg.nJ); A3 = max(j(p)-1,1); A4 = min(j(p)+1,gg.nI);
 if ismember(0,dd.h(A1:A2,A3:A4)); gg.nmgn(i(p),j(p))=1;
 end,end
-gg.nmgn = gg.nmgn & ~gg.nfxd;                       %Fixed bc take precedence
-E = dd.mask > 0; E(:,2:end-1) = 0;                  %Periodic BC nodes (must be on domain edge)
+gg.nmgn = gg.nmgn & ~gg.nfxd;                 %Fixed bc take precedence
+E = dd.mask > 0; E(:,2:end-1) = 0;              %Periodic BC nodes (must be on domain edge)
 F = dd.mask > 0; F(2:end-1,:) = 0;
 AA = (E & fliplr(E)); BB = (F & flipud(F));   
 gg.nperbc = AA | BB;
@@ -129,13 +132,13 @@ gg.c_hv = S_v*gg.c_hv*S_h';
 gg.du_x = S_h*gg.du_x*S_u';                                                 %Finite Difference Operators
 gg.dv_y = S_h*gg.dv_y*S_v';
 
-Mu = ones(gg.nu,1) - (unbnd - unmgn); Mu = spdiags(Mu, 0, gg.nu,gg.nu);          %masks (force to be zero) dh_x/dh_y
-Mv = ones(gg.nv,1) - (vnbnd - vnmgn); Mv = spdiags(Mv, 0, gg.nv,gg.nv);          %across the mask boundary at appropriate u/v nodes
+Mu = ones(gg.nu,1) - (unbnd - unmgn); spdiags(Mu, 0, gg.nu,gg.nu);          %masks (force to be zero) dh_x/dh_y
+Mv = ones(gg.nv,1) - (vnbnd - vnmgn); spdiags(Mv, 0, gg.nv,gg.nv);          %across the mask boundary at appropriate u/v nodes
 
 gg.dh_x = S_u*Mu*gg.dh_x*S_h';
 gg.dh_y = S_v*Mv*gg.dh_y*S_h';
 
-cnbnd1 = ~eq(gg.dv_x*S_v'*S_v*ones(gg.nv,1),0);                             %c-nodes where dv_x/du_y are across mask boundary (all such c-nodes)
+cnbnd1 = ~eq(gg.dv_x*S_v'*S_v*ones(gg.nv,1),0);                             %c-nodes where dv_x/du_y are cross mask boundary
 cnbnd2 = ~eq(gg.du_y*S_u'*S_u*ones(gg.nu,1),0);
 
 Mc1 = ones(gg.nc,1) - (cnbnd1); Mc1 = spdiags(Mc1, 0, gg.nc,gg.nc);         %masks (force to be zero) du_y/dv_x
@@ -144,8 +147,8 @@ Mc2 = ones(gg.nc,1) - (cnbnd2); Mc2 = spdiags(Mc2, 0, gg.nc,gg.nc);         %acr
 gg.dhv_x = gg.c_ch*S_c*Mc1*gg.dv_x*S_v';                                    %derivative of v in x-direction from v grid onto h-grid
 gg.dhu_y = gg.c_ch*S_c*Mc2*gg.du_y*S_u';                                    %derivative of u in y-direction from u grid onto h-grid
 
-gg.dvh_x = gg.c_uv*gg.dh_x ;                                                %derivative of h in x direction from h-grid onto v-grid
-gg.duh_y = gg.c_vu*gg.dh_y;                                                 %derivative of h in y direction from h-grid onto u-grid
+gg.dvh_x = gg.c_uv*gg.dh_x ;                %derivative of h in x direction from h-grid onto v-grid
+gg.duh_y = gg.c_vu*gg.dh_y;                 %derivative of h in y direction from h-grid onto u-grid
 
 
 

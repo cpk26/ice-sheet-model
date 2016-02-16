@@ -26,6 +26,8 @@ L = NaN(size(LHS,2),1);                               %Unmodified solution vecto
 DEL = union(nbnd_uind,nbnd_vind);                       %lambda,mu = 0
     
 LHS(:,DEL) = [];                                        %Apply boundary conditions
+LHS(DEL,:) = [];   
+RHS(DEL,:) = []; 
 
 Lm = LHS\RHS;                                           %Solve
 

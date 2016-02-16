@@ -1,5 +1,5 @@
 
-function [vv2] = ism_acoeff_linesearch(vv,aa, pp, gg, oo)
+function [vv2] = ism_acoeff_nrs(vv,aa, pp, gg, oo)
 %% Newton-Raphson step to update inversion alpha coefficients 
 % Based on code from C.T. Kelley, from SIAM's 'Solving Nonlinear Equations
 % with Newton's Method'
@@ -75,9 +75,9 @@ while mft >=  mft0;    %stopping conditions
     mftc_2 = mft*mft;
     iarm = iarm+1;
     if iarm > maxarm
-        disp(' Armijo failure, too many reductions ');
-        armflag = 1;
-        return;
+        disp('Newton Step Failure, too many reductions ');
+        vv2.armflag = 1;
+        break
     end
     
     disp(iarm)

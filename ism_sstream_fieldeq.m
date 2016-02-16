@@ -16,6 +16,13 @@ n = pp.n_Glen;
 %% Variables (Non-Dimensionalized)
 s = aa.s; s_diag = spdiags(s(:),0,gg.nIJ,gg.nIJ);      %Topography
 h = aa.h; h_diag = spdiags(h(:),0,gg.nIJ,gg.nIJ);
+
+hu = gg.c_hu*h(:)./(gg.c_hu*(h(:) > 0));               %h on u,v-grids. 
+hu_diag = diag(hu);                                    %Linearily extrapolated within the study area, nearest neighbor at edge.
+hv = gg.c_hv*h(:)./(gg.c_hv*(h(:) > 0));               
+hv_diag = diag(hv);
+
+
 Cslip_diag = spdiags(C(:),0,gg.nIJ,gg.nIJ);
 
 %Use gradient instead of gg.nddx/y 
@@ -34,7 +41,7 @@ nEff_diag = spdiags(nEff(:),0,gg.nIJ,gg.nIJ);
 
 
 %% Field equations for velocities
-A1 = gg.S_u*gg.dh_x*4*nEff_diag*h_diag*gg.du_x*gg.S_u';     %LHS SSA 
+A1 = (gg.S_u*gg.dh_x*gg.S_h')*gg.S_h*4*nEff_diag*h_diag*gg.S_h'*(gg.S_h*gg.du_x*gg.S_u');     %LHS SSA 
 A2 = gg.S_u*gg.dhu_y*nEff_diag*h_diag*gg.du_y*gg.S_u';
 A3 = pp.c3*gg.S_u*gg.c_hu*Cslip_diag*gg.c_uh*gg.S_u';
 AA = A1 + A2 - A3;
@@ -56,8 +63,13 @@ DD = D1 + D2 - D3;
 
 LHS = [AA BB; CC DD];
 
-f1a = gg.S_u*pp.c4*gg.c_hu*h_diag*Sx;                              %RHS SSA
-f1b = gg.S_v*pp.c4*gg.c_hv*h_diag*Sy;
+A1 = gg.S_u*gg.c_hu*h_diag*Sx;                                  %RHS SSA
+A2 = (gg.S_u*gg.c_hu*(aa.h(:) > 0));
+f1a = pp.c4*(A1./A2);   
+
+A1 = gg.S_v*gg.c_hv*h_diag*Sy;                                  %RHS SSA
+A2 = (gg.S_v*gg.c_hv*(aa.h(:) > 0));
+f1b = pp.c4*(A1./A2);   
 
 RHS = [f1a;f1b];
 

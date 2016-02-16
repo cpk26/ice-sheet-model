@@ -33,6 +33,7 @@ pp.u = ps.u;
 pp.A = pd.A;
 pp.B = pd.B;
 pp.g = pd.g;
+pp.x = ps.x;
 pp.rho_i = pd.rho_i;
 pp.n_rp = pd.n_rp/(ps.u/ps.x);
 pp.C_rp = pd.C_rp;
@@ -41,11 +42,11 @@ pp.C_rp = pd.C_rp;
 pp.c1 = (pd.rho_i*pd.g*ps.z/ps.u) * (ps.z/ps.x);              %SIA
 pp.c2 = NaN;
 
-pp.c3 = (ps.x^2)/(ps.z*ps.vis_i);                     %SSTREAM
+pp.c3 = (ps.x^2)/(ps.z*ps.vis_i);                             %SSTREAM
 pp.c4 = (ps.x*ps.z*pp.rho_i*pp.g)/(ps.vis_i*ps.u);
+pp.c11 = (ps.z^2 *pp.rho_i*pp.g)/(ps.vis_i*ps.u);
 
-
-pp.c5 = pd.min_wavelength/ps.x;           %Inversion
+pp.c5 = pd.min_wavelength/ps.x;                               %Inversion
 pp.c6 = (ps.vis_i * ps.z)/(ps.x^2);
 pp.c7 = ps.u;
 pp.c8 = (ps.x^2)*ps.u;

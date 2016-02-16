@@ -27,8 +27,8 @@ C = C(:) + pp.C_rp;                             %Regularziation to avoid C=0 -> 
 u = -pp.c1 * (gg.S_h * C.^-1) .* (gg.S_h * (h .* Sx));                  %Velocities (h-grid)
 v = -pp.c1 * (gg.S_h * C.^-1) .* (gg.S_h * (h .* Sy));
 
-u = gg.S_u * gg.c_hu*gg.S_h'*u(:);                      %Transfer onto u/v grids
-v = gg.S_v * gg.c_hv*gg.S_h'*v(:);
+u = gg.c_hu*u(:);                      %Transfer onto u/v grids
+v = gg.c_hv*v(:);
 
 vv.u = u;                                       %Non-dimensional velocity
 vv.v = v;

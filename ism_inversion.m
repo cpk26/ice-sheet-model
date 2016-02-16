@@ -9,14 +9,14 @@ function [vv2] = ism_inversion(vv,aa,pp,gg,oo )
 % Outputs:
 %   vv2     struct containing new solution variables
 
-if ~isfield(oo,'inv_iter'), oo.inv_iter = 10; end;    %Number of iterations for inversion
+if ~isfield(oo,'inv_iter'), oo.inv_iter = 35; end;    %Number of iterations for inversion
 
 vv2 = struct();
 
 %% Discretize Basal slipperiness using discrete cosine series
-n_x = ceil(log2(gg.Lx/pp.c5)); vv2.n_x = n_x + 10;   %Number of terms in x,y directions to keep
-n_y = ceil(log2(gg.Ly/pp.c5)); vv2.n_y = n_y + 10; 
-AA = zeros(gg.nJ,gg.nI); AA(1:n_x,1:n_y) = 1;
+vv2.n_x = ceil(log2(gg.Lx/pp.c5)); vv2.n_x = 120;   %Number of terms in x,y directions to keep
+vv2.n_y = ceil(log2(gg.Ly/pp.c5)); vv2.n_y = 120; 
+AA = zeros(gg.nJ,gg.nI); AA(1:vv2.n_y,1:vv2.n_x) = 1;
 
 
 
@@ -48,6 +48,7 @@ fprintf('Inversion iteration: %i of %i \n',[j,oo.inv_iter])
 
 %% newton-raphson step 
 [vv2] = ism_acoeff_nrs(vv2,aa, pp, gg, oo);
+if isfield(vv2,'armflag'); break; end
 
 inv_norm(j+1) = ism_vel_misfit(vv2.u,vv2.v,aa,pp,gg, oo);
 end
