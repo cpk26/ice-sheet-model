@@ -10,8 +10,8 @@ function [ vv2 ] = ism_plotsol(vv, dd, ps, pd, gg, oo )
 %   vv2     struct containing dimensionalized solution variables
 
 
-u_h = gg.c_uh*gg.S_u'*vv.u; u_h = reshape(u_h, gg.nJ, gg.nI);      %Velocities
-v_h = gg.c_vh*gg.S_v'*vv.v; v_h = reshape(v_h, gg.nJ, gg.nI);      %u,v grids onto h-grid 
+u_h = gg.c_uh*vv.u; u_h = reshape(u_h, gg.nJ, gg.nI);      %Velocities
+v_h = gg.c_vh*vv.v; v_h = reshape(v_h, gg.nJ, gg.nI);      %u,v grids onto h-grid 
 U = sqrt(u_h.^2 + v_h.^2);
 
 u_h = u_h*ps.u*pd.ty;                                  %Dimensionalize [m/yr]

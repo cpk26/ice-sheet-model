@@ -38,9 +38,10 @@ L(isnan(L)) = Lm;
 lambda = L(1:vOff);                             %lamba,mu fields
 mu = L(vOff+1:end);
 
+adjoint_norm = norm(RHS-LHS*Lm,oo.norm);
+
 vv.lambda = lambda;
 vv.mu = mu;
-vv.adjoint_norm = norm(RHS-LHS*Lm,oo.norm);
 vv2=vv;
 
 end

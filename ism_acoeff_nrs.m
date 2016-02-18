@@ -22,47 +22,35 @@ vv2 = vv;
 maxarm = 25;            %Maximum number of steps (reductions)
 iarm = 0;               %Counter of number of reductions
 sigma = .5;            %Initial step size reduction
-alpha = 1.d-4;          %Line search parameter
 armflag = 0;            %Flag for exceeding max number of reductions
-n_x = vv.n_x;           %Number of coefficients for basis in x/y dirs
-n_y = vv.n_y;
 
 [mft0] = ism_vel_misfit(vv.u,vv.v,aa,pp,gg, oo);  %Initial velocity misfit
 
-tau = vv.tau; taum = 1; tauc = tau;     %Step coefficient. 'm': previous step; 'c': current step
+tau = vv.tau;  %Step coefficient.
+%step = mft0 * vv.agrad/norm(vv.agrad(:),2);
 step = mft0/norm(vv.agrad(:),1) * vv.agrad / norm(vv.agrad(:),1);
-
 
 %% Initial step
 vv2.acoeff = vv.acoeff - tau*step;
-vv2.C = idct2(vv2.acoeff);       %Calculate new slipperiness field
+vv2.C = idct2(vv2.acoeff).^2;       %Calculate new slipperiness field
 
-[ii] = ism_sia(aa.s,aa.h,vv2.C,vv2, pp,gg,oo);  %Calculate corresponding velocities 
-                %SIA                                        
-[vv2] = ism_sstream(vv2,aa,pp,gg,oo );      %SSA 
+[vv2] = ism_sia(aa.s,aa.h,vv2.C,vv2, pp,gg,oo); %SIA                                        
+[vv2] = ism_sstream(vv2,aa,pp,gg,oo );          %SSA 
 
 [mft] = ism_vel_misfit(vv2.u,vv2.v,aa,pp,gg, oo); %Current misfit
-mft0_2 = mft0*mft0; mftc_2 = mft*mft; mftm_2 = mft*mft; %Misfit squared; 'm': previous step; 'c': current step
-
 
 %% Iterate step size coefficient
 %mft >= (1 - alpha*tau) * mft0
 
 while mft >=  mft0;    %stopping conditions
     fprintf('Line search iteration: %i \n',iarm+1)
-    %% Apply the three point parabolic model.
+    %% Step Size
     tau = sigma*tau;
-%     if iarm == 0
-%         tau = sigma1*tau;
-%     else
-%         tau = parab3p(tauc, taum, mft0_2, mftc_2, mftm_2);
-%     end
 
     %% Update vv2.coeff; keep the books on tau.
+    %step = mft0 * vv.agrad/norm(vv.agrad(:),2);
     step = mft0/norm(vv.agrad(:),1) * vv.agrad / norm(vv.agrad(:),1);
     vv2.acoeff = vv.acoeff - tau*step; %stepping from the original acoeff.
-    taum = tauc;
-    tauc = tau;
 
     %% Calculate misfit based on current step size
     vv2.C = idct2(vv2.acoeff).^2;      %Calculate new slipperiness field
@@ -71,8 +59,6 @@ while mft >=  mft0;    %stopping conditions
     [mft] = ism_vel_misfit(vv2.u,vv2.v,aa,pp,gg, oo); %Current misfit
     
     %% Keep the books on the function norms.
-    mftm_2 = mftc_2;
-    mftc_2 = mft*mft;
     iarm = iarm+1;
     if iarm > maxarm
         disp('Newton Step Failure, too many reductions ');

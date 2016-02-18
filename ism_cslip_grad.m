@@ -15,7 +15,7 @@ m = 0:1:gg.nI-1; n = 0:1:gg.nJ-1;  %switch to generic domain
 [xx,yy] = meshgrid(m,n); 
 
 
-DP = gg.S_h * (gg.c_uh*gg.S_u'*(vv.u.*vv.lambda) + gg.c_vh*gg.S_v'*(vv.v.*vv.mu));
+DP = (gg.c_uh*(vv.u.*vv.lambda) + gg.c_vh*(vv.v.*vv.mu));
 BB = idct2(vv.acoeff); BB = gg.S_h*BB(:);
 
 agrad = zeros(size(vv.acoeff));

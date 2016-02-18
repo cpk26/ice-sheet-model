@@ -50,8 +50,8 @@ DEL = [];                   %Columns to delete
 DEL2 = [];                  %Rows to delete
 
 if any(gg.nmgn(:))  %Ice Margin Nodes
-hu = (gg.S_u*gg.c_hu*aa.h(:))./(gg.S_u*gg.c_hu*(aa.h(:) > 0));            %Thickness on u,v grids
-hv = (gg.S_v*gg.c_hv*aa.h(:))./(gg.S_v*gg.c_hv*(aa.h(:) > 0));
+hu = (gg.c_hu*gg.S_h*aa.h(:))./(gg.c_hu*gg.S_h*(aa.h(:) > 0));            %Thickness on u,v grids
+hv = (gg.c_hv*gg.S_h*aa.h(:))./(gg.c_hv*gg.S_h*(aa.h(:) > 0));
 
 B = zeros(numel(RHS),1); 
 B(nmgn_uind) = 1/gg.dx; B(nmgn_vind) = 1/gg.dy;

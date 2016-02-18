@@ -118,7 +118,7 @@ nbndr_vind = setdiff(nbnd_vind, [nmgn_vind;nfxd_vind;nperbc_v1ind;nperbc_v2ind])
 
 %% Mask Operators
 
-gg.c_ch = S_h*gg.c_ch*S_c';                                             %Centering operators
+gg.c_ch = S_h*gg.c_ch*S_c';                                                %Centering operators
 gg.c_vu = S_u*gg.c_vu*S_v';
 gg.c_vh = S_h*gg.c_vh*S_v';
 gg.c_uv = S_v*gg.c_uv*S_u';
@@ -126,26 +126,26 @@ gg.c_uh = S_h*gg.c_uh*S_u';
 gg.c_hu = S_u*gg.c_hu*S_h';
 gg.c_hv = S_v*gg.c_hv*S_h';
 
-gg.du_x = S_h*gg.du_x*S_u';                                                 %Finite Difference Operators
+gg.du_x = S_h*gg.du_x*S_u';                                                %Finite Difference Operators
 gg.dv_y = S_h*gg.dv_y*S_v';
 
-Mu = ones(gg.nu,1) - (unbnd - unmgn); Mu = spdiags(Mu, 0, gg.nu,gg.nu);          %masks (force to be zero) dh_x/dh_y
-Mv = ones(gg.nv,1) - (vnbnd - vnmgn); Mv = spdiags(Mv, 0, gg.nv,gg.nv);          %across the mask boundary at appropriate u/v nodes
-
+Mu = ones(gg.nu,1) - (unbnd - unmgn); Mu = spdiags(Mu, 0, gg.nu,gg.nu);    %masks (force to be zero) dh_x/dh_y
+Mv = ones(gg.nv,1) - (vnbnd - vnmgn); Mv = spdiags(Mv, 0, gg.nv,gg.nv);    %across the mask boundary at all boundary u/v 
+                                                                           %nodes except the ice margin
 gg.dh_x = S_u*Mu*gg.dh_x*S_h';
 gg.dh_y = S_v*Mv*gg.dh_y*S_h';
 
-cnbnd1 = ~eq(gg.dv_x*S_v'*S_v*ones(gg.nv,1),0);                             %c-nodes where dv_x/du_y are across mask boundary (all such c-nodes)
+cnbnd1 = ~eq(gg.dv_x*S_v'*S_v*ones(gg.nv,1),0);                            %c-nodes where dv_x/du_y are across mask boundary
 cnbnd2 = ~eq(gg.du_y*S_u'*S_u*ones(gg.nu,1),0);
 
-Mc1 = ones(gg.nc,1) - (cnbnd1); Mc1 = spdiags(Mc1, 0, gg.nc,gg.nc);         %masks (force to be zero) du_y/dv_x
-Mc2 = ones(gg.nc,1) - (cnbnd2); Mc2 = spdiags(Mc2, 0, gg.nc,gg.nc);         %across the mask boundary at appropriate c-nodes
+Mc1 = ones(gg.nc,1) - (cnbnd1); Mc1 = spdiags(Mc1, 0, gg.nc,gg.nc);        %masks (force to be zero) du_y/dv_x
+Mc2 = ones(gg.nc,1) - (cnbnd2); Mc2 = spdiags(Mc2, 0, gg.nc,gg.nc);        %across the mask boundary at all c-nodes determined above
 
-gg.dhv_x = gg.c_ch*S_c*Mc1*gg.dv_x*S_v';                                    %derivative of v in x-direction from v grid onto h-grid
-gg.dhu_y = gg.c_ch*S_c*Mc2*gg.du_y*S_u';                                    %derivative of u in y-direction from u grid onto h-grid
+gg.dhv_x = gg.c_ch*S_c*Mc1*gg.dv_x*S_v';                                   %derivative of v in x-direction from v grid onto h-grid
+gg.dhu_y = gg.c_ch*S_c*Mc2*gg.du_y*S_u';                                   %derivative of u in y-direction from u grid onto h-grid
 
-gg.dvh_x = gg.c_uv*gg.dh_x ;                                                %derivative of h in x direction from h-grid onto v-grid
-gg.duh_y = gg.c_vu*gg.dh_y;                                                 %derivative of h in y direction from h-grid onto u-grid
+gg.dvh_x = gg.c_uv*gg.dh_x ;                                               %derivative of h in x direction from h-grid onto v-grid
+gg.duh_y = gg.c_vu*gg.dh_y;                                                %derivative of h in y direction from h-grid onto u-grid
 
 
 

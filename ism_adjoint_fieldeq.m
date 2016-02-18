@@ -10,40 +10,34 @@ function [LHS, RHS] = ism_adjoint_fieldeq(vv,aa,pp,gg,oo)
 %   LHS     Left hand side. 
 %   RHS     Right hand side.
 
+n = pp.n_Glen;                          
 
-n = pp.n_Glen;       
+%% Variables (Non-Dimensionalized)
+nha = sum(gg.S_h(:));                               %number of active h-grid nodes
+nua = sum(gg.S_u(:));
+nva = sum(gg.S_v(:));
+h_diag = spdiags(gg.S_h*aa.h(:),0,nha,nha);         %Diagonalize     
+Cslip_diag = spdiags(gg.S_h*vv.C(:),0,nha,nha);        
 
-h = aa.h; h_diag = spdiags(h(:),0,gg.nIJ,gg.nIJ);
-Cslip_diag = spdiags(vv.C(:),0,gg.nIJ,gg.nIJ);
-u = vv.u; v = vv.v;
+[Sx,Sy] = gradient(aa.s, gg.dx, gg.dy); %Use gradient instead of gg.nddx/y since periodic BC conditions do not apply      
+Sx = Sx(:); Sy = -Sy(:); 
 
-exx = gg.du_x*(gg.S_u'*u);                                %Strain Rates
-eyy = gg.dv_y*(gg.S_v'*v);
-exy = 0.5*(gg.du_y*(gg.S_u'*u) + gg.dv_x*(gg.S_v'*v));
+
+exx = gg.du_x*vv.u;                                %Strain Rates
+eyy = gg.dv_y*vv.v;
+exy = 0.5*(gg.dhu_y*vv.u + gg.dhv_x*vv.v);
 edeff = sqrt(exx.^2 + eyy.^2 + exx.*eyy + exy.^2 + pp.n_rp.^2);
 
-nEff =  edeff.^((1-n)/n);        %Effective Viscosity [dimensionless]
-nEff_diag = spdiags(nEff(:),0,gg.nIJ,gg.nIJ);              
+nEff =  edeff.^((1-n)/n);                       %Effective Viscosity [dimensionless]
+nEff_diag = spdiags(nEff(:),0,nha,nha);                                  
 
-A1 = gg.S_u*gg.dh_x * (pp.c6 * 4 * nEff_diag*h_diag) * gg.du_x*gg.S_u';   %LHS Adjoint equations
-A2 = gg.S_u*gg.dhu_y * (pp.c6 * nEff_diag*h_diag) * gg.du_y*gg.S_u';
-A3 = gg.S_u*gg.c_hu * (Cslip_diag) * gg.c_uh*gg.S_u';
-AA = A1 + A2 - A3;
 
-B1 = gg.S_u*gg.dh_x * (pp.c6 * 2 * nEff_diag*h_diag) * gg.dv_y*gg.S_v';
-B2 = gg.S_u*gg.dhu_y * (pp.c6 * nEff_diag*h_diag) * gg.dv_x*gg.S_v';
-BB = B1 + B2;
+%% Field equations for lambda and mu
+X = [gg.du_x gg.dv_y; gg.du_x -gg.dv_y; gg.dhu_y gg.dhv_x; gg.c_uh zeros(nha,nva); zeros(nha,nua) gg.c_vh];
+X2 = [gg.dh_x gg.dh_x gg.duh_y gg.c_hu zeros(nha,nua)'; gg.dh_y -gg.dh_y gg.dvh_x zeros(nha,nva)' gg.c_hv];
+D = blkdiag(3*pp.c6*nEff_diag*h_diag, pp.c6*nEff_diag*h_diag, pp.c6*nEff_diag*h_diag, Cslip_diag, Cslip_diag);
 
-C1 = gg.S_v*gg.dh_y * (pp.c6 * 2 * nEff_diag * h_diag) * gg.du_x*gg.S_u';
-C2 = gg.S_v*gg.dhv_x * (pp.c6 * nEff_diag * h_diag) * gg.du_y*gg.S_u';
-CC = C1 + C2;
-
-D1 = gg.S_v*gg.dh_y * (pp.c6 * 4 * nEff_diag * h_diag) * gg.dv_y*gg.S_v';
-D2 = gg.S_v*gg.dhv_x * (pp.c6 * nEff_diag * h_diag) *gg.dv_x*gg.S_v';
-D3 = gg.S_v*gg.c_hv * (Cslip_diag) * gg.c_vh*gg.S_v';
-DD = D1 + D2 - D3;
-
-LHS = [AA BB; CC DD];   
+LHS = X2*D*X;
 
 E1 = pp.c7*(aa.u - vv.u);                                %RHS Adjoint equations
 E2 = pp.c7*(aa.v - vv.v);

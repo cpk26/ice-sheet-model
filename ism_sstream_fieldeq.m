@@ -10,65 +10,42 @@ function [LHS, RHS] = ism_sstream_fieldeq(u,v,C,aa,pp,gg,oo)
 %   LHS     Left hand side. 
 %   RHS     Right hand side.
 
-
 n = pp.n_Glen;                          
 
 %% Variables (Non-Dimensionalized)
-s = aa.s; s_diag = spdiags(s(:),0,gg.nIJ,gg.nIJ);      %Topography
-h = aa.h; h_diag = spdiags(h(:),0,gg.nIJ,gg.nIJ);
+nha = sum(gg.S_h(:));                               %number of active h-grid nodes
+nua = sum(gg.S_u(:));
+nva = sum(gg.S_v(:));
 
-hu = gg.c_hu*h(:)./(gg.c_hu*(h(:) > 0));               %h on u,v-grids. 
-hu_diag = diag(hu);                                    %Linearily extrapolated within the study area, nearest neighbor at edge.
-hv = gg.c_hv*h(:)./(gg.c_hv*(h(:) > 0));               
-hv_diag = diag(hv);
+h_diag = spdiags(gg.S_h*aa.h(:),0,nha,nha);         %Diagonalize     
+Cslip_diag = spdiags(gg.S_h*C(:),0,nha,nha);        
 
-
-Cslip_diag = spdiags(C(:),0,gg.nIJ,gg.nIJ);
-
-%Use gradient instead of gg.nddx/y 
-%since periodic BC conditions do not apply
-[Sx,Sy] = gradient(s, gg.dx, gg.dy);        
+[Sx,Sy] = gradient(aa.s, gg.dx, gg.dy); %Use gradient instead of gg.nddx/y since periodic BC conditions do not apply      
 Sx = Sx(:); Sy = -Sy(:); 
 
 
-exx = gg.du_x*(gg.S_u'*u);                                %Strain Rates
-eyy = gg.dv_y*(gg.S_v'*v);
-exy = 0.5*(gg.du_y*(gg.S_u'*u) + gg.dv_x*(gg.S_v'*v));
+exx = gg.du_x*u;                                %Strain Rates
+eyy = gg.dv_y*v;
+exy = 0.5*(gg.dhu_y*u + gg.dhv_x*v);
 edeff = sqrt(exx.^2 + eyy.^2 + exx.*eyy + exy.^2 + pp.n_rp.^2);
 
-nEff =  edeff.^((1-n)/n);        %Effective Viscosity [dimensionless]
-nEff_diag = spdiags(nEff(:),0,gg.nIJ,gg.nIJ);                                  
+nEff =  edeff.^((1-n)/n);                       %Effective Viscosity [dimensionless]
+nEff_diag = spdiags(nEff(:),0,nha,nha);                                  
 
 
 %% Field equations for velocities
-A1 = (gg.S_u*gg.dh_x*gg.S_h')*gg.S_h*4*nEff_diag*h_diag*gg.S_h'*(gg.S_h*gg.du_x*gg.S_u');     %LHS SSA 
-A2 = gg.S_u*gg.dhu_y*nEff_diag*h_diag*gg.du_y*gg.S_u';
-A3 = pp.c3*gg.S_u*gg.c_hu*Cslip_diag*gg.c_uh*gg.S_u';
-AA = A1 + A2 - A3;
+X = [gg.du_x gg.dv_y; gg.du_x -gg.dv_y; gg.dhu_y gg.dhv_x; gg.c_uh zeros(nha,nva); zeros(nha,nua) gg.c_vh];
+X2 = [gg.dh_x gg.dh_x gg.duh_y gg.c_hu zeros(nha,nua)'; gg.dh_y -gg.dh_y gg.dvh_x zeros(nha,nva)' gg.c_hv];
+D = blkdiag(3*nEff_diag*h_diag, nEff_diag*h_diag, nEff_diag*h_diag, -pp.c3*Cslip_diag, -pp.c3*Cslip_diag);
 
+LHS = X2*D*X;
 
-B1 = gg.S_u*gg.dh_x*2*nEff_diag*h_diag*gg.dv_y*gg.S_v';
-B2 = gg.S_u*gg.dhu_y*nEff_diag*h_diag*gg.dv_x*gg.S_v';
-BB =  B1+B2;
-
-C1 = gg.S_v*gg.dh_y*2*nEff_diag*h_diag*gg.du_x*gg.S_u';
-C2 = gg.S_v*gg.dhv_x*nEff_diag*h_diag*gg.du_y*gg.S_u';
-CC = C1 + C2;
-
-
-D1 = gg.S_v*gg.dh_y*4*nEff_diag*h_diag*gg.dv_y*gg.S_v';
-D2 = gg.S_v*gg.dhv_x*nEff_diag*h_diag*gg.dv_x*gg.S_v';
-D3 = pp.c3*gg.S_v*gg.c_hv*Cslip_diag*gg.c_vh*gg.S_v';
-DD = D1 + D2 - D3;
-
-LHS = [AA BB; CC DD];
-
-A1 = gg.S_u*gg.c_hu*h_diag*Sx;                                  %RHS SSA
-A2 = (gg.S_u*gg.c_hu*(aa.h(:) > 0));
+A1 = gg.c_hu*h_diag*gg.S_h*Sx;             %RHS SSA
+A2 = (gg.c_hu*gg.S_h*(aa.h(:) > 0));       %Interpolate within mask, extrap at edges             
 f1a = pp.c4*(A1./A2);   
 
-A1 = gg.S_v*gg.c_hv*h_diag*Sy;                                  %RHS SSA
-A2 = (gg.S_v*gg.c_hv*(aa.h(:) > 0));
+A1 = gg.c_hv*h_diag*gg.S_h*Sy;           
+A2 = (gg.c_hv*gg.S_h*(aa.h(:) > 0));
 f1b = pp.c4*(A1./A2);   
 
 RHS = [f1a;f1b];

@@ -9,16 +9,14 @@ function [vv2] = ism_inversion(vv,aa,pp,gg,oo )
 % Outputs:
 %   vv2     struct containing new solution variables
 
-if ~isfield(oo,'inv_iter'), oo.inv_iter = 35; end;    %Number of iterations for inversion
+if ~isfield(oo,'inv_iter'), oo.inv_iter = 10; end;    %Number of iterations for inversion
 
 vv2 = struct();
 
 %% Discretize Basal slipperiness using discrete cosine series
-vv2.n_x = ceil(log2(gg.Lx/pp.c5)); vv2.n_x = 120;   %Number of terms in x,y directions to keep
-vv2.n_y = ceil(log2(gg.Ly/pp.c5)); vv2.n_y = 120; 
+vv2.n_x = ceil(log2(gg.Lx/pp.c5)); vv2.n_x = 25;   %Number of terms in x,y directions to keep
+vv2.n_y = ceil(log2(gg.Ly/pp.c5)); vv2.n_y = 25; 
 AA = zeros(gg.nJ,gg.nI); AA(1:vv2.n_y,1:vv2.n_x) = 1;
-
-
 
 
 acoeff = dct2(reshape(sqrt(vv.C),gg.nJ,gg.nI));  %2D DCT, removing high frequency terms
@@ -53,6 +51,7 @@ if isfield(vv2,'armflag'); break; end
 inv_norm(j+1) = ism_vel_misfit(vv2.u,vv2.v,aa,pp,gg, oo);
 end
 
+vv2.inv_norm = inv_norm;
 fprintf('Inversion Complete \n \n')
 
 end
