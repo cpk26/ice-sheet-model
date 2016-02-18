@@ -28,7 +28,7 @@ armflag = 0;            %Flag for exceeding max number of reductions
 
 tau = vv.tau;  %Step coefficient.
 %step = mft0 * vv.agrad/norm(vv.agrad(:),2);
-step = mft0/norm(vv.agrad(:),1) * vv.agrad / norm(vv.agrad(:),1);
+step = mft0 * vv.agrad / norm(vv.agrad(:),2)^2;
 
 %% Initial step
 vv2.acoeff = vv.acoeff - tau*step;
@@ -49,7 +49,7 @@ while mft >=  mft0;    %stopping conditions
 
     %% Update vv2.coeff; keep the books on tau.
     %step = mft0 * vv.agrad/norm(vv.agrad(:),2);
-    step = mft0/norm(vv.agrad(:),1) * vv.agrad / norm(vv.agrad(:),1);
+    step = mft0 * vv.agrad / norm(vv.agrad(:),2)^2;
     vv2.acoeff = vv.acoeff - tau*step; %stepping from the original acoeff.
 
     %% Calculate misfit based on current step size
