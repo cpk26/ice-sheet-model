@@ -27,6 +27,7 @@ if ~isfield(pd, 'min_wavelength'), pd.min_wavelength = 1000; end;  %For fourier 
 if ~isfield(oo,'pT'), oo.pT = 'forward'; end                       %problem type: 'forward' or 'inverse'
 if ~isfield(oo,'sL'), oo.sL = 'ismip'; end                         %Sliding Law: ismip 
 if ~isfield(oo,'norm'), oo.norm = 2; end                           %solution norm for testing convergence. see norm()
-                                                                   
+if ~isfield(oo,'inv_msft'), oo.inv_msft = 'abs'; end               %Least square solution using absolute or relative error
+                                               
 
 end

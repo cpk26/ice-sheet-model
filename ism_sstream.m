@@ -54,14 +54,14 @@ hu = (gg.c_hu*gg.S_h*aa.h(:))./(gg.c_hu*gg.S_h*(aa.h(:) > 0));            %Thick
 hv = (gg.c_hv*gg.S_h*aa.h(:))./(gg.c_hv*gg.S_h*(aa.h(:) > 0));
 
 B = zeros(numel(RHS),1); 
-B(nmgn_uind) = 1/gg.dx; B(nmgn_vind) = 1/gg.dy;
+B(nmgn_uind) = 1/(pp.x*gg.dx); B(nmgn_vind) = 1/(pp.x*gg.dy);
 
-f2a = 0.5*pp.c11*hu.^2;
-f2b = 0.5*pp.c11*hv.^2;
+f2a = 0.5*pp.c4*hu.^2;
+f2b = 0.5*pp.c4*hv.^2;
 F = [f2a; f2b];
 
-RHS(B>0) = 0;                       %Replace forcing at the edge
-RHS = B.*F;            
+RHS(B>0) = 0;           %Replace forcing at the edge 
+RHS = RHS + B.*F;
 end
 
 if any(gg.nfxd(:))  %Dirichlet BC Nodes

@@ -44,7 +44,6 @@ pp.c2 = NaN;
 
 pp.c3 = (ps.x^2)/(ps.z*ps.vis_i);                             %SSTREAM
 pp.c4 = (ps.x*ps.z*pp.rho_i*pp.g)/(ps.vis_i*ps.u);
-pp.c11 = (ps.z^2 *pp.rho_i*pp.g)/(ps.vis_i*ps.u);
 
 pp.c5 = pd.min_wavelength/ps.x;                               %Inversion
 pp.c6 = (ps.vis_i * ps.z)/(ps.x^2);

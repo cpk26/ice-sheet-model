@@ -12,13 +12,31 @@ function [LHS, RHS] = ism_sstream_fieldeq(u,v,C,aa,pp,gg,oo)
 
 n = pp.n_Glen;                          
 
+%% Remap indices [from whole region, to masked area]
+
+A = sum(gg.S_u); A2 = cumsum(A);            %u-grid
+nmgn_uind = A2(gg.nmgn_uind);               %Margin Nodes
+
+vOff = sum(A);                              %offset to v values [number of u values]
+
+A = sum(gg.S_v); A2 = cumsum(A);            %v-grid
+nmgn_vind = A2(gg.nmgn_vind)+ vOff;         %Margin Nodes
+
+
 %% Variables (Non-Dimensionalized)
 nha = sum(gg.S_h(:));                               %number of active h-grid nodes
 nua = sum(gg.S_u(:));
 nva = sum(gg.S_v(:));
 
-h_diag = spdiags(gg.S_h*aa.h(:),0,nha,nha);         %Diagonalize     
-Cslip_diag = spdiags(gg.S_h*C(:),0,nha,nha);        
+Cslip_u = (gg.c_hu*gg.S_h*C(:))./(gg.c_hu*gg.S_h*(C(:) > 0));            %Slipperiness on u,v grids
+Cslip_v = (gg.c_hv*gg.S_h*C(:))./(gg.c_hv*gg.S_h*(C(:) > 0));
+
+Cslip_u(nmgn_uind) = 0;             %Slipperiness is zero at margin for BC
+Cslip_v(nmgn_vind - vOff) = 0;
+
+h_diag = spdiags(gg.S_h*aa.h(:),0,nha,nha);         %Diagonalize  
+Cslip_udiag = spdiags(Cslip_u(:),0,nua,nua);
+Cslip_vdiag = spdiags(Cslip_v(:),0,nva,nva);
 
 [Sx,Sy] = gradient(aa.s, gg.dx, gg.dy); %Use gradient instead of gg.nddx/y since periodic BC conditions do not apply      
 Sx = Sx(:); Sy = -Sy(:); 
@@ -34,9 +52,9 @@ nEff_diag = spdiags(nEff(:),0,nha,nha);
 
 
 %% Field equations for velocities
-X = [gg.du_x gg.dv_y; gg.du_x -gg.dv_y; gg.dhu_y gg.dhv_x; gg.c_uh zeros(nha,nva); zeros(nha,nua) gg.c_vh];
-X2 = [gg.dh_x gg.dh_x gg.duh_y gg.c_hu zeros(nha,nua)'; gg.dh_y -gg.dh_y gg.dvh_x zeros(nha,nva)' gg.c_hv];
-D = blkdiag(3*nEff_diag*h_diag, nEff_diag*h_diag, nEff_diag*h_diag, -pp.c3*Cslip_diag, -pp.c3*Cslip_diag);
+X = [gg.du_x gg.dv_y; gg.du_x -gg.dv_y; gg.dhu_y gg.dhv_x; speye(nua,nua) sparse(nua,nva); sparse(nva,nua) speye(nva,nva)];
+X2 = [gg.dh_x gg.dh_x gg.duh_y speye(nua,nua) sparse(nva,nua)'; gg.dh_y -gg.dh_y gg.dvh_x sparse(nua,nva)' speye(nva,nva)];
+D = blkdiag(3*nEff_diag*h_diag, nEff_diag*h_diag, nEff_diag*h_diag, -pp.c3*Cslip_udiag, -pp.c3*Cslip_vdiag);
 
 LHS = X2*D*X;
 
