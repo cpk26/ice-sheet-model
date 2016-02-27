@@ -73,8 +73,8 @@ if strcmp(oo.inv_msft,'abs')                        %RHS Adjoint equations
 E1 = pp.c7*(aa.u - vv.u);                                
 E2 = pp.c7*(aa.v - vv.v);
 elseif strcmp(oo.inv_msft,'rel')
-E1 = 10^4*(aa.u - vv.u)./(aa.u.^2);                               
-E2 = 10^4*(aa.v - vv.v)./(aa.v.^2);
+E1 = (1/pp.c7)*(aa.u - vv.u)./(aa.u.^2);                               
+E2 = (1/pp.c7)*(aa.v - vv.v)./(aa.v.^2);
 end
 
 RHS = [E1; E2];
