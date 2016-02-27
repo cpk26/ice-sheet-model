@@ -21,6 +21,7 @@ if ~isfield(pd,'A'), pd.A = 3.5*10^(-25); end                      % ice rheolog
 if ~isfield(pd,'B'), pd.B = pd.A^(-1/pd.n_Glen); end;              % Ice stiffness parameter (associated rate factor)
 if ~isfield(pd,'n_rp'), pd.n_rp = 10^-5/(pd.ty); end;              % Effective Viscosity regularization parameter (m/s) (Arthern et al, 2015)
 if ~isfield(pd,'C_rp'), pd.C_rp = 10^6; end;                       % Basal Slipperiness regularation parameter for SIA (to avoid vel=Inf)
+if ~isfield(pd,'U_rp'), pd.U_rp = 1/pd.ty; end;                    % Velocity regularization parameter for inversion s.t. there are no zero vels
 if ~isfield(pd, 'min_wavelength'), pd.min_wavelength = 1000; end;  %For fourier series basis during inversion 
 
 

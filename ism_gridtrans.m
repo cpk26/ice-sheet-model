@@ -1,6 +1,6 @@
 function [ u, v ] = ism_gridtrans( h )
 %velInterp transfer values from h-grid onto u and v grids, using nanmean.
-%   Detailed explanation goes here
+
 
 nJ = size(h,1); nI = size(h,2);
 u = NaN(nJ,nI+1);

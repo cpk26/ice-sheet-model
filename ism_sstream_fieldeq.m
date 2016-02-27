@@ -38,6 +38,11 @@ h_diag = spdiags(gg.S_h*aa.h(:),0,nha,nha);         %Diagonalize
 Cslip_udiag = spdiags(Cslip_u(:),0,nua,nua);
 Cslip_vdiag = spdiags(Cslip_v(:),0,nva,nva);
 
+%%TEST
+% JJ = reshape(gg.S_v'*Cslip_v,gg.nJ+1,gg.nI) > 1;
+% JJ2 = reshape(gg.S_v'*(gg.S_v*ones(gg.nI*(gg.nJ+1),1)),gg.nJ+1,gg.nI);
+% imagesc(JJ+JJ2)
+
 [Sx,Sy] = gradient(aa.s, gg.dx, gg.dy); %Use gradient instead of gg.nddx/y since periodic BC conditions do not apply      
 Sx = Sx(:); Sy = -Sy(:); 
 

@@ -12,7 +12,7 @@ if ~isfield(oo,'inv_msft'), oo.inv_msft = 'abs'; end
 
 if strcmp(oo.inv_msft,'abs') 
 msft = pp.c9*0.5*sum( gg.c_uh*(u-aa.u).^2 + gg.c_vh*(v-aa.v).^2 )*gg.dx*gg.dy;
-elseif strcmp(oo.inv_msft,'rel')
+elseif strcmp(oo.inv_msft,'rel')    
 msft = pp.c9*0.5*sum( gg.c_uh*((u-aa.u)./aa.u).^2 + gg.c_vh*((v-aa.v)./aa.v).^2 )*gg.dx*gg.dy;  
 end
 

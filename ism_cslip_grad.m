@@ -16,7 +16,7 @@ m = 0:1:gg.nI-1; n = 0:1:gg.nJ-1;  %switch to generic domain
 
 
 DP = (gg.c_uh*(vv.u.*vv.lambda) + gg.c_vh*(vv.v.*vv.mu));
-BB = idct2(vv.acoeff); BB = gg.S_h*BB(:);
+BB = exp(idct2(vv.acoeff)); BB = gg.S_h*BB(:);
 
 agrad = zeros(size(vv.acoeff));
 
@@ -28,7 +28,7 @@ if k == 0; a2 = 1/sqrt(gg.nI); else a1 = sqrt(2/gg.nI); end
 
 AA = a1*a2*cos(pi*(2*yy+1)*j/(2*gg.nJ)).*cos(pi*(2*xx+1)*k/(2*gg.nI));
 AA = gg.S_h*AA(:);
-agrad(j+1,k+1) = -2*pp.c8*sum(AA.*BB.*DP*gg.dx*gg.dy);
+agrad(j+1,k+1) = -pp.c8*sum(AA.*BB.*DP*gg.dx*gg.dy);
          
 end
 end

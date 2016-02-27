@@ -37,6 +37,7 @@ pp.x = ps.x;
 pp.rho_i = pd.rho_i;
 pp.n_rp = pd.n_rp/(ps.u/ps.x);
 pp.C_rp = pd.C_rp;
+pp.U_rp = pd.U_rp;
    
 %pp.c1 = (ps.sigma/ps.u) * (ps.e).^3;                         %SIA
 pp.c1 = (pd.rho_i*pd.g*ps.z/ps.u) * (ps.z/ps.x);              %SIA

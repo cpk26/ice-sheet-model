@@ -36,11 +36,10 @@ if any(gg.nfxd(:))
 DEL = union(nfxd_uind,nfxd_vind);                       %lambda,mu = 0
 end
 
-if any(gg.nmgn(:))  %Ice Margin Nodes
+if any(gg.nmgn(:))              %Ice Margin Nodes
 B = ones(numel(RHS),1); 
-B(nmgn_uind) = 1/(pp.x*gg.dx); B(nmgn_vind) = 1/(pp.x*gg.dy);
-
-RHS = RHS.*B;           %Replace forcing at the edge
+B(nmgn_uind) = 0; B(nmgn_vind) = 0;
+RHS = RHS.*B;                   %Replace forcing at the edge
 end
     
 LHS(:,DEL) = [];                                        %Apply boundary conditions

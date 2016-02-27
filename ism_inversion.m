@@ -9,23 +9,26 @@ function [vv2] = ism_inversion(vv,aa,pp,gg,oo )
 % Outputs:
 %   vv2     struct containing new solution variables
 
-if ~isfield(oo,'inv_iter'), oo.inv_iter = 15; end;    %Number of iterations for inversion
+if ~isfield(oo,'inv_iter'), oo.inv_iter = 20; end;    %Number of iterations for inversion
 
 vv2 = struct();
 
 %% Discretize Basal slipperiness using discrete cosine series
-vv2.n_x = ceil(log2(gg.Lx/pp.c5)); vv2.n_x = 45;   %Number of terms in x,y directions to keep
+vv2.n_x = ceil(log2(gg.Lx/pp.c5)); vv2.n_x = 45;   %Number of terms in x,y directions to keep in DCT2
 vv2.n_y = ceil(log2(gg.Ly/pp.c5)); vv2.n_y = 45; 
 AA = zeros(gg.nJ,gg.nI); AA(1:vv2.n_y,1:vv2.n_x) = 1;
 
 
-acoeff = dct2(reshape(sqrt(vv.C),gg.nJ,gg.nI));  %2D DCT, removing high frequency terms
+BB = reshape(log(vv.C),gg.nJ,gg.nI);                %Set slipperiness, C = exp(a(:)*F(:))
+BB(vv.C == 0) = mean(gg.S_h*log(vv.C(:)));          %Remove INF values outside of mask
+
+acoeff = dct2(BB,gg.nJ,gg.nI);                      %2D DCT, removing high frequency terms
 acoeff(~AA) = 0;                                         
-vv2.acoeff = acoeff;
+vv2.acoeff = acoeff;                                %DCT coefficients
 
 
 %% Initial Basal Slipperiness Field   
-vv2.C = idct2(acoeff).^2;                   %reconstruct basal slipperiness
+vv2.C = exp(idct2(vv2.acoeff));                   %reconstruct basal slipperiness
 
 %% Solve forward problem for initial guess
 [vv2] = ism_sia(aa.s,aa.h,vv2.C,vv2,pp,gg,oo);  %SIA 

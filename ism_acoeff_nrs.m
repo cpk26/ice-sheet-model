@@ -19,7 +19,7 @@ if ~isfield(vv,'tau'), vv.tau = 1; end;        %Initial step coefficient
 %% Paramaters
 vv2 = vv;               
 
-maxarm = 25;            %Maximum number of steps (reductions)
+maxarm = 15;            %Maximum number of steps (reductions)
 iarm = 0;               %Counter of number of reductions
 sigma = .5;            %Initial step size reduction
 armflag = 0;            %Flag for exceeding max number of reductions
@@ -28,11 +28,12 @@ armflag = 0;            %Flag for exceeding max number of reductions
 
 tau = vv.tau;  %Step coefficient.
 %step = mft0 * vv.agrad/norm(vv.agrad(:),2);
-step = mft0 * vv.agrad / norm(vv.agrad(:),2)^2;
+step = 0.1*mft0 * vv.agrad / norm(vv.agrad(:),2)^2;
 
 %% Initial step
 vv2.acoeff = vv.acoeff - tau*step;
-vv2.C = idct2(vv2.acoeff).^2;       %Calculate new slipperiness field
+vv2.C = exp(idct2(vv2.acoeff));       %Calculate new slipperiness field
+
 
 [vv2] = ism_sia(aa.s,aa.h,vv2.C,vv2, pp,gg,oo); %SIA                                        
 [vv2] = ism_sstream(vv2,aa,pp,gg,oo );          %SSA 
@@ -49,11 +50,11 @@ while mft >=  mft0;    %stopping conditions
 
     %% Update vv2.coeff; keep the books on tau.
     %step = mft0 * vv.agrad/norm(vv.agrad(:),2);
-    step = mft0 * vv.agrad / norm(vv.agrad(:),2)^2;
+    step = 0.1 * mft0 * vv.agrad / norm(vv.agrad(:),2)^2;
     vv2.acoeff = vv.acoeff - tau*step; %stepping from the original acoeff.
 
     %% Calculate misfit based on current step size
-    vv2.C = idct2(vv2.acoeff).^2;      %Calculate new slipperiness field
+    vv2.C = exp(idct2(vv2.acoeff));      %Calculate new slipperiness field
     [vv2] = ism_sia(aa.s,aa.h,vv2.C,vv2,pp,gg,oo);  %Calculate corresponding velocities 
     [vv2] = ism_sstream(vv2,aa,pp,gg,oo );      %SSA 
     [mft] = ism_vel_misfit(vv2.u,vv2.v,aa,pp,gg, oo); %Current misfit

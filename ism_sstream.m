@@ -53,8 +53,11 @@ if any(gg.nmgn(:))  %Ice Margin Nodes
 hu = (gg.c_hu*gg.S_h*aa.h(:))./(gg.c_hu*gg.S_h*(aa.h(:) > 0));            %Thickness on u,v grids
 hv = (gg.c_hv*gg.S_h*aa.h(:))./(gg.c_hv*gg.S_h*(aa.h(:) > 0));
 
+AAx = gg.dh_x*gg.S_h*ones(gg.nIJ,1);
+AAy = gg.dh_y*gg.S_h*ones(gg.nIJ,1);
+
 B = zeros(numel(RHS),1); 
-B(nmgn_uind) = 1/(pp.x*gg.dx); B(nmgn_vind) = 1/(pp.x*gg.dy);
+B(nmgn_uind) = AAx(nmgn_uind); B(nmgn_vind) = AAy(nmgn_vind-vOff);
 
 f2a = 0.5*pp.c4*hu.^2;
 f2b = 0.5*pp.c4*hv.^2;
