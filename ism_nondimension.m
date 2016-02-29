@@ -41,7 +41,8 @@ pp.U_rp = pd.U_rp;
    
 %pp.c1 = (ps.sigma/ps.u) * (ps.e).^3;                         %SIA
 pp.c1 = (pd.rho_i*pd.g*ps.z/ps.u) * (ps.z/ps.x);              %SIA
-pp.c2 = NaN;
+pp.c2 = ((2*pp.A)/(pp.n_Glen+1))*((pd.rho_i*pd.g).^(pp.n_Glen)) ...
+    *(ps.z^(pp.n_Glen+1))*((ps.z/ps.x)^(pp.n_Glen));
 
 pp.c3 = (ps.x^2)/(ps.z*ps.vis_i);                             %SSTREAM
 pp.c4 = (ps.x*ps.z*pp.rho_i*pp.g)/(ps.vis_i*ps.u);

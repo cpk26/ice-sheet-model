@@ -21,6 +21,7 @@ function [ vv ] = ism_sia(s,h,C,vv,pp,gg,oo )
 [Sx,Sy] = gradient(s, gg.dx, gg.dy);            %Topography   
 Sx = Sx(:); 
 Sy = -Sy(:); 
+Sgrad = sqrt(Sx.^2 + Sy.^2);
 h = h(:); 
 C = C(:) + pp.C_rp;                             %Regularziation to avoid C=0 -> InF
 

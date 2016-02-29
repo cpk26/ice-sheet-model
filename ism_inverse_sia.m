@@ -16,7 +16,6 @@ function [ vv ] = ism_inverse_sia(s,h,u_obs,v_obs,vv,pp,gg,oo )
 [Sx,Sy] = gradient(s, gg.dx, gg.dy);            %Topography   
 Sx = Sx(:); 
 Sy = -Sy(:); 
-Sg = Sx.^2 + Sy.^2; 
 h = h(:); 
 
 A1 = -pp.c1 * gg.S_h * (h .* Sx);                   %Basal Slip multiplier

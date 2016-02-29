@@ -19,7 +19,7 @@ disp('Newton-Raphson Step')
 vv2 = vv;               
 
 maxarm = 15;            %Maximum number of steps (reductions)
-alpha = 0.1;
+alpha = 0.01;
 iarm = 0;               %Counter of number of reductions
 sigma = .25;            %Initial step size reduction
 armflag = 0;            %Flag for exceeding max number of reductions

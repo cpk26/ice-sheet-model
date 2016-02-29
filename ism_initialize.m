@@ -43,10 +43,11 @@ elseif strcmp(oo.pT, 'inverse')
 vv.C = C(:);                   %Inverse Problem
 aa.u = u(:); 
 aa.v = v(:); 
-aa.u(aa.u <= 0) = aa.u(aa.u <= 0) - 1; %Regularize
-aa.u(aa.u > 0) = aa.u(aa.u > 0) + 1;
-aa.v(aa.v <= 0) = aa.v(aa.v <= 0) - 1; 
-aa.v(aa.v > 0) = aa.v(aa.v > 0) + 1;
+
+aa.u(aa.u <= 0) = aa.u(aa.u <= 0) - 10; %Regularize
+aa.u(aa.u > 0) = aa.u(aa.u > 0) + 10;
+aa.v(aa.v <= 0) = aa.v(aa.v <= 0) - 10; 
+aa.v(aa.v > 0) = aa.v(aa.v > 0) + 10;
 end
 
 
