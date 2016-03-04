@@ -22,13 +22,17 @@ if ~isfield(pd,'B'), pd.B = pd.A^(-1/pd.n_Glen); end;              % Ice stiffne
 if ~isfield(pd,'n_rp'), pd.n_rp = 10^-5/(pd.ty); end;              % Effective Viscosity regularization parameter (m/s) (Arthern et al, 2015)
 if ~isfield(pd,'C_rp'), pd.C_rp = 10^6; end;                       % Basal Slipperiness regularation parameter for SIA (to avoid vel=Inf)
 if ~isfield(pd,'U_rp'), pd.U_rp = 1/pd.ty; end;                    % Velocity regularization parameter for inversion s.t. there are no zero vels
-if ~isfield(pd, 'min_wavelength'), pd.min_wavelength = 1000; end;  %For fourier series basis during inversion 
-
+if ~isfield(pd,'L_vel'), pd.L_vel = 1; end            %Velocity mismatch regularization parameter (Tikhonov reg)
+if ~isfield(pd,'L_smooth'), pd.L_smooth = 1; end         %Smoothness cost regularization parameter (Tikhonov reg)
+if ~isfield(pd,'acoeff_nx'), pd.acoeff_nx = 45; end         %Number of terms in x,y directions to keep in DCT2
+if ~isfield(pd,'acoeff_ny'), pd.acoeff_ny = 45; end         
 
 if ~isfield(oo,'pT'), oo.pT = 'forward'; end                       %problem type: 'forward' or 'inverse'
-if ~isfield(oo,'sL'), oo.sL = 'ismip'; end                         %Sliding Law: ismip 
+if ~isfield(oo,'inv_iter'), oo.inv_iter = 10; end;                 %number of inversion iterations
 if ~isfield(oo,'norm'), oo.norm = 2; end                           %solution norm for testing convergence. see norm()
 if ~isfield(oo,'inv_msft'), oo.inv_msft = 'abs'; end               %Least square solution using absolute or relative error
+if ~isfield(oo,'Cdisc'), oo.Cdisc = 'dct2'; end                    %Discritization of C slip coefficient. Either 'dct2' or 'grid'
+
                                                
 
 end

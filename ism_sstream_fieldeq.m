@@ -43,8 +43,20 @@ Cslip_vdiag = spdiags(Cslip_v(:),0,nva,nva);
 % JJ2 = reshape(gg.S_v'*(gg.S_v*ones(gg.nI*(gg.nJ+1),1)),gg.nJ+1,gg.nI);
 % imagesc(JJ+JJ2)
 
-[Sx,Sy] = gradient(aa.s, gg.dx, gg.dy); %Use gradient instead of gg.nddx/y since periodic BC conditions do not apply      
-Sx = Sx(:); Sy = -Sy(:); 
+[Sx,Sy] = gradient(aa.s, gg.dx, gg.dy); %Use gradient instead of gg.nddx/y since periodic BC conditions do not apply 
+
+[ii,jj] = gradient(double(aa.h >0), gg.dx, gg.dy); %Set gradient to aa.h/(dx or dy) at ice margin
+ii = ii.*(aa.h>0); jj = jj.*(aa.h>0);              %Mask to limit gradient to ice sheet margin
+ii(ii~=0) = ii(ii~=0)./abs(ii(ii~=0));             %Normalized gradient direction at margin 
+jj(jj~=0) = jj(jj~=0)./abs(jj(jj~=0));
+
+Sx(ii~=0) =  aa.h(ii~=0)./(ii(ii~=0)*2*gg.dx);
+Sy(jj~=0) =  aa.h(jj~=0)./(jj(jj~=0)*2*gg.dy);
+
+Sx = Sx(:); Sy = -Sy(:);
+
+
+ 
 
 
 exx = gg.du_x*u;                                %Strain Rates

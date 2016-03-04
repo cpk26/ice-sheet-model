@@ -50,7 +50,7 @@ DEL = [];                   %Columns to delete
 DEL2 = [];                  %Rows to delete
 
 if any(gg.nmgn(:))  %Ice Margin Nodes
-hu = (gg.c_hu*gg.S_h*aa.h(:))./(gg.c_hu*gg.S_h*(aa.h(:) > 0));            %Thickness on u,v grids
+hu = (gg.c_hu*gg.S_h*aa.h(:))./(gg.c_hu*gg.S_h*(aa.h(:) > 0));            %Thickness on u,v grids, linear extrapolation at the edges
 hv = (gg.c_hv*gg.S_h*aa.h(:))./(gg.c_hv*gg.S_h*(aa.h(:) > 0));
 
 AAx = gg.dh_x*gg.S_h*ones(gg.nIJ,1);
@@ -59,8 +59,9 @@ AAy = gg.dh_y*gg.S_h*ones(gg.nIJ,1);
 B = zeros(numel(RHS),1); 
 B(nmgn_uind) = AAx(nmgn_uind); B(nmgn_vind) = AAy(nmgn_vind-vOff);
 
-f2a = 0.5*pp.c4*hu.^2;
-f2b = 0.5*pp.c4*hv.^2;
+f2a = 0.5*pp.c4*(0.5*hu).^2;              %Ice margin boundary condition. Set ice thickness to zero at ice margin.
+f2b = 0.5*pp.c4*(0.5*hv).^2;
+
 F = [f2a; f2b];
 
 RHS(B>0) = 0;           %Replace forcing at the edge 

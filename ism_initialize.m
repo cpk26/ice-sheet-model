@@ -44,10 +44,10 @@ vv.C = C(:);                   %Inverse Problem
 aa.u = u(:); 
 aa.v = v(:); 
 
-aa.u(aa.u <= 0) = aa.u(aa.u <= 0) - 10; %Regularize
-aa.u(aa.u > 0) = aa.u(aa.u > 0) + 10;
-aa.v(aa.v <= 0) = aa.v(aa.v <= 0) - 10; 
-aa.v(aa.v > 0) = aa.v(aa.v > 0) + 10;
+aa.u(aa.u <= 0) = aa.u(aa.u <= 0) - pp.U_rp; %Regularize
+aa.u(aa.u > 0) = aa.u(aa.u > 0) + pp.U_rp;
+aa.v(aa.v <= 0) = aa.v(aa.v <= 0) - pp.U_rp; 
+aa.v(aa.v > 0) = aa.v(aa.v > 0) + pp.U_rp;
 end
 
 

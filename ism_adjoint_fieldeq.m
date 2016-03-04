@@ -41,18 +41,6 @@ h_diag = spdiags(gg.S_h*aa.h(:),0,nha,nha);         %Diagonalize
 Cslip_udiag = spdiags(Cslip_u(:),0,nua,nua);
 Cslip_vdiag = spdiags(Cslip_v(:),0,nva,nva);       
 
-[Sx,Sy] = gradient(aa.s, gg.dx, gg.dy); %Use gradient instead of gg.nddx/y since periodic BC conditions do not apply      
-Sx = Sx(:); Sy = -Sy(:); 
-
-%%TEST
-% JJ = reshape(gg.S_v'*Cslip_v,gg.nJ+1,gg.nI) > 0;
-% JJ2 = reshape(gg.S_v'*(gg.S_v*ones(gg.nI*(gg.nJ+1),1)),gg.nJ+1,gg.nI);
-% imagesc(JJ+JJ2)
-% JJ = reshape(gg.S_u'*Cslip_u,gg.nJ,gg.nI+1) > 0;
-% JJ2 = reshape(gg.S_u'*(gg.S_u*ones(gg.nJ*(gg.nI+1),1)),gg.nJ,gg.nI+1);
-% imagesc(JJ+JJ2)
-
-
 exx = gg.du_x*vv.u;                                %Strain Rates
 eyy = gg.dv_y*vv.v;
 exy = 0.5*(gg.dhu_y*vv.u + gg.dhv_x*vv.v);
@@ -70,11 +58,11 @@ D = blkdiag(3*pp.c6*nEff_diag*h_diag, pp.c6*nEff_diag*h_diag, pp.c6*nEff_diag*h_
 LHS = X2*D*X;
 
 if strcmp(oo.inv_msft,'abs')                        %RHS Adjoint equations
-E1 = pp.c7*(aa.u - vv.u);                                
-E2 = pp.c7*(aa.v - vv.v);
+E1 = pp.L_vel*pp.c7*(aa.u - vv.u);                                
+E2 = pp.L_vel*pp.c7*(aa.v - vv.v);
 elseif strcmp(oo.inv_msft,'rel')
-E1 = (1/pp.c7)*(aa.u - vv.u)./(aa.u.^2);                               
-E2 = (1/pp.c7)*(aa.v - vv.v)./(aa.v.^2);
+E1 = (pp.L_vel/pp.c7)*(aa.u - vv.u)./(aa.u.^2);                               
+E2 = (pp.L_vel/pp.c7)*(aa.v - vv.v)./(aa.v.^2);
 end
 
 RHS = [E1; E2];
