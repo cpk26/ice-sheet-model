@@ -40,7 +40,7 @@ sgrad = -vv.agrad(:);
 sgrad = reshape(sgrad,gg.nJ,gg.nI);
 vv2.bfgs_iter = vv2.bfgs_iter+1;
 tau = 1/(norm(sgrad(:),2));
-tau = 1;
+%tau = 1;
 else
 disp('Calculating sgrad')
 tic

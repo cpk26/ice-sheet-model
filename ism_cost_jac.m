@@ -1,4 +1,4 @@
-function [vv] = ism_cslip_grad(vv, pp, gg, oo)
+function [vv] = ism_cost_jac(vv, pp, gg, oo)
 %% Calculate gradients of alpha coefficients
 % Inputs:
 %   n_x,n_y   number of alpha coefficients in the x,y directions
@@ -10,12 +10,14 @@ function [vv] = ism_cslip_grad(vv, pp, gg, oo)
 %   vv       solution variables
 
 
-agrad = zeros(size(vv.acoeff));                                     %acoeff gradient matrix
+cJac = zeros(size(vv.acoeff));      %Jacobian for cost function                               
+
+
+%Tikanov smoothing contribution
 a_xx = (pp.c10.^-2)*gg.du_x*((gg.dh_x*gg.S_h*vv.acoeff(:)).*((gg.c_hu*gg.S_h*ones(gg.nIJ,1)) == 1));
 a_yy = (pp.c10.^-2)*gg.dv_y*((gg.dh_y*gg.S_h*vv.acoeff(:)).*((gg.c_hv*gg.S_h*ones(gg.nIJ,1)) == 1));
 a_lap = a_xx + a_yy;
-
-a_c = -pp.L_smooth*pp.c10*reshape(gg.S_h'*a_lap,gg.nJ,gg.nI)*gg.dx*gg.dy;
+tikCntrb = -pp.L_smooth*pp.c10*reshape(gg.S_h'*a_lap,gg.nJ,gg.nI)*gg.dx*gg.dy;
 
 DP = (gg.c_uh*(vv.u.*vv.lambda) + gg.c_vh*(vv.v.*vv.mu));           %Dot product of velocities and lagrange multiplier
 Cslip = ism_cslip_field(vv, pp, gg, oo); Cslip = gg.S_h*Cslip(:);   %Basal Slipperiness
@@ -39,7 +41,7 @@ if k == 0; a2 = 1/sqrt(gg.nI); else a2 = sqrt(2/gg.nI); end
 
 AA = a1*a2*cos(pi*(2*yy+1)*j/(2*gg.nJ)).*cos(pi*(2*xx+1)*k/(2*gg.nI));
 AA = gg.S_h*AA(:);
-agrad(j+1,k+1) = -pp.c8*sum(AA.*Cslip.*DP*gg.dx*gg.dy);
+cJac(j+1,k+1) = -pp.c8*sum(AA.*Cslip.*DP*gg.dx*gg.dy);
 
 
 elseif isequal(oo.Cdisc, 'grid')
@@ -47,7 +49,7 @@ elseif isequal(oo.Cdisc, 'grid')
 AA = zeros(Ny,Nx); AA(j+1,k+1) = vv.acoeff(j+1,k+1);
 AA = gg.S_h*AA(:);
 
-agrad(j+1,k+1) = -pp.c8*sum(AA.*Cslip.*DP*gg.dx*gg.dy) + a_c(j+1,k+1);
+cJac(j+1,k+1) = -pp.c8*sum(AA.*Cslip.*DP*gg.dx*gg.dy) + tikCntrb(j+1,k+1);
 
 end
 
@@ -55,6 +57,6 @@ end
 end
 end
 
-vv.agrad = agrad;
+vv.cJac = cJac;
 
 end

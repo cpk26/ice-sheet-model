@@ -30,7 +30,7 @@ if ~isfield(pd,'acoeff_ny'), pd.acoeff_ny = 45; end
 if ~isfield(oo,'pT'), oo.pT = 'forward'; end                       %problem type: 'forward' or 'inverse'
 if ~isfield(oo,'inv_iter'), oo.inv_iter = 10; end;                 %number of inversion iterations
 if ~isfield(oo,'norm'), oo.norm = 2; end                           %solution norm for testing convergence. see norm()
-if ~isfield(oo,'inv_msft'), oo.inv_msft = 'abs'; end               %Least square solution using absolute or relative error
+if ~isfield(oo,'inv_cst'), oo.inv_msft = 'abs'; end               %Least square solution using absolute or relative error
 if ~isfield(oo,'Cdisc'), oo.Cdisc = 'dct2'; end                    %Discritization of C slip coefficient. Either 'dct2' or 'grid'
 
                                                

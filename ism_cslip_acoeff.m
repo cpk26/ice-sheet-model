@@ -1,4 +1,4 @@
-function [acoeff] = ism_clip_acoeff(vv, pp, gg, oo)
+function [acoeff] = ism_cslip_acoeff(vv, pp, gg, oo)
 %% Calculate Basal Slipperiness alpha coefficients
 % Inputs:
 %   vv      solution variables

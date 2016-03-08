@@ -1,5 +1,9 @@
 function [gg] = ism_mask(gg,dd,oo)
-% Assign default parameters and options
+% Assign default parameters and options. Important to note that dh_x/dh_y
+% and dhv_x/dhu_y are modified so that they equal zero across the margin of
+% fixed cells (dirichlet). This is necessary to solve the adjoint eq, but also for free
+% slip. Recommend using centering ch_x/... for boundary detection.
+
 % Inputs 
 %   gg struct of grid
 %   dd struct of topography
@@ -110,8 +114,8 @@ A = find(gg.c_hv*gg.nmgn(:) == 0.5); nmgn_vind = intersect(A,nbnd_vind);
 end
 
 % Fixed Boundary Nodes (u/v grid)
-A = find(gg.c_hu*gg.nfxd(:) == 0.5); nfxd_uind = intersect(A,nbnd_uind); %nfxd_uind = A;
-A = find(gg.c_hv*gg.nfxd(:) == 0.5); nfxd_vind = intersect(A,nbnd_vind); %nfxd_vind = A;
+A = find(gg.c_hu*gg.nfxd(:) == 0.5); nfxd_uind = A; %nfxd_uind = intersect(A,nbnd_uind); %nfxd_uind = A;
+A = find(gg.c_hv*gg.nfxd(:) == 0.5); nfxd_vind = A; %nfxd_vind = intersect(A,nbnd_vind); %nfxd_vind = A;
 
 % Remnant Boundary Nodes (u/v grid)
 nbndr_uind = setdiff(nbnd_uind, [nmgn_uind;nfxd_uind;nperbc_u1ind;nperbc_u2ind]);
@@ -130,7 +134,7 @@ gg.c_hv = S_v*gg.c_hv*S_h';
 gg.du_x = S_h*gg.du_x*S_u';                                                %Finite Difference Operators
 gg.dv_y = S_h*gg.dv_y*S_v';
 
-%% For Free Slip BC
+%% For Free Slip BC and Adjoint method
 Mu = ones(gg.nu,1) - (unbnd - unmgn); Mu = spdiags(Mu, 0, gg.nu,gg.nu);    %masks (force to be zero) dh_x/dh_y
 Mv = ones(gg.nv,1) - (vnbnd - vnmgn); Mv = spdiags(Mv, 0, gg.nv,gg.nv);    %across the mask boundary at all boundary u/v 
                                                                            %nodes except the ice margin
@@ -138,13 +142,13 @@ gg.dh_x = S_u*Mu*gg.dh_x*S_h';
 gg.dh_y = S_v*Mv*gg.dh_y*S_h';
 %%
 
- %gg.dh_x = S_u*gg.dh_x*S_h';
- %gg.dh_y = S_v*gg.dh_y*S_h';
+%  gg.dh_x = S_u*gg.dh_x*S_h';
+%  gg.dh_y = S_v*gg.dh_y*S_h';
 
 cnbnd1 = ~eq(gg.dv_x*S_v'*S_v*ones(gg.nv,1),0);                            %c-nodes where dv_x/du_y are across mask boundary
 cnbnd2 = ~eq(gg.du_y*S_u'*S_u*ones(gg.nu,1),0);
 
-%% For Free Slip BC
+%% For Free Slip BC and Adjoint method
 Mc1 = ones(gg.nc,1) - (cnbnd1); Mc1 = spdiags(Mc1, 0, gg.nc,gg.nc);        %masks (force to be zero) du_y/dv_x
 Mc2 = ones(gg.nc,1) - (cnbnd2); Mc2 = spdiags(Mc2, 0, gg.nc,gg.nc);        %across the mask boundary at all c-nodes determined above
 
@@ -152,8 +156,8 @@ gg.dhv_x = gg.c_ch*S_c*Mc1*gg.dv_x*S_v';                                   %deri
 gg.dhu_y = gg.c_ch*S_c*Mc2*gg.du_y*S_u';                                   %derivative of u in y-direction from u grid onto h-grid
 %%
 
- %gg.dhv_x = gg.c_ch*S_c*gg.dv_x*S_v';                                   %derivative of v in x-direction from v grid onto h-grid
- %gg.dhu_y = gg.c_ch*S_c*gg.du_y*S_u'; 
+%  gg.dhv_x = gg.c_ch*S_c*gg.dv_x*S_v';                                   %derivative of v in x-direction from v grid onto h-grid
+%  gg.dhu_y = gg.c_ch*S_c*gg.du_y*S_u'; 
 
 
 gg.dvh_x = gg.c_uv*gg.dh_x ;                                               %derivative of h in x direction from h-grid onto v-grid

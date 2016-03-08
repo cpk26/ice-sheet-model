@@ -25,7 +25,7 @@ vv2.C = ism_cslip_field(vv2, pp, gg, oo);    %reconstruct basal slipperiness
 
 
 inv_norm = zeros(oo.inv_iter+1,1);            %Store velocity misfit
-inv_norm(1) = ism_inv_misfit(vv2,aa,pp,gg, oo);
+inv_norm(1) = ism_inv_cost(vv2,aa,pp,gg, oo);
 
 %% Iterate
 for j = 1:oo.inv_iter
@@ -35,7 +35,7 @@ fprintf('Inversion iteration: %i of %i \n',[j,oo.inv_iter])
 [vv2] = ism_acoeff_ls(vv2,aa, pp, gg, oo);
 if isfield(vv2,'armflag'); break; end
 
-inv_norm(j+1) = ism_inv_misfit(vv2,aa,pp,gg, oo);
+inv_norm(j+1) = ism_inv_cost(vv2,aa,pp,gg, oo);
 end
 
 vv2.inv_norm = inv_norm;

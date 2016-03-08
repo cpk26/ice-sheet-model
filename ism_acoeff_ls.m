@@ -24,16 +24,17 @@ iarm = 0;               %Counter of number of reductions
 sigma = .25;            %Initial step size reduction
 armflag = 0;            %Flag for exceeding max number of reductions
 
-[mft0] = ism_inv_misfit(vv,aa,pp,gg, oo);  %Initial velocity misfit
+[cst0] = ism_inv_cost(vv,aa,pp,gg, oo);  %Initial velocity misfit
 
-%% calculate gradient, determine step size
+%% calculate jacobian, determine step size
 [vv] = ism_adjoint(vv,aa,pp,gg,oo );
-[vv] = ism_cslip_grad(vv, pp, gg, oo);
+[vv] = ism_cost_jac(vv, pp, gg, oo);
 
 
-tau = mft0/norm(vv.agrad(:),2);  %Step coefficient.
-tau = 1;
-sdir = -vv.agrad / norm(vv.agrad(:),2);
+
+tau = cst0/norm(vv.cJac(:),2);  %Step coefficient.
+%tau = 1;
+sdir = -vv.cJac / norm(vv.cJac(:),2);
 
 
 %% Initial step
@@ -44,10 +45,10 @@ vv2.C = ism_cslip_field(vv2, pp, gg, oo);       %Calculate new slipperiness fiel
 [vv2] = ism_sia(aa.s,aa.h,vv2.C,vv2, pp,gg,oo); %SIA                                        
 [vv2] = ism_sstream(vv2,aa,pp,gg,oo );          %SSA 
 
-[mft] = ism_inv_misfit(vv2,aa,pp,gg, oo); %Current misfit
+[cst] = ism_inv_cost(vv2,aa,pp,gg, oo); %Current misfit
 
 %% Iterate step size coefficient
-while mft >= mft0 + alpha * tau * (vv.agrad(:)'*sdir(:));    %stopping conditions
+while cst >= cst0 + alpha * tau * (vv.cJac(:)'*sdir(:));    %stopping conditions
     fprintf('Line search iteration: %i \n',iarm+1)
     %% Step Size
     tau = sigma*tau;
@@ -58,7 +59,7 @@ while mft >= mft0 + alpha * tau * (vv.agrad(:)'*sdir(:));    %stopping condition
     vv2.C = ism_cslip_field(vv2, pp, gg, oo);      %Calculate new slipperiness field
     [vv2] = ism_sia(aa.s,aa.h,vv2.C,vv2,pp,gg,oo);  %Calculate corresponding velocities 
     [vv2] = ism_sstream(vv2,aa,pp,gg,oo );      %SSA 
-    [mft] = ism_inv_misfit(vv2,aa,pp,gg, oo); %Current misfit
+    [cst] = ism_inv_cost(vv2,aa,pp,gg, oo); %Current misfit
     
     %% Keep the books on the function norms.
     iarm = iarm+1;
@@ -70,7 +71,7 @@ while mft >= mft0 + alpha * tau * (vv.agrad(:)'*sdir(:));    %stopping condition
     
     disp(iarm)
 end
-fprintf('Misfit: %i \n', mft)
+fprintf('Cost: %i \n', cst)
 disp('Completed')
 
 end   
