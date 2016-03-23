@@ -31,10 +31,11 @@ armflag = 0;            %Flag for exceeding max number of reductions
 [vv] = ism_cost_jac(vv, pp, gg, oo);
 
 
+[tau, sdir] = ism_acoeff_minalg(cst0, vv,aa,pp,gg,oo);
 
-tau = cst0/norm(vv.cJac(:),2);  %Step coefficient.
-%tau = 1;
-sdir = -vv.cJac / norm(vv.cJac(:),2);
+% tau = cst0/norm(vv.cJac(:),2);  %Step coefficient.
+% %tau = 1;
+% sdir = -vv.cJac / norm(vv.cJac(:),2);
 
 
 %% Initial step
