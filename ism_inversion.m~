@@ -40,8 +40,8 @@ vv2.C = ism_cslip_field(vv2, pp, gg, oo);    %Reconstruct basal slipperiness
 % options.Display = 'iter';
 % %options.LS_init = 0;
 % 
-% options.LS_type = 2;
-% [vv2.acoeff,cst,exitflag,output] = minFunc(@(x)ism_invoptWrapper(x,vv2,aa, pp, gg, oo),vv2.acoeff(:),options);
+% %options.LS_type = 0;
+%[vv2.acoeff,cst,exitflag,output] = minFunc(@(x)ism_invoptWrapper(x,vv2,aa, pp, gg, oo),vv2.acoeff(:),options);
 
 %% Finish up
 vv2.C = ism_cslip_field(vv2, pp, gg, oo);    %reconstruct basal slipperiness
