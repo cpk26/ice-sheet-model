@@ -1,5 +1,5 @@
 
-function [cst,grad] = ism_inv_optfunc(acoeff,vv,aa, pp, gg, oo)
+function [cst,grad] = ism_inv_optWrapper(acoeff,vv,aa, pp, gg, oo)
 % Inputs:
 %   vv      struct containing initial solution variables
 %   aa      prescribed fields, including inputs and boundary conditions
@@ -20,7 +20,7 @@ vv.C = ism_cslip_field(vv, pp, gg, oo);    %reconstruct basal slipperiness
 cst = ism_inv_cost(vv,aa,pp,gg, oo); %Current misfit
 
 if nargout > 1 % gradient required
-    grad = vv.cJac(:);                      %Gradient (as array)
+    grad = cvv.cJac(:);                      %Gradient (as array)
 end
 
 end   

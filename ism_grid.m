@@ -1,5 +1,5 @@
 function [gg] = ism_grid(nI,nJ,xl,xr,yb,yt,oo)
-% Setup Grid
+% Setup Grid for model domain
 % inputs
 %   nI,nJ size of grid [x,y]
 %   xl,xr,yb,yt left and right, bottom and top boundary coordinates
@@ -7,7 +7,6 @@ function [gg] = ism_grid(nI,nJ,xl,xr,yb,yt,oo)
 % outputs
 %   gg grid struct [see below for contents]
 %
-% Dec 8, 2015: based on nevis_grid
 
 nIJ = nI*nJ;            %Number of nodes
 

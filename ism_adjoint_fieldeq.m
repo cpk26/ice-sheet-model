@@ -14,18 +14,6 @@ if ~isfield(oo,'inv_msft'), oo.inv_msft = 'abs'; end
 
 n = pp.n_Glen;                          
 
-
-%% Remap indices [from whole region, to masked area]
-
-A = sum(gg.S_u); A2 = cumsum(A);            %u-grid
-nmgn_uind = A2(gg.nmgn_uind);               %Margin Nodes
-
-vOff = sum(A);                              %offset to v values [number of u values]
-
-A = sum(gg.S_v); A2 = cumsum(A);            %v-grid
-nmgn_vind = A2(gg.nmgn_vind)+ vOff;         %Margin Nodes
-
-
 %% Variables (Non-Dimensionalized)
 nha = sum(gg.S_h(:));                               %number of active h-grid nodes
 nua = sum(gg.S_u(:));
@@ -34,8 +22,9 @@ nva = sum(gg.S_v(:));
 Cslip_u = (gg.c_hu*gg.S_h*vv.C(:))./(gg.c_hu*gg.S_h*(vv.C(:) > 0));            %Slipperiness on u,v grids
 Cslip_v = (gg.c_hv*gg.S_h*vv.C(:))./(gg.c_hv*gg.S_h*(vv.C(:) > 0));
 
-Cslip_u(nmgn_uind) = 0;             %Slipperiness is zero at margin for BC
-Cslip_v(nmgn_vind - vOff) = 0;
+Cslip_u(logical(gg.S_u*gg.nmgn_ugrid(:))) = 0;                           %Slipperiness is zero at margin for BC
+Cslip_v(logical(gg.S_v*gg.nmgn_vgrid(:))) = 0;
+
 
 h_diag = spdiags(gg.S_h*aa.h(:),0,nha,nha);         %Diagonalize  
 Cslip_udiag = spdiags(Cslip_u(:),0,nua,nua);

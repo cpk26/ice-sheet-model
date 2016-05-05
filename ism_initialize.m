@@ -29,10 +29,10 @@ aa.h = max(s-b,0);
 %Fixed Boundary Conditions. 
 
 if ~isempty(dd.nfxd)
-aa.nfxd_uval = dd.vx_u(gg.nfxd_uind)/pp.u;
-aa.nfxd_vval = dd.vy_v(gg.nfxd_vind)/pp.u;
+aa.nfxd_uval = dd.vx_u.*gg.nfxd_ugrid/pp.u;
+aa.nfxd_vval = dd.vy_v.*gg.nfxd_vgrid/pp.u;
 else
-aa.nfxd_uval = []; aa.nfxd_vval = [];
+aa.nfxd_uval = zeros(gg.nJ,gg.nI+1); aa.nfxd_vval = zeros(gg.nJ+1,gg.nI);
 end
 
 if strcmp(oo.pT, 'forward')

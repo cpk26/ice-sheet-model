@@ -31,7 +31,7 @@ vv2.C = ism_cslip_field(vv2, pp, gg, oo);    %Reconstruct basal slipperiness
  %    'HessUpdate', 'bfgs','GradObj','on');
  options = optimoptions(@fminunc,'Display','iter','Algorithm','quasi-newton',...
      'HessUpdate', 'steepdesc','GradObj','on');
- [vv2.acoeff,cst,exitflag,output] = fminunc(@(x)ism_invoptWrapper(x,vv2,aa, pp, gg, oo),vv2.acoeff(:),options);
+ [vv2.acoeff,cst,exitflag,output] = fminunc(@(x)ism_inv_optWrapper(x,vv2,aa, pp, gg, oo),vv2.acoeff(:),options);
 
 %% cs.ubc.ca function minimizer
 
@@ -50,28 +50,4 @@ vv2.C = ism_cslip_field(vv2, pp, gg, oo);    %reconstruct basal slipperiness
 fprintf('Inversion Complete \n \n')
 
 end
-
-
-% %% Solve forward problem for initial guess
-% [vv2] = ism_sia(aa.s,aa.h,vv2.C,vv2,pp,gg,oo);  %SIA 
-% [vv2] = ism_sstream(vv2,aa,pp,gg,oo );      %SSA 
-% 
-% 
-% inv_norm = zeros(oo.inv_iter+1,1);            %Store velocity misfit
-% inv_norm(1) = ism_inv_cost(vv2,aa,pp,gg, oo);
-% 
-% %% Iterate
-% for j = 1:oo.inv_iter
-% fprintf('Inversion iteration: %i of %i \n',[j,oo.inv_iter])
-% 
-% %% Line search step 
-% [vv2] = ism_acoeff_ls(vv2,aa, pp, gg, oo);
-% if isfield(vv2,'armflag'); break; end
-% 
-% inv_norm(j+1) = ism_inv_cost(vv2,aa,pp,gg, oo);
-% end
-% 
-% vv2.inv_norm = inv_norm;
-
-
 

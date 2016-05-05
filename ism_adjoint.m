@@ -10,37 +10,28 @@ function [vv2] = ism_adjoint(vv,aa,pp,gg,oo )
 %   vv2     struct containing new solution variables
 
 
-%% Remap indices [from whole region, to masked area]
-
-A = sum(gg.S_u); A2 = cumsum(A);            %U-grid
-nbnd_uind = A2(gg.nbnd_uind);               %Boundary nodes 
-nfxd_uind = A2(gg.nfxd_uind);               %Fixed nodes
-nmgn_uind = A2(gg.nmgn_uind);               %Margin Nodes
-
-
-vOff = sum(A);                              %offset to v values [number of u values]
-
-A = sum(gg.S_v); A2 = cumsum(A);            %V-grid
-nbnd_vind = A2(gg.nbnd_vind) + vOff;        %Boundary nodes 
-nfxd_vind = A2(gg.nfxd_vind) + vOff;        %Fixed nodes 
-nmgn_vind = A2(gg.nmgn_vind)+ vOff;         %Margin Nodes
-
 %% Boundary Conditions    
 [LHS, RHS] = ism_adjoint_fieldeq(vv,aa,pp,gg,oo);       %Field Equations
 L = NaN(size(LHS,2),1);                               %Unmodified solution vector 
 
-DEL = [];                   %Columns to delete
-DEL2 = [];                  %Rows to delete
+DEL = zeros(gg.nua+gg.nva,1);                   %Columns/rows to delete
 
 if any(gg.nfxd(:))
-DEL = union(nfxd_uind,nfxd_vind);                       %lambda,mu = 0
+DEL = DEL + [gg.S_u*gg.nfxd_ugrid(:); gg.S_v*gg.nfxd_vgrid(:)];  %lambda,mu = 0
 end
 
 if any(gg.nmgn(:))              %Ice Margin Nodes
-B = ones(numel(RHS),1); 
-B(nmgn_uind) = 0; B(nmgn_vind) = 0;
+tmp_a = gg.S_u*gg.nmgn_ugrid(:); tmp_a = logical(tmp_a);
+tmp_b = [zeros(gg.nua,1); gg.S_v*gg.nmgn_vgrid(:)]; tmp_b = logical(tmp_b);
+
+B = ones(gg.nua + gg.nva,1);
+B(tmp_a) = 0; B(tmp_b) = 0;
 RHS = RHS.*B;                   %Replace forcing at the edge
+
+clear tmp_a tmp_b;
 end
+
+DEL = logical(DEL);
     
 LHS(:,DEL) = [];                                        %Apply boundary conditions
 LHS(DEL,:) = [];   
@@ -52,8 +43,8 @@ L(DEL) = 0;                                           %Return to L vector
 L(isnan(L)) = Lm;
 
 
-lambda = L(1:vOff);                             %lamba,mu fields
-mu = L(vOff+1:end);
+lambda = L(1:gg.nua);                             %lamba,mu fields
+mu = L(gg.nua+1:end);
 
 adjoint_norm = norm(RHS-LHS*Lm,oo.norm);
 

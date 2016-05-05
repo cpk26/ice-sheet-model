@@ -1,8 +1,9 @@
 function [gg] = ism_mask(gg,dd,oo)
-% Assign default parameters and options. Important to note that dh_x/dh_y
+% Apply mask to grid. 
+% UNDERSTAND: It is important to note that dh_x/dh_y
 % and dhv_x/dhu_y are modified so that they equal zero across the margin of
-% fixed cells (dirichlet). This is necessary to solve the adjoint eq, but also for free
-% slip. Recommend using centering ch_x/... for boundary detection.
+% fixed cells (dirichlet). This is necessary to solve the adjoint eq, and also for free
+% slip. It is recommended to use centering ch_x/... for boundary detection.
 
 % Inputs 
 %   gg struct of grid
@@ -15,28 +16,28 @@ function [gg] = ism_mask(gg,dd,oo)
 
 if ~isfield(dd,'nfxd'), dd.nfxd = zeros(size(dd.mask)); end;
 
-%% Assign nodes to categories, relevant for Boundary conditions (h-grid)
-gg.nbnd = bwperim(dd.mask,4);                      %Boundary Cells
-gg.nin = dd.mask & ~gg.nbnd;                       %Interior Cells
-gg.nfxd = dd.nfxd;                                 %Fixed Cells (Direchlet BC)
-gg.nmgn = zeros(size(dd.mask));                    %Ice Margin Cells
-[i,j] = find(gg.nbnd); 
+%% Categorize nodes (h-grid)
+nbnd = bwperim(dd.mask,4);                      %Boundary Cells
+nin = dd.mask & ~nbnd;                       %Interior Cells
+nfxd = dd.nfxd;                                 %Direchlet BC Cells
+nmgn = zeros(size(dd.mask));                    %Ice Margin Cells (sans direchlet bc nodes)
+[i,j] = find(nbnd); 
 for p=1:numel(i), 
 A1 = max(i(p)-1,1); A2 = min(i(p)+1,gg.nJ); A3 = max(j(p)-1,1); A4 = min(j(p)+1,gg.nI);
-if ismember(0,dd.h(A1:A2,A3:A4)); gg.nmgn(i(p),j(p))=1;
+if ismember(0,dd.h(A1:A2,A3:A4)); nmgn(i(p),j(p))=1;
 end,end
-gg.nmgn = gg.nmgn & ~gg.nfxd;                       %Fixed bc take precedence
-E = dd.mask > 0; E(:,2:end-1) = 0;                  %Periodic BC nodes (must be on domain edge)
+nmgn = nmgn & ~nfxd;                       
+E = dd.mask > 0; E(:,2:end-1) = 0;                 %Periodic BC nodes (must be on domain edge)
 F = dd.mask > 0; F(2:end-1,:) = 0;
 AA = (E & fliplr(E)); BB = (F & flipud(F));   
-gg.nperbc = AA | BB;
-gg.nbndr = gg.nbnd & ~(gg.nmgn | gg.nfxd | gg.nperbc);  %Remnant boundary cells
-gg.next = ~dd.mask;
+nperbc = AA | BB;
+nbndr = nbnd & ~(nmgn | nfxd | nperbc);  %Remnant boundary cells. not belonging to another category
+next = ~dd.mask;                                     %Cells outside of the mask
 
 
 %Determine nodes on the bottom row and rightmost column of the u/v grids which periodic BC apply to.
-gg.unperBC = reshape((gg.c_hu*AA(:) == 1),gg.nJ, gg.nI+1); gg.unperBC(:,1:end-1) = 0; %u-grid
-gg.vnperBC = reshape((gg.c_hv*BB(:) == 1),gg.nJ+1, gg.nI); gg.vnperBC(2:end,:) = 0;  %v-grd
+%gg.unperBC = reshape((gg.c_hu*AA(:) == 1),gg.nJ, gg.nI+1); gg.unperBC(:,1:end-1) = 0; %u-grid
+%gg.vnperBC = reshape((gg.c_hv*BB(:) == 1),gg.nJ+1, gg.nI); gg.vnperBC(2:end,:) = 0;  %v-grd
 
 %% Sampling Operators
 %H-grid
@@ -49,7 +50,7 @@ S_u = spdiags(AA(:) > 0,0,(gg.nI+1)*(gg.nJ),(gg.nI+1)*(gg.nJ)); S_u = S_u(any(S_
 %u-grid nodes which periodic BC apply to. Of each pair, one is positive, the other
 %is negative
 BB = zeros(gg.nJ, gg.nI+1);                              %First/last column u-grid nodes with periodic BC
-for j = 1:gg.nJ; if and(gg.nperbc(j,1), gg.nperbc(j,end)); BB(j,1) = 1; end; end;          %First Column only
+for j = 1:gg.nJ; if and(nperbc(j,1), nperbc(j,end)); BB(j,1) = 1; end; end;          %First Column only
 CC = spdiags(BB(:),0,(gg.nI+1)*(gg.nJ),(gg.nI+1)*(gg.nJ)); DD = CC(any(CC,2),:);    %Reformat, isolate entries
 S_u_perBC = DD - circshift(DD,(gg.nI)*gg.nJ,2);   %Add corresponding node (-)
 
@@ -61,7 +62,7 @@ S_v = spdiags(AA(:) > 0, 0,(gg.nI)*(gg.nJ+1),(gg.nI)*(gg.nJ+1)); S_v = S_v(any(S
 %v-grid nodes which periodic BC apply to. Of each pair, one is positive, the other
 %is negative
 BB = zeros(gg.nJ+1, gg.nI);             %Top/bottom row v-grid nodes with periodic BC
-for j = 1:gg.nI; if and(gg.nperbc(1,j),  gg.nperbc(end,j)); BB(1,j) = 1; end; end;          %Top row only
+for j = 1:gg.nI; if and(nperbc(1,j),  nperbc(end,j)); BB(1,j) = 1; end; end;          %Top row only
 CC = spdiags(BB(:),0,(gg.nI)*(gg.nJ+1),(gg.nI)*(gg.nJ+1)); DD = CC(any(CC,2),:);    %Reformat, isolate entries
 S_v_perBC = DD - circshift(DD,gg.nJ,2);                                  %Add corresponding node (-)
 
@@ -77,49 +78,43 @@ S_c = spdiags(CC(:) == 1,[0],(gg.nI+1)*(gg.nJ+1),(gg.nI+1)*(gg.nJ+1)); S_c = S_c
 %% Boundary Conditions
 
 %% Periodic Boundary Nodes (u/v grid)
-%Determine whether whether periodic BC apply within the mask
+%Determine whether periodic BC apply within the mask
 perBC = any(S_u_perBC(:)) || any(S_v_perBC(:));
 
 if perBC
-%List of indices in U velocity vector for u/v and +/- velocity sets
-[nperbc_u1ind,~] = find(S_u_perBC' == 1);   %half of the u-grid points with periodic bc, 
-[nperbc_u2ind,~] = find(S_u_perBC' == -1);  %corresponding half to the above points
-
-[nperbc_v1ind,~] = find(S_v_perBC' == 1);   %v-grid points with periodic bc, set A
-[nperbc_v2ind,~] = find(S_v_perBC' == -1);  %corresponding half to the above points
+nperbc_ugrid = reshape(sum(S_u_perBC), gg.nJ, gg.nI+1);
+nperbc_vgrid = reshape(sum(S_v_perBC), gg.nJ+1, gg.nI);
 
 else
-nperbc_u1ind = []; nperbc_u2ind = [];
-nperbc_v1ind = []; nperbc_v2ind = [];
+nperbc_ugrid = zeros(gg.nJ,gg.nI+1);
+nperbc_vgrid = zeros(gg.nJ+1,gg.nI);
+
 end
 
 % Boundary Nodes (u/v) grid
+nbnd_ugrid = (gg.dh_x * dd.mask(:) ~= 0); nbnd_ugrid = reshape(nbnd_ugrid, gg.nJ,gg.nI+1);
+nbnd_vgrid = (gg.dh_y * dd.mask(:) ~= 0); nbnd_vgrid = reshape(nbnd_vgrid, gg.nJ +1,gg.nI);
 
-unbnd = ~eq(gg.dh_x * dd.mask(:),0);
-vnbnd = ~eq(gg.dh_y * dd.mask(:),0);
-
-A = find(gg.c_hu*dd.mask(:) == 0.5); B = union(nperbc_u1ind,nperbc_u2ind); 
-nbnd_uind = union(A,B);
-A = find(gg.c_hv*dd.mask(:) == 0.5); B = union(nperbc_v1ind,nperbc_v2ind); 
-nbnd_vind = union(A,B);
+nbnd_ugrid = nbnd_ugrid + nperbc_ugrid;
+nbnd_vgrid = nbnd_vgrid + nperbc_vgrid;
 
 % Margin Boundary Nodes (u/v grid)
-if ~isempty(gg.nmgn)
+if ~all(nmgn(:) == 0)
 gg.mgnBC = 1;
-unmgn = ~eq(gg.c_hu*gg.nmgn(:), 0) & unbnd;
-vnmgn = ~eq(gg.c_hv*gg.nmgn(:),0) & vnbnd;
-
-A = find(gg.c_hu*gg.nmgn(:) == 0.5); nmgn_uind = intersect(A,nbnd_uind);
-A = find(gg.c_hv*gg.nmgn(:) == 0.5); nmgn_vind = intersect(A,nbnd_vind);
+nmgn_ugrid = (gg.c_hu*nmgn(:) ~= 0) & nbnd_ugrid(:); nmgn_ugrid = reshape(nmgn_ugrid, gg.nJ,gg.nI+1);
+nmgn_vgrid = (gg.c_hv*nmgn(:) ~= 0) & nbnd_vgrid(:); nmgn_vgrid = reshape(nmgn_vgrid, gg.nJ +1,gg.nI);
+else
+nmgn_ugrid = zeros(gg.nJ,gg.nI+1);
+nmgn_vgrid = zeros(gg.nJ+1,gg.nI);
 end
 
 % Fixed Boundary Nodes (u/v grid)
-A = find(gg.c_hu*gg.nfxd(:) == 0.5); nfxd_uind = A; %nfxd_uind = intersect(A,nbnd_uind); %nfxd_uind = A;
-A = find(gg.c_hv*gg.nfxd(:) == 0.5); nfxd_vind = A; %nfxd_vind = intersect(A,nbnd_vind); %nfxd_vind = A;
+nfxd_ugrid = (gg.c_hu*nfxd(:) == 0.5); nfxd_ugrid = reshape(nfxd_ugrid, gg.nJ,gg.nI+1);
+nfxd_vgrid = (gg.c_hv*nfxd(:) == 0.5); nfxd_vgrid = reshape(nfxd_vgrid, gg.nJ+1,gg.nI);
 
 % Remnant Boundary Nodes (u/v grid)
-nbndr_uind = setdiff(nbnd_uind, [nmgn_uind;nfxd_uind;nperbc_u1ind;nperbc_u2ind]);
-nbndr_vind = setdiff(nbnd_vind, [nmgn_vind;nfxd_vind;nperbc_v1ind;nperbc_v2ind]);
+nbndr_ugrid = nbnd_ugrid - nperbc_ugrid - nmgn_ugrid - nfxd_ugrid;
+nbndr_vgrid = nbnd_vgrid - nperbc_vgrid - nmgn_vgrid - nfxd_vgrid;
 
 %% Mask Operators
 
@@ -135,18 +130,16 @@ gg.du_x = S_h*gg.du_x*S_u';                                                %Fini
 gg.dv_y = S_h*gg.dv_y*S_v';
 
 %% For Free Slip BC and Adjoint method
-Mu = ones(gg.nu,1) - (unbnd - unmgn); Mu = spdiags(Mu, 0, gg.nu,gg.nu);    %masks (force to be zero) dh_x/dh_y
-Mv = ones(gg.nv,1) - (vnbnd - vnmgn); Mv = spdiags(Mv, 0, gg.nv,gg.nv);    %across the mask boundary at all boundary u/v 
+Mu = ones(gg.nu,1) - (nbnd_ugrid(:) - nmgn_ugrid(:)); Mu = spdiags(Mu, 0, gg.nu,gg.nu);    %masks (force to be zero) dh_x/dh_y
+Mv = ones(gg.nv,1) - (nbnd_vgrid(:) - nmgn_vgrid(:)); Mv = spdiags(Mv, 0, gg.nv,gg.nv);    %across the mask boundary at all boundary u/v 
                                                                            %nodes except the ice margin
 gg.dh_x = S_u*Mu*gg.dh_x*S_h';
 gg.dh_y = S_v*Mv*gg.dh_y*S_h';
-%%
-
-%  gg.dh_x = S_u*gg.dh_x*S_h';
+%  gg.dh_x = S_u*gg.dh_x*S_h';                                             %Sans masking at border
 %  gg.dh_y = S_v*gg.dh_y*S_h';
 
-cnbnd1 = ~eq(gg.dv_x*S_v'*S_v*ones(gg.nv,1),0);                            %c-nodes where dv_x/du_y are across mask boundary
-cnbnd2 = ~eq(gg.du_y*S_u'*S_u*ones(gg.nu,1),0);
+cnbnd1 = (gg.dv_x*S_v'*S_v*ones(gg.nv,1) ~= 0);                            %c-nodes where dv_x/du_y are across mask boundary
+cnbnd2 = (gg.du_y*S_u'*S_u*ones(gg.nu,1) ~= 0);
 
 %% For Free Slip BC and Adjoint method
 Mc1 = ones(gg.nc,1) - (cnbnd1); Mc1 = spdiags(Mc1, 0, gg.nc,gg.nc);        %masks (force to be zero) du_y/dv_x
@@ -154,9 +147,8 @@ Mc2 = ones(gg.nc,1) - (cnbnd2); Mc2 = spdiags(Mc2, 0, gg.nc,gg.nc);        %acro
 
 gg.dhv_x = gg.c_ch*S_c*Mc1*gg.dv_x*S_v';                                   %derivative of v in x-direction from v grid onto h-grid
 gg.dhu_y = gg.c_ch*S_c*Mc2*gg.du_y*S_u';                                   %derivative of u in y-direction from u grid onto h-grid
-%%
 
-%  gg.dhv_x = gg.c_ch*S_c*gg.dv_x*S_v';                                   %derivative of v in x-direction from v grid onto h-grid
+%  gg.dhv_x = gg.c_ch*S_c*gg.dv_x*S_v';                                    %Sans masking at border
 %  gg.dhu_y = gg.c_ch*S_c*gg.du_y*S_u'; 
 
 
@@ -165,7 +157,20 @@ gg.duh_y = gg.c_vu*gg.dh_y;                                                %deri
 
 
 
-%% Assign variables to Struct
+%% Assign variables to output structure
+gg.mask = logical(dd.mask); 
+
+gg.nha = sum(S_h(:));                               %number of active h/u/v grid nodes
+gg.nua = sum(S_u(:));
+gg.nva = sum(S_v(:));
+
+gg.nbnd = nbnd;                      
+gg.nin = nin;                       
+gg.nfxd = nfxd;                                 
+gg.nmgn = nmgn;                    
+gg.nperbc = nperbc;
+gg.nbndr = nbndr;  
+gg.next = next;  
 
 gg.S_h = double(S_h);
 gg.S_u = double(S_u);
@@ -176,16 +181,15 @@ gg.S_u_perBC = S_u_perBC;
 gg.S_v_perBC = S_v_perBC;
 
 
-gg.nbnd_uind = nbnd_uind;
-gg.nbnd_vind = nbnd_vind;
-gg.nmgn_uind = nmgn_uind;
-gg.nmgn_vind = nmgn_vind;
-gg.nfxd_uind = nfxd_uind;
-gg.nfxd_vind = nfxd_vind;
-gg.nbndr_uind = nbndr_uind;
-gg.nbndr_vind = nbndr_vind;
-gg.nperbc_u1ind = nperbc_u1ind;
-gg.nperbc_u2ind = nperbc_u2ind;
-gg.nperbc_v1ind = nperbc_v1ind;
-gg.nperbc_v2ind = nperbc_v2ind;
+gg.nperbc_ugrid = nperbc_ugrid;
+gg.nperbc_vgrid = nperbc_vgrid;
+gg.nbnd_ugrid = nbnd_ugrid;
+gg.nbnd_vgrid = nbnd_vgrid;
+gg.nmgn_ugrid = nmgn_ugrid;
+gg.nmgn_vgrid = nmgn_vgrid;
+gg.nfxd_ugrid = nfxd_ugrid;
+gg.nfxd_vgrid = nfxd_vgrid;
+gg.nbndr_ugrid = nbndr_ugrid;
+gg.nbndr_vgrid = nbndr_vgrid;
+
 end

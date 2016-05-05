@@ -12,38 +12,25 @@ function [LHS, RHS] = ism_sstream_fieldeq(u,v,C,aa,pp,gg,oo)
 
 n = pp.n_Glen;                          
 
-%% Remap indices [from whole region, to masked area]
 
-A = sum(gg.S_u); A2 = cumsum(A);            %u-grid
-nmgn_uind = A2(gg.nmgn_uind);               %Margin Nodes
-
-vOff = sum(A);                              %offset to v values [number of u values]
-
-A = sum(gg.S_v); A2 = cumsum(A);            %v-grid
-nmgn_vind = A2(gg.nmgn_vind)+ vOff;         %Margin Nodes
-
-
-%% Variables (Non-Dimensionalized)
-nha = sum(gg.S_h(:));                               %number of active h-grid nodes
+nha = sum(gg.S_h(:));                               %number of active h/u/v grid nodes
 nua = sum(gg.S_u(:));
 nva = sum(gg.S_v(:));
+
+%% Variables (Non-Dimensionalized)
 
 Cslip_u = (gg.c_hu*gg.S_h*C(:))./(gg.c_hu*gg.S_h*(C(:) > 0));            %Slipperiness on u,v grids
 Cslip_v = (gg.c_hv*gg.S_h*C(:))./(gg.c_hv*gg.S_h*(C(:) > 0));
 
-Cslip_u(nmgn_uind) = 0;             %Slipperiness is zero at margin for BC
-Cslip_v(nmgn_vind - vOff) = 0;
+Cslip_u(logical(gg.S_u*gg.nmgn_ugrid(:))) = 0;                           %Slipperiness is zero at margin for BC
+Cslip_v(logical(gg.S_v*gg.nmgn_vgrid(:))) = 0;
 
-h_diag = spdiags(gg.S_h*aa.h(:),0,nha,nha);         %Diagonalize  
+h_diag = spdiags(gg.S_h*aa.h(:),0,nha,nha);         %Diagonalize thickness and slipperiness
 Cslip_udiag = spdiags(Cslip_u(:),0,nua,nua);
 Cslip_vdiag = spdiags(Cslip_v(:),0,nva,nva);
 
-%%TEST
-% JJ = reshape(gg.S_v'*Cslip_v,gg.nJ+1,gg.nI) > 1;
-% JJ2 = reshape(gg.S_v'*(gg.S_v*ones(gg.nI*(gg.nJ+1),1)),gg.nJ+1,gg.nI);
-% imagesc(JJ+JJ2)
-
-[Sx,Sy] = gradient(aa.s, gg.dx, gg.dy); %Use gradient instead of gg.nddx/y since periodic BC conditions do not apply 
+%Use gradient instead of gg.nddx/y since periodic BC conditions do not apply 
+[Sx,Sy] = gradient(aa.s, gg.dx, gg.dy);             %Surface Gradient        
 
 [ii,jj] = gradient(double(aa.h >0), gg.dx, gg.dy); %Set gradient to aa.h/(dx or dy) at ice margin
 ii = ii.*(aa.h>0); jj = jj.*(aa.h>0);              %Mask to limit gradient to ice sheet margin
@@ -53,11 +40,7 @@ jj(jj~=0) = jj(jj~=0)./abs(jj(jj~=0));
 Sx(ii~=0) =  aa.h(ii~=0)./(ii(ii~=0)*2*gg.dx);
 Sy(jj~=0) =  aa.h(jj~=0)./(jj(jj~=0)*2*gg.dy);
 
-Sx = Sx(:); Sy = -Sy(:);
-
-
- 
-
+Sx = Sx(:); Sy = -Sy(:);                            %Vectorize, flip the sign in y-direction due to convention
 
 exx = gg.du_x*u;                                %Strain Rates
 eyy = gg.dv_y*v;
@@ -73,9 +56,9 @@ X = [gg.du_x gg.dv_y; gg.du_x -gg.dv_y; gg.dhu_y gg.dhv_x; speye(nua,nua) sparse
 X2 = [gg.dh_x gg.dh_x gg.duh_y speye(nua,nua) sparse(nva,nua)'; gg.dh_y -gg.dh_y gg.dvh_x sparse(nua,nva)' speye(nva,nva)];
 D = blkdiag(3*nEff_diag*h_diag, nEff_diag*h_diag, nEff_diag*h_diag, -pp.c3*Cslip_udiag, -pp.c3*Cslip_vdiag);
 
-LHS = X2*D*X;
+LHS = X2*D*X;                              %LHS
 
-A1 = gg.c_hu*h_diag*gg.S_h*Sx;             %RHS SSA
+A1 = gg.c_hu*h_diag*gg.S_h*Sx;             %Driving Stress
 A2 = (gg.c_hu*gg.S_h*(aa.h(:) > 0));       %Interpolate within mask, extrap at edges             
 f1a = pp.c4*(A1./A2);   
 

@@ -36,21 +36,19 @@ hu = (gg.c_hu*gg.S_h*aa.h(:))./(gg.c_hu*gg.S_h*(aa.h(:) > 0));            %Thick
 hv = (gg.c_hv*gg.S_h*aa.h(:))./(gg.c_hv*gg.S_h*(aa.h(:) > 0));
 
 t_mgn = [0.5*pp.c4*(0.5*hu).^2; 0.5*pp.c4*(0.5*hv).^2];                   %Boundary Condition at Ice Margin
-mgn_mask = [gg.S_u*gg.nmgn_ugrid(:); gg.S_v*gg.nmgn_vgrid(:)];            %Ice Margin Node Mask
+mgn_mask = [gg.S_u*gg.nmgn_ugrid(:); gg.S_v*gg.nmgn_vgrid(:)];            %Margin Node Mask
 
-RHS(logical(mgn_mask)) = 0;                                               %Insert Ice Margin BC
+RHS(mgn_mask>0) = 0;                                                      %Insert BC
 RHS = RHS + mgn_mask.*t_mgn;
 end
 
 if any(gg.nfxd(:))  %Dirichlet BC Nodes
 tmp_a = [gg.S_u*aa.nfxd_uval(:); gg.S_v*aa.nfxd_vval(:)];                 %Vector of fixed values
-tmp_b = [gg.S_u*gg.nfxd_ugrid(:); gg.S_v*gg.nfxd_vgrid(:)];               %Location of fixed values
-
 RHS = RHS - LHS*tmp_a;
-DEL = DEL + tmp_b;
+DEL = DEL + (tmp_a > 0);
 DEL2 = DEL2 + DEL;
 
-clear tmp_a tmp_b;
+clear tmp_a;
 end
 
 if any(gg.nperbc(:))    %Periodic BC nodes
@@ -82,21 +80,20 @@ U(DEL) = NaN;
 U(~isnan(U)) = Um;
 
 if any(gg.nfxd(:))
-tmp_a = [gg.S_u*gg.nfxd_ugrid(:); gg.S_v*gg.nfxd_vgrid(:)]; tmp_a = logical(tmp_a);
-tmp_b = [gg.S_u*aa.nfxd_uval(:); gg.S_v*aa.nfxd_vval(:)];              
-
-U(tmp_a) = tmp_b(tmp_a);
-
-clear tmp_a tmp_b;
+    tmp_a = [gg.S_u*gg.nfxd_ugrid(:); gg.S_v*gg.nfxd_vgrid(:)]; tmp_a = logical(tmp_a);
+    tmp_b = [gg.S_u*aa.nfxd_uval(:); gg.S_v*aa.nfxd_vval(:)]; tmp_b = logical(tmp_b);               
+    
+    U(tmp_a) = U(tmp_a) + tmp_b(tmp_a);
+    
+    clear tmp_a tmp_b;
 end
 
 if any(gg.nperbc)
-tmp_a = [gg.S_u*(gg.nperBC_ugrid(:) < 0); gg.S_v*(gg.nperBC_vgrid(:) < 0)]; tmp_a = logical(tmp_a);
-tmp_b = [gg.S_u*(gg.nperBC_ugrid(:) > 0); gg.S_v*(gg.nperBC_vgrid(:) > 0)]; tmp_b = logical(tmp_b); 
-
-U(tmp_a) = U(tmp_a) + tmp_b(tmp_a);
-
-clear tmp_a tmp_b;
+    tmp_a = [gg.S_u*(gg.nperBC_ugrid(:) < 0); gg.S_v*(gg.nperBC_vgrid(:) < 0)]; tmp_a = logical(tmp_a);
+    tmp_b = [gg.S_u*(gg.nperBC_ugrid(:) > 0); gg.S_v*(gg.nperBC_vgrid(:) > 0)]; tmp_b = logical(tmp_b); 
+    U(tmp_a) = U(tmp_b);
+    
+    clear tmp_a tmp_b;
 end
 
 u = U(1:gg.nua);    %u,v velocity fields
