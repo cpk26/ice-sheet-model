@@ -31,6 +31,17 @@ RHS = RHS.*B;                   %Replace forcing at the edge
 clear tmp_a tmp_b;
 end
 
+if any(gg.nperbc(:))    %Periodic BC nodes
+    
+tmp_a = [gg.S_u*(gg.nperbc_ugrid(:) < 0); gg.S_v*(gg.nperbc_vgrid(:) < 0)]; tmp_a = logical(tmp_a);
+tmp_b = [gg.S_u*(gg.nperbc_ugrid(:) > 0); gg.S_v*(gg.nperbc_vgrid(:) > 0)]; tmp_b = logical(tmp_b); 
+
+DEL = DEL + [tmp_a] + [tmp_b];
+
+clear tmp_a tmp_b tmp_c tmp_d
+
+end
+
 DEL = logical(DEL);
     
 LHS(:,DEL) = [];                                        %Apply boundary conditions
@@ -41,6 +52,17 @@ Lm = LHS\RHS;                                           %Solve
 
 L(DEL) = 0;                                           %Return to L vector
 L(isnan(L)) = Lm;
+
+
+% if any(gg.nperbc)
+% 
+% tmp_a = [gg.S_u*(gg.nperbc_ugrid(:) < 0); gg.S_v*(gg.nperbc_vgrid(:) < 0)]; tmp_a = logical(tmp_a);
+% tmp_b = [gg.S_u*(gg.nperbc_ugrid(:) > 0); gg.S_v*(gg.nperbc_vgrid(:) > 0)]; tmp_b = logical(tmp_b); 
+% 
+% L(tmp_a) = L(tmp_b);
+% 
+% clear tmp_a tmp_b;
+% end
 
 
 lambda = L(1:gg.nua);                             %lamba,mu fields
