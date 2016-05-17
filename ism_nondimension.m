@@ -57,6 +57,7 @@ pp.c7 = ps.u;
 pp.c8 = (ps.x^2)*ps.u;
 pp.c9 = (ps.x^2)*ps.u^2;
 pp.c10 = (ps.x^2);
+pp.c11 = ps.x/ps.vis_i;
 
 
 end

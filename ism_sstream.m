@@ -54,16 +54,16 @@ clear tmp_a tmp_b;
 end
 
 if any(gg.nperbc(:))    %Periodic BC nodes
-tmp_a = gg.S_u*(gg.nperbc_ugrid(:)>0); tmp_a = logical(tmp_a);
-tmp_b = gg.S_u*(gg.nperbc_ugrid(:)<0); tmp_b = logical(tmp_b);
-tmp_c = gg.S_v*(gg.nperbc_vgrid(:)>0); tmp_c = logical(tmp_c);
-tmp_d = gg.S_v*(gg.nperbc_vgrid(:)<0); tmp_d = logical(tmp_d);
+    
+tmp_a = [gg.S_u*(gg.nperbc_ugrid(:) < 0); gg.S_v*(gg.nperbc_vgrid(:) < 0)]; tmp_a = logical(tmp_a);
+tmp_b = [gg.S_u*(gg.nperbc_ugrid(:) > 0); gg.S_v*(gg.nperbc_vgrid(:) > 0)]; tmp_b = logical(tmp_b); 
 
-LHS(:, tmp_a) = LHS(:, tmp_a) + LHS(:, tmp_b); % Apply Periodic BC
-LHS(:, tmp_c) = LHS(:, tmp_c) + LHS(:, tmp_d); 
-DEL = DEL + [tmp_b; tmp_d];
+LHS(:, tmp_b) = LHS(:, tmp_b) + LHS(:, tmp_a);
 
-clear tmp_i tmp_j tmp_k tmp_l
+DEL = DEL + [tmp_a];
+DEL2 = DEL2 + [tmp_a];
+
+clear tmp_a tmp_b tmp_c tmp_d
 
 end
 
@@ -91,10 +91,11 @@ clear tmp_a tmp_b;
 end
 
 if any(gg.nperbc)
-tmp_a = [gg.S_u*(gg.nperBC_ugrid(:) < 0); gg.S_v*(gg.nperBC_vgrid(:) < 0)]; tmp_a = logical(tmp_a);
-tmp_b = [gg.S_u*(gg.nperBC_ugrid(:) > 0); gg.S_v*(gg.nperBC_vgrid(:) > 0)]; tmp_b = logical(tmp_b); 
 
-U(tmp_a) = U(tmp_a) + tmp_b(tmp_a);
+tmp_a = [gg.S_u*(gg.nperbc_ugrid(:) < 0); gg.S_v*(gg.nperbc_vgrid(:) < 0)]; tmp_a = logical(tmp_a);
+tmp_b = [gg.S_u*(gg.nperbc_ugrid(:) > 0); gg.S_v*(gg.nperbc_vgrid(:) > 0)]; tmp_b = logical(tmp_b); 
+
+U(tmp_a) = U(tmp_b);
 
 clear tmp_a tmp_b;
 end

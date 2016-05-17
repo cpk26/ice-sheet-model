@@ -13,9 +13,9 @@ function [LHS, RHS] = ism_sstream_fieldeq(u,v,C,aa,pp,gg,oo)
 n = pp.n_Glen;                          
 
 
-nha = sum(gg.S_h(:));                               %number of active h/u/v grid nodes
-nua = sum(gg.S_u(:));
-nva = sum(gg.S_v(:));
+nha = full(gg.nha);                               %number of active h/u/v grid nodes
+nua = full(gg.nua);
+nva = full(gg.nva);
 
 %% Variables (Non-Dimensionalized)
 

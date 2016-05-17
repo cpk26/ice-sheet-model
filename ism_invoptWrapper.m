@@ -20,7 +20,7 @@ vv.C = ism_cslip_field(vv, pp, gg, oo);    %reconstruct basal slipperiness
 cst = ism_inv_cost(vv,aa,pp,gg, oo); %Current misfit
 
 if nargout > 1 % gradient required
-    grad = cvv.cJac(:);                      %Gradient (as array)
+    grad = vv.cJac(:);                      %Gradient (as array)
 end
 
 end   

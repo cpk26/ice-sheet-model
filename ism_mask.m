@@ -160,9 +160,9 @@ gg.duh_y = gg.c_vu*gg.dh_y;                                                %deri
 %% Assign variables to output structure
 gg.mask = logical(dd.mask); 
 
-gg.nha = sum(S_h(:));                               %number of active h/u/v grid nodes
-gg.nua = sum(S_u(:));
-gg.nva = sum(S_v(:));
+gg.nha = full(sum(S_h(:)));                               %number of active h/u/v grid nodes
+gg.nua = full(sum(S_u(:)));
+gg.nva = full(sum(S_v(:)));
 
 gg.nbnd = nbnd;                      
 gg.nin = nin;                       
