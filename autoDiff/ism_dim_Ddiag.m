@@ -1,4 +1,4 @@
-function [D_diag] = ism_dim_Ddiag(C,nEff,aa,pp,gg,oo,mm)
+function [D_diag] = ism_dim_Ddiag(C,nEff,aa,pp,gg,oo)
 %% Field Equations for SSA velocities 
 % Inputs:
 %   u,v     velocities in the x,y directions

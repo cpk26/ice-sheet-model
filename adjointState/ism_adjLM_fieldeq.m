@@ -1,4 +1,4 @@
-function [LHS, RHS] = ism_adjoint_fieldeq(vv,aa,pp,gg,oo)
+function [LHS, RHS] = ism_adjLM_fieldeq(vv,aa,pp,gg,oo)
 %% Field Equations for Adjoint  
 % Inputs:
 %   u,v     velocities in the x,y directions

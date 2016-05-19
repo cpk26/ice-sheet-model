@@ -23,17 +23,23 @@ vv2.C = ism_cslip_field(vv2, pp, gg, oo);    %Reconstruct basal slipperiness
 [vv2] = ism_sia(aa.s,aa.h,vv2.C,vv2,pp,gg,oo);  %SIA 
 [vv2] = ism_sstream(vv2,aa,pp,gg,oo );          %SSA 
 
-%% Minimize Inversion Cost
-[ cst0 ] = ism_inv_cost(vv2,aa,pp,gg, oo);
-disp(['Initial Cost: ', num2str(cst0)]);
 
-%% Use Matlab function minimizer
+%% Optimization
  %options = optimoptions(@fminunc,'Display','iter','Algorithm','quasi-newton',...
  %    'HessUpdate', 'bfgs','GradObj','on');
  options = optimoptions(@fminunc,'Display','iter','Algorithm','quasi-newton',...
      'HessUpdate', 'steepdesc','GradObj','on', 'TolFun', 1e-15);
- [vv2.acoeff,cst,exitflag,output] = fminunc(@(x)ism_inv_optWrapper(x,vv2,aa, pp, gg, oo),vv2.acoeff(:),options);
-
+ 
+ if strcmp(oo.inv_meth, 'LM')
+ [vv2.acoeff,cst,exitflag,output] = fminunc(@(x)ism_adjLM_optWrapper(x,vv2,aa, pp, gg, oo),vv2.acoeff(:),options);
+ elseif strcmp(oo.inv_meth, 'AD')
+ ism_adjAD_generate( vv2,aa, pp, gg, oo );
+ [vv2.acoeff,cst,exitflag,output] = fminunc(@(x)ism_adjAD_optWrapper(x,vv2,aa, pp, gg, oo),vv2.acoeff(:),options);
+ else
+ error('Inversion Method not specified')
+ end
+     
+     
 %% cs.ubc.ca function minimizer
 
 % options = struct();

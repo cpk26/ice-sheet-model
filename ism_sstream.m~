@@ -18,7 +18,7 @@ if strcmp(oo.pT, 'inverse'); C = vv.C; end;
 tt = struct();
 if isequal(oo.savePicIter,1)                %Preallocate arrays if we are saving picard iterations
     tt.An = cell(1,10); 
-    tt.Un = zeros(gg.nua+gg.nva,numIter+1);
+    tt.Un = zeros(gg.nua+gg.nva,numIter);
 end
 
 u = vv.u;                                   %Initial iterate velocity 
@@ -31,7 +31,6 @@ for j = 1:numIter
 [LHS, RHS] = ism_sstream_fieldeq(u,v,C,aa,pp,gg,oo);      %Field Equations
 U = Inf(size(LHS,2),1);                                   %Velocity vector, unmodified length   
 
-if isequal(oo.savePicIter,1),tt.An{j} = LHS; end          %Save Intermediate A matrix
 
 %% Apply Boundary Conditions
 
@@ -64,7 +63,8 @@ if any(gg.nperbc(:))    %Periodic BC nodes
     
 tmp_a = [gg.S_u*(gg.nperbc_ugrid(:) < 0); gg.S_v*(gg.nperbc_vgrid(:) < 0)]; tmp_a = logical(tmp_a);
 tmp_b = [gg.S_u*(gg.nperbc_ugrid(:) > 0); gg.S_v*(gg.nperbc_vgrid(:) > 0)]; tmp_b = logical(tmp_b); 
-
+tt.r_nperBCa = LHS(:, tmp_a);
+tt.r_nperBCa = LHS(:, tmp_b);
 LHS(:, tmp_b) = LHS(:, tmp_b) + LHS(:, tmp_a);
 
 DEL = DEL + [tmp_a];
@@ -112,7 +112,10 @@ v = U(gg.nua+1:end);
 sstream_norm(j) = norm(RHS-LHS*Um,oo.norm); %iteration norm (using Um)
 
 
-if isequal(oo.savePicIter,1),tt.Un(:,j+1) = U; end                %Save Intermediate velocity array
+if isequal(oo.savePicIter,1)                %Save intermediate values in Picard Iterations
+    tt.An{j} = LHS; 
+    tt.Un(:,j) = U;
+end
 
 end
 

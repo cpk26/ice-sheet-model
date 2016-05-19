@@ -1,4 +1,4 @@
-function [vv2] = ism_adjoint(vv,aa,pp,gg,oo )
+function [vv2] = ism_adjLM_main(vv,aa,pp,gg,oo )
 %% Shallow Stream Model 
 % Inputs:
 %   vv      struct containing initial solution variables
@@ -11,7 +11,7 @@ function [vv2] = ism_adjoint(vv,aa,pp,gg,oo )
 
 
 %% Boundary Conditions    
-[LHS, RHS] = ism_adjoint_fieldeq(vv,aa,pp,gg,oo);       %Field Equations
+[LHS, RHS] = ism_adjLM_fieldeq(vv,aa,pp,gg,oo);       %Field Equations
 L = NaN(size(LHS,2),1);                               %Unmodified solution vector 
 
 DEL = zeros(gg.nua+gg.nva,1);                   %Columns/rows to delete

@@ -1,4 +1,4 @@
-function [vv] = ism_cost_jac(vv, pp, gg, oo)
+function [vv] = ism_adjLM_costJac(vv, pp, gg, oo)
 %% Calculate gradients of alpha coefficients
 % Inputs:
 %   n_x,n_y   number of alpha coefficients in the x,y directions

@@ -37,6 +37,7 @@ v = gg.c_hv*v_s(:);
 
 vv.u = u;                              %Non-dimensional velocity
 vv.v = v;
+vv.U = [u;v];
 
 
 
