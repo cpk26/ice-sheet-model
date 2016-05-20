@@ -18,8 +18,8 @@ adigator('ism_inv_cost', {U,vv,aa,pp,gg,oo},'ism_inv_cost_AD')
 clear U;
 
 %Viscosity w.r.t velocity
-z = adigatorCreateDerivInput([gg.nha,1], 'z');
-U = adigatorCreateAuxInput([gg.nua+gg.nva,1]);
+U = adigatorCreateDerivInput([gg.nua+gg.nva,1], 'U');
+z = adigatorCreateAuxInput([gg.nha,1]);
 nEff = adigatorCreateAuxInput([gg.nha,1]);
 C = adigatorCreateAuxInput([gg.nha,1]);
 adigator('ism_visc', {z,U,nEff,C,aa,pp,gg,oo},'ism_visc_AD')

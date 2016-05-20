@@ -29,7 +29,7 @@ if nargout > 1 % gradient required
     
     rr = ism_adjAD_main(vv,rr,aa,pp,gg,oo );
     
-    grad =rr.adjC.*vv.acoeff(:).*exp(vv.acoeff(:));
+    grad =rr.adjC;
 end
 
 end   

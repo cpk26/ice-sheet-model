@@ -27,8 +27,8 @@ vv2.C = ism_cslip_field(vv2, pp, gg, oo);    %Reconstruct basal slipperiness
 %% Optimization
  %options = optimoptions(@fminunc,'Display','iter','Algorithm','quasi-newton',...
  %    'HessUpdate', 'bfgs','GradObj','on');
- options = optimoptions(@fminunc,'Display','iter','Algorithm','quasi-newton',...
-     'HessUpdate', 'steepdesc','GradObj','on', 'TolFun', 1e-15);
+ options = optimoptions(@fminunc, 'Display','iter','Algorithm','quasi-newton',...
+     'HessUpdate', 'bfgs','GradObj','on', 'TolFun', 1e-15);
  
  if strcmp(oo.inv_meth, 'LM')
  [vv2.acoeff,cst,exitflag,output] = fminunc(@(x)ism_adjLM_optWrapper(x,vv2,aa, pp, gg, oo),vv2.acoeff(:),options);

@@ -17,21 +17,26 @@ if strcmp(oo.pT, 'inverse'); C = vv.C; end;
 
 tt = struct();
 if isequal(oo.savePicIter,1)                %Preallocate arrays if we are saving picard iterations
-    tt.An = cell(1,10); 
+    tt.An = cell(1,numIter); 
     tt.Un = zeros(gg.nua+gg.nva,numIter+1);
+    tt.nEffn = zeros(gg.nha,numIter);
 end
 
-u = vv.u;                                   %Initial iterate velocity 
+U = vv.U;                                   %Initial iterate velocity
+u = vv.u;                                   
 v = vv.v;
+if isequal(oo.savePicIter,1),tt.Un(:,1) = U; end              %Save initial velocity                  
 
 %% Picard Iterations
 for j = 1:numIter
 
+nEff = ism_visc(gg.S_h*aa.s(:),U,inf([gg.nha,1]),C(:),aa,pp,gg,oo);     %Viscosity
+    
+[LHS, RHS] = ism_sstream_fieldeq(u,v,C,nEff, aa,pp,gg,oo);              %Field Equations
+U = Inf(size(LHS,2),1);                                                 %Velocity vector, full length   
 
-[LHS, RHS] = ism_sstream_fieldeq(u,v,C,aa,pp,gg,oo);      %Field Equations
-U = Inf(size(LHS,2),1);                                   %Velocity vector, unmodified length   
-
-if isequal(oo.savePicIter,1),tt.An{j} = LHS; end          %Save Intermediate A matrix
+if isequal(oo.savePicIter,1),tt.An{j} = LHS; end                        %Save
+if isequal(oo.savePicIter,1),tt.nEffn(:,j) = nEff(:); end                        
 
 %% Apply Boundary Conditions
 

@@ -34,6 +34,7 @@ pp.A = pd.A;
 pp.B = pd.B;
 pp.g = pd.g;
 pp.x = ps.x;
+pp.vis_i = ps.vis_i;
 pp.rho_i = pd.rho_i;
 pp.n_rp = pd.n_rp/(ps.u/ps.x);
 pp.C_rp = pd.C_rp;
@@ -58,6 +59,7 @@ pp.c8 = (ps.x^2)*ps.u;
 pp.c9 = (ps.x^2)*ps.u^2;
 pp.c10 = (ps.x^2);
 pp.c11 = ps.x/ps.vis_i;
+pp.c12 = (ps.z*ps.vis_i*ps.u)/(ps.x^2);
 
 
 end

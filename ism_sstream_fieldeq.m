@@ -1,4 +1,4 @@
-function [LHS, RHS] = ism_sstream_fieldeq(u,v,C,aa,pp,gg,oo)
+function [LHS, RHS] = ism_sstream_fieldeq(u,v,C,nEff,aa,pp,gg,oo)
 %% Field Equations for SSA velocities 
 % Inputs:
 %   u,v     velocities in the x,y directions
@@ -42,12 +42,12 @@ Sy(jj~=0) =  aa.h(jj~=0)./(jj(jj~=0)*2*gg.dy);
 
 Sx = Sx(:); Sy = -Sy(:);                            %Vectorize, flip the sign in y-direction due to convention
 
-exx = gg.du_x*u;                                %Strain Rates
-eyy = gg.dv_y*v;
-exy = 0.5*(gg.dhu_y*u + gg.dhv_x*v);
-edeff = sqrt(exx.^2 + eyy.^2 + exx.*eyy + exy.^2 + pp.n_rp.^2);
-
-nEff =  edeff.^((1-n)/n);                       %Effective Viscosity [dimensionless]
+% exx = gg.du_x*u;                                %Strain Rates
+% eyy = gg.dv_y*v;
+% exy = 0.5*(gg.dhu_y*u + gg.dhv_x*v);
+% edeff = sqrt(exx.^2 + eyy.^2 + exx.*eyy + exy.^2 + pp.n_rp.^2);
+% 
+% nEff =  edeff.^((1-n)/n);                       %Effective Viscosity [dimensionless]
 nEff_diag = spdiags(nEff(:),0,nha,nha);                                  
 
 
