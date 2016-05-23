@@ -11,6 +11,7 @@ function [rr] = ism_adjAD_main(vv,rr ,aa,pp,gg,oo )
 
 numIter = 10;                               %Number of Picard Iterations
 
+runC = zeros(gg.nha,1);
 
 if strcmp(oo.pT, 'forward'); C = aa.C; end; %Problem Type
 if strcmp(oo.pT, 'inverse'); C = vv.C; end;
@@ -29,13 +30,12 @@ for j = numIter:-1:1
 disp(['Inverse Picard Iteration: ', num2str(j)])
 
 %% Initiate Variables
-A_r = rr.An{j};                             %A matrix from current iteration (r indicates reduced form, occurs during application of BC)
-Uc = rr.Un(:,j);                            %Velocity from iteration n (current iteration)
+A_r = rr.An{j};                             %A matrix from current iteration (r indicates that it will be reduced during application of BC)
 Uf = rr.Un(:,j+1);                          %Velocity from iteration n+1 (forward iteration)
 b = zeros(numel(Uf),1);                     %Preallocate  b array
 
 if firstpass
-    adjU = rr.adjU.dU; adjU_r = adjU;               %Adjoint of U from cost function for first iteration
+    adjU = rr.adjU; adjU_r = adjU;               %Adjoint of U from cost function for first iteration
     firstpass = 0;    
     
 else
@@ -108,7 +108,7 @@ tmp = X2*spdiags(C_Ddiag(:,i),0,CAD.dC_size(1),CAD.dC_size(1))*X;
 adjC(i) = tmp(:)'*adjA(:);
 end
 
-
+runC = runC + adjC;
 clear C_adi CAD C_Ddiag tmp;
 
 
@@ -116,7 +116,7 @@ end
 
 disp('Finished looping through picard iterations [Adjoint]')
 rr.adjC = adjC;
-
+rr.runC = runC;
 
 end
 

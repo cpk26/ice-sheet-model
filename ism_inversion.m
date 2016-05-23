@@ -25,10 +25,10 @@ vv2.C = ism_cslip_field(vv2, pp, gg, oo);    %Reconstruct basal slipperiness
 
 
 %% Optimization
- %options = optimoptions(@fminunc,'Display','iter','Algorithm','quasi-newton',...
- %    'HessUpdate', 'bfgs','GradObj','on');
- options = optimoptions(@fminunc, 'Display','iter','Algorithm','quasi-newton',...
-     'HessUpdate', 'bfgs','GradObj','on', 'TolFun', 1e-15);
+  options = optimoptions(@fminunc,'Display','iter','Algorithm','quasi-newton',...
+     'HessUpdate', 'bfgs','GradObj','on','TolFun', 1e-10);
+%options = optimoptions(@fminunc, 'Display','iter','Algorithm','quasi-newton',...
+%     'HessUpdate', 'steepdesc','GradObj','on','TolFun', 1e-10);
  
  if strcmp(oo.inv_meth, 'LM')
  [vv2.acoeff,cst,exitflag,output] = fminunc(@(x)ism_adjLM_optWrapper(x,vv2,aa, pp, gg, oo),vv2.acoeff(:),options);
@@ -40,15 +40,20 @@ vv2.C = ism_cslip_field(vv2, pp, gg, oo);    %Reconstruct basal slipperiness
  end
      
      
-%% cs.ubc.ca function minimizer
-
-% options = struct();
-% %options.Method = 'cg';
-% options.Display = 'iter';
-% %options.LS_init = 0;
+% %% cs.ubc.ca function minimizer
 % 
-% options.LS_type = 2;
-% [vv2.acoeff,cst,exitflag,output] = minFunc(@(x)ism_invoptWrapper(x,vv2,aa, pp, gg, oo),vv2.acoeff(:),options);
+% options = struct();
+% options.Method = 'lbgs';
+% options.Display = 'excessive';
+% options.optTol = 1e-10;
+% options.progTol = 1e-15;
+% options.optTol = 1e-10;
+% options.initialHessType = 10^-14;
+% 
+% % [vv2.acoeff,cst,exitflag,output] = minFunc(@(x)ism_invoptWrapper(x,vv2,aa, pp, gg, oo),vv2.acoeff(:),options);
+% 
+% ism_adjAD_generate( vv2,aa, pp, gg, oo );
+% [vv2.acoeff,cst,exitflag,output] = minFunc(@(x)ism_adjAD_optWrapper(x,vv2,aa, pp, gg, oo),vv2.acoeff(:),options);
 
 %% Finish up
 vv2.C = ism_cslip_field(vv2, pp, gg, oo);    %reconstruct basal slipperiness
