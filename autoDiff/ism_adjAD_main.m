@@ -9,7 +9,7 @@ function [rr] = ism_adjAD_main(vv,rr ,aa,pp,gg,oo )
 % Outputs:
 %   vv2     struct containing new solution variables
 
-numIter = 10;                               %Number of Picard Iterations
+numIter = oo.pic_iter;                               %Number of Picard Iterations
 
 runC = zeros(gg.nha,1);
 

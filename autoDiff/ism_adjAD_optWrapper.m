@@ -17,7 +17,7 @@ vv.acoeff = reshape(acoeff,gg.nJ,gg.nI);   %Array=>matrix
 vv.C = ism_cslip_field(vv, pp, gg, oo);    %reconstruct basal slipperiness
 
 [vv] = ism_sia(aa.s,aa.h,vv.C,vv, pp,gg,oo);    %SIA                                        
-[vv, rr] = ism_sstream(vv,aa,pp,gg,oo );        %SSA 
+[vv, rr] = ism_deism(vv,aa,pp,gg,oo );        %SSA 
 cst = ism_inv_cost(vv.U, vv,aa,pp,gg, oo);            %Current misfit
 
 if nargout > 1 % gradient required

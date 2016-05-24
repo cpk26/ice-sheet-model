@@ -21,7 +21,7 @@ vv2.C = ism_cslip_field(vv2, pp, gg, oo);    %Reconstruct basal slipperiness
 
 %% Solve Initial Forward problem
 [vv2] = ism_sia(aa.s,aa.h,vv2.C,vv2,pp,gg,oo);  %SIA 
-[vv2] = ism_sstream(vv2,aa,pp,gg,oo );          %SSA 
+[vv2] = ism_deism(vv2,aa,pp,gg,oo );          %SSA 
 
 
 %% Optimization

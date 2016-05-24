@@ -1,4 +1,4 @@
-function [vv2, tt] = ism_sstream(vv,aa,pp,gg,oo )
+function [vv2, tt] = ism_deism(vv,aa,pp,gg,oo )
 %% Shallow Stream Model 
 % Inputs:
 %   vv      struct containing initial solution variables
@@ -9,7 +9,7 @@ function [vv2, tt] = ism_sstream(vv,aa,pp,gg,oo )
 % Outputs:
 %   vv2     struct containing new solution variables
 
-numIter = 10;                               %Solver parameters
+numIter = oo.pic_iter;                      %Solver parameters
 sstream_norm = zeros(numIter,1);
 
 if strcmp(oo.pT, 'forward'); C = aa.C; end; %Problem Type
@@ -32,7 +32,7 @@ for j = 1:numIter
 
 nEff = ism_visc(gg.S_h*aa.s(:),U,inf([gg.nha,1]),C(:),aa,pp,gg,oo);     %Viscosity
     
-[LHS, RHS] = ism_sstream_fieldeq(u,v,C,nEff, aa,pp,gg,oo);              %Field Equations
+[LHS, RHS] = ism_deism_fieldeq(C,nEff, aa,pp,gg,oo);              %Field Equations
 U = Inf(size(LHS,2),1);                                                 %Velocity vector, full length   
 
 if isequal(oo.savePicIter,1),tt.An{j} = LHS; end                        %Save

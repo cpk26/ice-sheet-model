@@ -1,4 +1,4 @@
-function [LHS, RHS] = ism_sstream_fieldeq(u,v,C,nEff,aa,pp,gg,oo)
+function [LHS, RHS] = ism_deism_fieldeq(C,nEff,aa,pp,gg,oo)
 %% Field Equations for SSA velocities 
 % Inputs:
 %   u,v     velocities in the x,y directions
