@@ -34,6 +34,7 @@ pp.A = pd.A;
 pp.B = pd.B;
 pp.g = pd.g;
 pp.x = ps.x;
+pp.z = ps.z;
 pp.vis_i = ps.vis_i;
 pp.rho_i = pd.rho_i;
 pp.n_rp = pd.n_rp/(ps.u/ps.x);

@@ -15,23 +15,41 @@ sstream_norm = zeros(numIter,1);
 if strcmp(oo.pT, 'forward'); C = aa.C; end; %Problem Type
 if strcmp(oo.pT, 'inverse'); C = vv.C; end;
 
-tt = struct();
-if isequal(oo.savePicIter,1)                %Preallocate arrays if we are saving picard iterations
+U = vv.U;                                   %Initial iterate velocity
+u = vv.u;                                   
+v = vv.v;
+
+if isfield(vv,'nEff'), nEff = vv.nEff;      %Ensure an initial viscosity
+else nEff = ism_visc(gg.S_h*aa.s(:),U,inf([gg.nha,1]),C(:),aa,pp,gg,oo); 
+end
+
+tt = struct();                              %Preallocate arrays if we are saving picard iterations
+if isequal(oo.savePicIter,1)
     tt.An = cell(1,numIter); 
     tt.Un = zeros(gg.nua+gg.nva,numIter+1);
     tt.nEffn = zeros(gg.nha,numIter);
 end
 
-U = vv.U;                                   %Initial iterate velocity
-u = vv.u;                                   
-v = vv.v;
-if isequal(oo.savePicIter,1),tt.Un(:,1) = U; end              %Save initial velocity                  
+if isequal(oo.savePicIter,1),tt.Un(:,1) = U; end    %Save initial velocity                  
 
 %% Picard Iterations
 for j = 1:numIter
 
-nEff = ism_visc(gg.S_h*aa.s(:),U,inf([gg.nha,1]),C(:),aa,pp,gg,oo);     %Viscosity
+if oo.hybrid                            %Hybrid viscosity, integrating with composite simpson's rule
+vl = 14;                                %Number of layers, must even so vl+1 is odd.
+nEffz = zeros(gg.nha,vl+1);             %Viscosity in each layer
+sp = gg.S_h*aa.h(:)/vl;                        %Depth of each layer
+for k =[0:vl]
+tmpz = gg.S_h*aa.b(:) + k*sp;
+nEffz(:,k+1) = ism_visc(tmpz,U,gg.S_h*nEff,C(:),aa,pp,gg,oo);     %Hybrid Viscosity   
+end
+
+nEff = (1./(gg.S_h*aa.h(:))) .*(sp/3) .* sum([nEffz(:,[1,end]), 2*nEffz(:,[2:2:end-1]), 4*nEffz(:,[3:2:end-2])],2);
+clear nEffz sp tmpz;
     
+else nEff = ism_visc(gg.S_h*aa.s(:),U,inf([gg.nha,1]),C(:),aa,pp,gg,oo);             %SSA Viscosity
+end
+
 [LHS, RHS] = ism_deism_fieldeq(C,nEff, aa,pp,gg,oo);              %Field Equations
 U = Inf(size(LHS,2),1);                                                 %Velocity vector, full length   
 
@@ -124,6 +142,7 @@ end
 vv.U = U;
 vv.u = u;
 vv.v = v;
+vv.nEff = nEff;
 vv.sstream_norm = sstream_norm;
 
 vv2=vv;

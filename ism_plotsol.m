@@ -1,4 +1,4 @@
-function [ vv2 ] = ism_plotsol(vv, dd, ps, pd, gg, oo )
+function [ vv2 ] = ism_plotsol(vv, aa, dd, pp, pd, gg, oo )
 %% Plot Solution
 % Inputs:
 %   vv      struct containing solution variables
@@ -10,19 +10,42 @@ function [ vv2 ] = ism_plotsol(vv, dd, ps, pd, gg, oo )
 %   vv2     struct containing dimensionalized solution variables
 
 
-u_h = gg.c_uh*vv.u; u_h = reshape(u_h, gg.nJ, gg.nI);      %Velocities
-v_h = gg.c_vh*vv.v; v_h = reshape(v_h, gg.nJ, gg.nI);      %u,v grids onto h-grid 
-U = sqrt(u_h.^2 + v_h.^2);
+if strcmp(oo.pT, 'forward'); C = aa.C; end; %Problem Type
+if strcmp(oo.pT, 'inverse'); C = vv.C; end;
 
-u_h = u_h*ps.u*pd.ty;                                  %Dimensionalize [m/yr]
-v_h = v_h*ps.u*pd.ty;
-U = U*ps.u*pd.ty;
 
-h = dd.h;                                               %Topography
+
+u = vv.u;
+v = vv.v;
+U = vv.U;
+
+u_h = gg.c_uh*u;                    %Velocities
+v_h = gg.c_vh*v;                    %u,v grids onto h-grid 
+
+if oo.hybrid                        %For hybrid model, convert u_Eff to u_surface
+F1 = ism_falpha(1,vv,aa,pp,gg,oo );
+F2 = ism_falpha(2,vv,aa,pp,gg,oo );
+tmpa = (1 + C(:).*F1)./(1 + C(:).*F2);
+
+u_h = u_h.*tmpa;
+v_h = v_h.*tmpa;
+end
+
+
+u_h = reshape(u_h, gg.nJ, gg.nI);      %Velocities
+v_h = reshape(v_h, gg.nJ, gg.nI);      %Reshape for plotting
+U_h = sqrt(u_h.^2 + v_h.^2);
+
+u_h = u_h*pp.u*pd.ty;                                  %Dimensionalize [m/yr]
+v_h = v_h*pp.u*pd.ty;
+U_h = U_h*pp.u*pd.ty;
+
+
+h = dd.h;                                          %Topography
 b = dd.b;
 s = dd.s;
 
-x = dd.x;                                               %Grid
+x = dd.x;                                          %Grid
 y = dd.y;
 
 vv2.u = u_h;                                            %Dimensionalized solutions
@@ -31,7 +54,7 @@ vv2.U = U;
 
 figure()                                                %Plot Solution Velocities
 subplot(3,1,1)
-imagesc(U);
+imagesc(U_h);
 title('Velocity');
 colorbar()
 

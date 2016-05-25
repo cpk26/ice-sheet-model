@@ -29,7 +29,7 @@ if ~isfield(pd,'acoeff_ny'), pd.acoeff_ny = 45; end
 
 if ~isfield(oo,'pT'), oo.pT = 'forward'; end                       %problem type: 'forward' or 'inverse'
 if ~isfield(oo,'inv_iter'), oo.pic_iter = 10; end;                 %number of picard iterations iterations
-if ~isfield(oo,'pT'), oo.hybrid = 1; end                           %Approximation: 1 for hybrid, else default to SSA
+if ~isfield(oo,'hybrid'), oo.hybrid = 1; end                       %Approximation: 1 for hybrid, else default to SSA
 if ~isfield(oo,'inv_meth'), oo.inv_meth = 'AD'; end                %Inversion Method, either LM or AD
 if ~isfield(oo,'savePicIter'), oo.savePicIter = 0; end             %Flag to save intermediate arrays in picard iterations
 if ~isfield(oo,'inv_opt'), oo.inv_opt = 'dg'; end                  %Inversion acoeff optimization algorithm: 'dg'/'lbfgs': downgradient/lBFGS 
