@@ -85,7 +85,7 @@ tmp_b = [gg.S_u*(gg.nperbc_ugrid(:) > 0); gg.S_v*(gg.nperbc_vgrid(:) > 0)]; tmp_
 LHS(:, tmp_b) = LHS(:, tmp_b) + LHS(:, tmp_a);
 
 DEL = DEL + [tmp_a];
-DEL2 = DEL2 + [tmp_a];
+%DEL2 = DEL2 + [tmp_a];
 
 clear tmp_a tmp_b tmp_c tmp_d
 

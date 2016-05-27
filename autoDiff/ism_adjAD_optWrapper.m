@@ -30,12 +30,13 @@ if nargout > 1 % gradient required
     U_adi = struct('f', vv.U, 'dU',ones(gg.nua+gg.nva,1));
     UAD = ism_inv_cost_ADu(U_adi,vv.C,F1,F2,vv,aa,pp,gg,oo);
     rr.adjU = UAD.dU;
+    
     %imagesc(reshape(rr.adjU(1:gg.nua),75,76))
-%     if oo.hybrid
-%     C_adi = struct('f', vv.C(:), 'dC',ones(gg.nha,1));
-%     UAC = ism_inv_cost_ADc(vv.U,C_adi,F1,F2,vv,aa,pp,gg,oo);
-%     rr.adjC = UAC.dC;
-%     end
+    if oo.hybrid
+    C_adi = struct('f', vv.C(:), 'dC',ones(gg.nha,1));
+    UAC = ism_inv_cost_ADc(vv.U,C_adi,F1,F2,vv,aa,pp,gg,oo);
+    rr.adjC = UAC.dC;
+    end
     %imagesc(reshape(rr.adjC,75,75))
     rr = ism_adjAD_main(vv,rr,aa,pp,gg,oo );
     

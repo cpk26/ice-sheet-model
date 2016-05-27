@@ -32,7 +32,7 @@ if nargin < 4                   %Maximum number of iterations
 maxit=15; 
 end
 if nargin < 3                   %Tolerance, as fraction (xc - xn)/xc
-tol=0.005;
+tol=0.1;
 end
 
 itc=1; xc=x0;                   %Initialize                    
