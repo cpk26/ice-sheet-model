@@ -79,6 +79,9 @@ adjU_r(tmp_a) = [];
 A_r(:,tmp_a) = [];
 A_r(tmp_a,:) = [];
 
+adjU_r(tmp_a) = 0;
+A_r(:,tmp_a) = 0;
+A_r(tmp_a,:) = 0;
 
 clear tmp_a;
 end

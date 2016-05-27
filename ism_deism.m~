@@ -44,6 +44,10 @@ if oo.hybrid                            %Determine viscosity depending on approx
 nEff = ism_visc_di(U,gg.S_h*nEff,C(:),aa,pp,gg,oo);       
 else nEff = ism_visc(U,vv,aa,pp,gg,oo); end           %SSA Viscosity
 
+[f,g] = autoGrad(U,1, ism_visc_di,{gg.S_h*nEff,C(:),aa,pp,gg,oo});
+
+
+
 [LHS, RHS] = ism_deism_fieldeq(C,nEff, aa,pp,gg,oo);              %Field Equations
 U = Inf(size(LHS,2),1);                                                 %Velocity vector, full length   
 
