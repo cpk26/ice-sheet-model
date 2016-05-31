@@ -23,6 +23,9 @@ X2 = [gg.dh_x gg.dh_x gg.duh_y speye(gg.nua,gg.nua) sparse(gg.nva,gg.nua)'; gg.d
 
 
 DEL = zeros(gg.nua+gg.nva,1);                   %Columns to delete
+DEL2 = DEL;                                     %Rows to delete                 
+
+A_sp = double(rr.An{1} ~= 0);
 
 
 firstpass = 1;
@@ -53,20 +56,6 @@ else
     U_visc = sparse(UAD.dU_location(:,1),UAD.dU_location(:,2), UAD.dU, UAD.dU_size(1), UAD.dU_size(2));
     end
     
-%     adjU = U_visc'*adjnEff;
-%     imagesc(reshape(adjU(1:gg.nua),75,76)); colorbar; caxis([-1e-10,1e-10])
-%     UAD = ism_visc_AD(U_adi,vv,aa,pp,gg,oo);    
-%     U_visc = sparse(UAD.dU_location(:,1),UAD.dU_location(:,2), UAD.dU, UAD.dU_size(1), UAD.dU_size(2));
-%     adjU = U_visc'*adjnEff;
-%     figure
-%     imagesc(reshape(adjU(1:gg.nua),75,76)); colorbar; caxis([-1e-10,1e-10])
-%     figure;
-%     imagesc(reshape(adjnEff,75,75));
-%     
-%     adjnEff = ones(75*75,1);
-%     adjU_plain = U_visc'*adjnEff;
-%     imagesc(reshape(adjU_plain(1:gg.nua),75,76)); colorbar; caxis([-1e-10,1e-10])
-    
     adjU = U_visc'*adjnEff; adjU_r = adjU;
     clear U_adi UAD U_visc
 
@@ -75,51 +64,61 @@ end
 
 %% Handle BC for A matrix and Velocity Array 
 
+if any(gg.nmgn(:)); end; %ice Margin Nodes have no impact
+
+if any(gg.nfxd(:))  %Dirichlet BC Nodes
+tmp_a = [gg.S_u*gg.nfxd_ugrid(:); gg.S_v*gg.nfxd_vgrid(:)];               %Location of fixed values
+
+DEL = DEL + tmp_a;
+DEL2 = DEL2 + tmp_a;
+
+clear tmp_a tmp_b;
+end
+
 if any(gg.nperbc)
 
-% tmp_a = [gg.S_u*(gg.nperbc_ugrid(:) < 0); gg.S_v*(gg.nperbc_vgrid(:) < 0)]; tmp_a = logical(tmp_a);
-% tmp_b = [gg.S_u*(gg.nperbc_ugrid(:) > 0); gg.S_v*(gg.nperbc_vgrid(:) > 0)]; tmp_b = logical(tmp_b); 
-% tmp_c = [gg.S_u*(gg.nperbc_ugrid(:) ~= 0); gg.S_v*(gg.nperbc_vgrid(:) ~= 0)]; tmp_c = logical(tmp_c);
-% 
-% adjU_r(tmp_c) = 0;
-% adjU_r(tmp_a) = [];
-% 
-% A_r(:, tmp_b) = A_r(:, tmp_b) + A_r(:, tmp_a);
-% DEL = DEL + [tmp_a];
-
-
+%Method 1  
 tmp_a = [gg.S_u*(gg.nperbc_ugrid(:) ~= 0); gg.S_v*(gg.nperbc_vgrid(:) ~= 0)]; tmp_a = logical(tmp_a);
 adjU_r(tmp_a) = 0;
-%A_r(:,tmp_a) = [];
-A_r(tmp_a,:) = [];
 
-
+DEL2 = DEL2 + tmp_a;
+%A_r(tmp_a,:) = [];
+  
 clear tmp_a tmp_b tmp_c;
 end
 
+DEL = logical(DEL);
+DEL2 = logical(DEL2);
+
+
+A_r(:,DEL) = [];
+A_r(DEL2,:) = [];
+
+adjU_r(DEL) = [];   
+
 %% Intermediate step to determining the adjoint of A matrix
-% DEL = logical(DEL);
-% A_r(:,DEL) = [];
 b_r = A_r'\adjU_r;
 
 %% Apply BC to b array
 
 if any(gg.nperbc)
-% tmp_a = [gg.S_u*(gg.nperbc_ugrid(:) < 0); gg.S_v*(gg.nperbc_vgrid(:) < 0)]; tmp_a = logical(tmp_a);
-% tmp_b = [gg.S_u*(gg.nperbc_ugrid(:) > 0); gg.S_v*(gg.nperbc_vgrid(:) > 0)]; tmp_b = logical(tmp_b); 
-% 
-% 
-% b_r(tmp_a) = b_r(tmp_b);
-b = b_r;
+tmp_a = [gg.S_u*(gg.nperbc_ugrid(:) ~= 0); gg.S_v*(gg.nperbc_vgrid(:) ~= 0)]; tmp_a = logical(tmp_a);
 
-
-% tmp_a = [gg.S_u*(gg.nperbc_ugrid(:) ~= 0); gg.S_v*(gg.nperbc_vgrid(:) ~= 0)]; tmp_a = logical(tmp_a);
-% b(~tmp_a) = b_r;
+b(~tmp_a) = b_r;
 clear tmp_a;
 end   
   
+%Return to original velocity vector
+b(~DEL2) = b_r;
+
 %% Determine adjoint of A matrix
+
+
+adjA1 = -(A_sp'*spdiags(b,0,gg.nua+gg.nva,gg.nua+gg.nva))*spdiags(Uf,0,gg.nua+gg.nva,gg.nua+gg.nva);
+
 adjA = -b*Uf';  
+
+
 
 clear b tmp_a;
 
@@ -152,7 +151,6 @@ adjC(i) = tmp(:)'*adjA(:);
 end
 
 runC = runC + adjC;
-%imagesc(reshape(runC,75,75))
 clear C_adi CAD C_Ddiag tmp;
 
 

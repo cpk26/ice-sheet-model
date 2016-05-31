@@ -14,7 +14,7 @@ Fz = zeros(gg.nha,vl+1);                %value in each layer
 sp = gg.S_h *aa.h(:)/vl;                 %Depth of each layer
 
 for k =[0:vl]
-tmpa = gg.S_h * (aa.s(:) - aa.b(:)) + k*sp;
+tmpa = gg.S_h * (aa.s(:) - aa.b(:)) - k*sp;
 Fz(:,k+1) = (pp.vis_i*vv.nEff).^(-1) .* (tmpa./(gg.S_h *aa.h(:))).^alpha;  
 end
     

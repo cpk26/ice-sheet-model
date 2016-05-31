@@ -13,8 +13,6 @@ function [ vv2 ] = ism_plotsol(vv, aa, dd, pp, pd, gg, oo )
 if strcmp(oo.pT, 'forward'); C = aa.C; end; %Problem Type
 if strcmp(oo.pT, 'inverse'); C = vv.C; end;
 
-
-
 u = vv.u;
 v = vv.v;
 U = vv.U;
@@ -25,7 +23,10 @@ v_h = gg.c_vh*v;                    %u,v grids onto h-grid
 if oo.hybrid                        %For hybrid model, convert u_Eff to u_surface; Need to update C to Cb
 F1 = ism_falpha(1,vv,aa,pp,gg,oo );
 F2 = ism_falpha(2,vv,aa,pp,gg,oo );
-tmpa = (1 + C(:).*F1)./(1 + C(:).*F2);
+
+Cb = C(:)./(1 - C(:).*F2);    %Cslip effective -> Cslip basal
+
+tmpa = (1 + Cb(:).*F1)./(1 + Cb(:).*F2);
 
 u_h = u_h.*tmpa;
 v_h = v_h.*tmpa;

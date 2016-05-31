@@ -12,7 +12,7 @@ function [nEff_di] = ism_visc_di(U,nEff,C,aa,pp,gg,oo)
 %   LHS     Left hand side. 
 %   RHS     Right hand side.
 
-vl = 30;                                %Number of layers, must even so vl+1 is odd.
+vl = 14;                                %Number of layers, must even so vl+1 is odd.
 nEffz = zeros(gg.nha,vl+1);             %Viscosity in each layer
 sp = gg.S_h*aa.h(:)/vl;                 %Depth of each layer
 

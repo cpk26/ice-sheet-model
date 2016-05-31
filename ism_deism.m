@@ -45,6 +45,8 @@ nEff = ism_visc_di(U,gg.S_h*nEff,C(:),aa,pp,gg,oo);
 else nEff = ism_visc(U,vv,aa,pp,gg,oo); end           %SSA Viscosity
 
 [LHS, RHS] = ism_deism_fieldeq(C,nEff, aa,pp,gg,oo);              %Field Equations
+LHSf = LHS;
+RHSf = RHS;
 U = Inf(size(LHS,2),1);                                                 %Velocity vector, full length   
 
 if isequal(oo.savePicIter,1),rr.An{j} = LHS; end                        %Save
@@ -126,7 +128,7 @@ end
 u = U(1:gg.nua);    %u,v velocity fields
 v = U(gg.nua+1:end);
 
-sstream_norm(j) = norm(RHS-LHS*Um,oo.norm); %iteration norm (using Um)
+sstream_norm(j) = norm(RHSf-LHSf*U,oo.norm); %iteration norm (using Um)
 
 
 if isequal(oo.savePicIter,1),rr.Un(:,j+1) = U; end                %Save Intermediate velocity array
