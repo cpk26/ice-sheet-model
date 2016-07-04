@@ -19,10 +19,12 @@ U = vv.U;                                   %Initial iterate velocity
 u = vv.u;                                   
 v = vv.v;
 
-                                            %Ensure an initial viscosity
-nEff = ism_visc(U,vv,aa,pp,gg,oo);          %SSA
-if oo.hybrid,                               %Hybrid Approximation      
-for j=[1:5], nEff = ism_visc_di(U,gg.S_h*nEff,C(:),aa,pp,gg,oo);end,end;
+if oo.hybrid;                           %Setup Initial Hybrid Problem
+nEff = vv.nEff;                         %Initial Viscosity
+Cb = C;                                 %Basal Slipperiness
+F2 = ism_falpha(2,nEff,vv,aa,pp,gg,oo );%Effective Basal Slipperiness   
+C = Cb(:)./(1 + Cb(:).*(gg.S_h'*F2));                   
+end;                  
 
 
 rr = struct();                              %Preallocate arrays if we are saving picard iterations
@@ -37,11 +39,11 @@ if isequal(oo.savePicIter,1),rr.Un(:,1) = U; end    %Save initial velocity
 %% Picard Iterations
 for j = 1:numIter
 
-    
-%Insert Test Code HEre
-
-if oo.hybrid                            %Determine viscosity depending on approximation
-nEff = ism_visc_di(U,gg.S_h*nEff,C(:),aa,pp,gg,oo);       
+if oo.hybrid                                %Determine viscosity, basal slipperiness appropriately
+nEff = ism_visc_di(U,nEff,gg.S_h*C(:),aa,pp,gg,oo); %Note: Update viscosity, then C, for AD purposes
+F2 = ism_falpha(2,nEff,vv,aa,pp,gg,oo );    
+C = Cb(:)./(1 + Cb(:).*(gg.S_h'*F2));        %Effective Basal Slipperiness 
+       
 else nEff = ism_visc(U,vv,aa,pp,gg,oo); end           %SSA Viscosity
 
 [LHS, RHS] = ism_deism_fieldeq(C,nEff, aa,pp,gg,oo);              %Field Equations
@@ -69,11 +71,23 @@ RHS = RHS + mgn_mask.*t_mgn;
 end
 
 if any(gg.nfxd(:))  %Dirichlet BC Nodes
-tmp_a = [gg.S_u*aa.nfxd_uval(:); gg.S_v*aa.nfxd_vval(:)];                 %Vector of fixed values
-tmp_b = [gg.S_u*gg.nfxd_ugrid(:); gg.S_v*gg.nfxd_vgrid(:)];               %Location of fixed values
+tmp_a = [gg.S_u*gg.nfxd_ugrid(:); gg.S_v*gg.nfxd_vgrid(:)];               %Location of fixed values
+tmp_b = [gg.S_u*aa.nfxd_uval(:); gg.S_v*aa.nfxd_vval(:)];                 %Vector of fixed values
 
-RHS = RHS - LHS*tmp_a;
-DEL = DEL + tmp_b;
+if oo.hybrid,                                     %Convert surface vel -> effective vel
+F1 = ism_falpha(1,nEff,vv,aa,pp,gg,oo );          %Calculate F alpha factors 
+F2 = ism_falpha(2,nEff,vv,aa,pp,gg,oo );
+tmp_c = (1 + (gg.S_h*Cb(:)).*F1)./(1 + (gg.S_h*Cb(:)).*F2);          %Un -> Us factor
+tmpc_u = (gg.c_hu*tmp_c)./(gg.c_hu*(tmp_c > 0));    %Interpolate onto u/v grids
+tmpc_v = (gg.c_hv*tmp_c)./(gg.c_hv*(tmp_c > 0));    %Extrapolate at edges
+tmp_d = [tmpc_u; tmpc_v];            
+
+tmp_b = tmp_b./tmp_d;                                %effective velocities
+end
+
+
+RHS = RHS - LHS*tmp_b;
+DEL = DEL + tmp_a;
 DEL2 = DEL2 + DEL;
 
 clear tmp_a tmp_b;

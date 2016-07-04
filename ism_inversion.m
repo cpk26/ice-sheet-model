@@ -11,15 +11,16 @@ function [vv2] = ism_inversion(vv,aa,pp,gg,oo )
 
 if ~isfield(oo,'inv_iter'), oo.inv_iter = 40; end;    %Number of iterations for inversion
 
-vv2 = struct();
+vv2 = vv;
 
 %% Discretize Basal slipperiness into coefficients                                    
 vv2.acoeff = ism_cslip_acoeff(vv, pp, gg, oo);
 
-%% Initial Basal Slipperiness Field   
-vv2.C = ism_cslip_field(vv2, pp, gg, oo);    %Reconstruct basal slipperiness
 
-%% Solve Initial Forward problem
+% %% Initial Basal Slipperiness Field   
+vv2.C = ism_cslip_field(vv2, pp, gg, oo);    %Reconstruct basal slipperiness
+ 
+% %% Solve Initial Forward problem
 [vv2] = ism_sia(aa.s,aa.h,vv2.C,vv2,pp,gg,oo);  %SIA 
 [vv2] = ism_deism(vv2,aa,pp,gg,oo );          %SSA 
 
@@ -34,7 +35,7 @@ vv2.C = ism_cslip_field(vv2, pp, gg, oo);    %Reconstruct basal slipperiness
  [vv2.acoeff,cst,exitflag,output] = fminunc(@(x)ism_adjLM_optWrapper(x,vv2,aa, pp, gg, oo),vv2.acoeff(:),options);
  elseif strcmp(oo.inv_meth, 'AD')
  ism_adjAD_generate( vv2,aa, pp, gg, oo );
- [vv2.acoeff,cst,exitflag,output] = ism_steepDesc(@(x)ism_adjAD_optWrapper(x,vv2,aa, pp, gg, oo),vv2.acoeff(:));
+ [vv2.acoeff,cst,exitflag,output] = ism_steepDesc(@(x)ism_adjAD_optWrapper(x,{},aa, pp, gg, oo),vv2.acoeff(:));
   %[vv2.acoeff,cst,exitflag,output] = fminunc(@(x)ism_adjAD_optWrapper(x,vv2,aa, pp, gg, oo),vv2.acoeff(:),options);
  else
  error('Inversion Method not specified')

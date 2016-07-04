@@ -27,8 +27,7 @@ if oo.hybrid,                                                 %Deformational vel
 u_d = -gg.S_h * (pp.c2*(Sx.^2 + Sy.^2).*(h.^4).*Sx);
 v_d = -gg.S_h * (pp.c2*(Sx.^2 + Sy.^2).*(h.^4).*Sy);
 
-u_d(logical(gg.S_h*gg.nmgn(:))) = 0;                          %Except at ice margin
-v_d(logical(gg.S_h*gg.nmgn(:))) = 0;
+u_d(gg.S_h*gg.nmgn(:)) = 0;
 
 else                                                          %Plug Flow
 u_d = 0;
@@ -38,8 +37,8 @@ end
 
 %% Depth Integrated Velocity
 
-u_di = u_b + 0.8*u_d*0;                                              
-v_di = v_b + 0.8*v_d*0;
+u_di = u_b + 0.8*u_d;                                              
+v_di = v_b + 0.8*v_d;
 
 u = gg.c_hu*u_di(:);                   %Transfer onto u/v grids
 v = gg.c_hv*v_di(:);

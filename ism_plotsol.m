@@ -21,8 +21,8 @@ u_h = gg.c_uh*u;                    %Velocities
 v_h = gg.c_vh*v;                    %u,v grids onto h-grid 
 
 if oo.hybrid                        %For hybrid model, convert u_Eff to u_surface; Need to update C to Cb
-F1 = ism_falpha(1,vv,aa,pp,gg,oo );
-F2 = ism_falpha(2,vv,aa,pp,gg,oo );
+F1 = ism_falpha(1,vv.nEff, vv,aa,pp,gg,oo );
+F2 = ism_falpha(2,vv.nEff,vv,aa,pp,gg,oo );
 
 Cb = C(:)./(1 - C(:).*F2);    %Cslip effective -> Cslip basal
 

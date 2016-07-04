@@ -1,4 +1,4 @@
-function [ F ] = ism_falpha(alpha,vv,aa,pp,gg,oo )
+function [ F ] = ism_falpha(alpha,nEff,vv,aa,pp,gg,oo )
 %ism_falpha Calculate F_alpha integrals from Arthern, 2015
 % Inputs:
 %   vv      struct containing initial solution variables
@@ -15,7 +15,7 @@ sp = gg.S_h *aa.h(:)/vl;                 %Depth of each layer
 
 for k =[0:vl]
 tmpa = gg.S_h * (aa.s(:) - aa.b(:)) - k*sp;
-Fz(:,k+1) = (pp.vis_i*vv.nEff).^(-1) .* (tmpa./(gg.S_h *aa.h(:))).^alpha;  
+Fz(:,k+1) = (pp.vis_i*nEff).^(-1) .* (tmpa./(gg.S_h *aa.h(:))).^alpha;  
 end
     
 tmpVec = [Fz(:,[1,end]), 2*Fz(:,(2:2:end-1)), 4*Fz(:,(3:2:end-2))];
