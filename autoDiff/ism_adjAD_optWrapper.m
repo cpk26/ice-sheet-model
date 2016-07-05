@@ -60,9 +60,10 @@ if nargout > 1 % gradient required
     gradN = grad./max(abs(grad));
     %imagesc(reshape(gradN,gg.nJ,gg.nI))
     
-    
-%     acoeff = acoeff - 4*gradN;
-%     cst1 = cst;
+    %acoeff_orig = acoeff;
+    %cst_orig = cst;
+    %acoeff = acoeff_orig - 50*gradN;
+
 end
 
 end   

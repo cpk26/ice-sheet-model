@@ -28,7 +28,7 @@ aa.h = max(s-b,0);
 
 %Fixed Boundary Conditions. 
 
-if ~isempty(dd.nfxd)
+if any(dd.nfxd(:))
 aa.nfxd_uval = dd.vx_u.*gg.nfxd_ugrid/pp.u;
 aa.nfxd_vval = dd.vy_v.*gg.nfxd_vgrid/pp.u;
 else

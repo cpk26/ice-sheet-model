@@ -1,12 +1,11 @@
 function [x,f, exitflag,costdata] = ism_steepDesc(f,x0,tol,maxit)
 %
-% C. T. Kelley, Dec 20, 1996
 %
 % This code comes with no guarantee or warranty of any kind.
 %
 % function [x,histout,costdata] = steep(x0,f,tol,maxit)
 %
-% steepest descent with Armijo rule, polynomial linesearch 
+% steepest descent, simple linesearch 
 % 
 %
 % Input: x0 = initial iterate
@@ -24,7 +23,7 @@ function [x,f, exitflag,costdata] = ism_steepDesc(f,x0,tol,maxit)
 %            [norm(grad), f, number of step length reductions, iteration count]
 %         costdata = [num f, num grad, num hess] (for steep, num hess=0)
 %
-% Requires: polymod.m
+
 %
 % linesearch parms
 
@@ -44,20 +43,24 @@ exitflag = 0;
 
 
 tau = 0.5;                     %Line stepping parameters
+lambda = 10;
 
 disp(['Initial Cost: ', num2str(fc)])
 
+
 while(chng > tol && itc <= maxit)
-    disp(['Iteration: ', num2str(itc)])
-    iarm = 1;
-    lambda = tau*iarm;
+    disp(['Iteration: ', num2str(itc)])    
     xn=xc-lambda*gc;
     fn = feval(f,xn); 
     
+    iarm = 1;
+    fp = Inf;
     
-	while(fn > fc)
-		iarm=iarm+1;
-        lambda = tau^(iarm);
+	while(((fn > fc) && (fp > fc)) || fn < fp)                      %line search
+		fp = fn;
+        xp = xn;
+        
+        lambda = lambda*tau;
 		xn=xc-lambda*gc;
 		fn=feval(f,xn); 
 		
@@ -68,15 +71,20 @@ while(chng > tol && itc <= maxit)
         exitflag = 1;
 		return; end
                 
+    iarm=iarm+1;
     end
     
-    chng = (fc-fn)/fc;          %Iteration information
+    lambda = lambda*(1/tau);
+    
+    chng = (fc-fp)/fc;          %Iteration information
     itc = itc + 1;    
     
     disp(['Updated Cost: ', num2str(fn)])
     disp(['% Change: ', num2str(100*chng)])
     
-	xc=xn; [fc,gc]=feval(f,xc); %Update Values
+	xc=xp; 
+    fc = fp;
+    if chng > tol, [fc,gc]=feval(f,xc); end; %Update Values
     costdata(itc) = fc;
 end
 

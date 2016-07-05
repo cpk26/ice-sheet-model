@@ -1,5 +1,5 @@
 
-function [cst,grad] = ism_adjLM_optWrapper(acoeff,vv,aa, pp, gg, oo)
+function [cst,gradN] = ism_adjLM_optWrapper(acoeff,vv,aa, pp, gg, oo)
 % Inputs:
 %   vv      struct containing initial solution variables
 %   aa      prescribed fields, including inputs and boundary conditions
@@ -20,6 +20,7 @@ if nargout > 1 % gradient required
     [vv] = ism_adjLM_main(vv,aa,pp,gg,oo );
     [vv] = ism_adjLM_costJac(vv, pp, gg, oo);
     grad = vv.cJac(:);                      %Gradient (as array)
+    gradN = grad./max(abs(grad));
 end
 
 end   
