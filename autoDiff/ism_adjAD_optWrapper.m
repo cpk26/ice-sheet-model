@@ -1,5 +1,5 @@
 
-function [cst,gradN] = ism_adjAD_optWrapper(acoeff,vv,aa, pp, gg, oo)
+function [cst,grad] = ism_adjAD_optWrapper(acoeff,vv,aa, pp, gg, oo)
 % Inputs:
 %   vv      struct containing initial solution variables
 %   aa      prescribed fields, including inputs and boundary conditions
@@ -56,8 +56,8 @@ if nargout > 1 % gradient required
     %imagesc(reshape(gg.S_h'*rr.adjC(:),gg.nJ,gg.nI))
     rr = ism_adjAD_main(vv,rr,aa,pp,gg,oo );
     
-    grad = rr.runC.*exp(vv.acoeff(:));
-    gradN = grad./max(abs(grad));
+    grad = rr.runC.*(exp(acoeff(:)));
+    %gradN = grad./max(abs(grad));
     %imagesc(reshape(gradN,gg.nJ,gg.nI))
     
     %acoeff_orig = acoeff;
