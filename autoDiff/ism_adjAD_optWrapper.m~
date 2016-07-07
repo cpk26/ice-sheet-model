@@ -30,6 +30,9 @@ vv.nEff = nEff;
 end
 
 oo.savePicIter = 0;                                     %Depth Integrated Model
+if nargout > 1, oo.pic_iter = 25;
+else, oo.pic_iter = 10;
+end
 
 [vv, rr] = ism_deism(vv,aa,pp,gg,oo );           
 
