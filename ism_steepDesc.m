@@ -28,10 +28,10 @@ function [x,f, exitflag,costdata] = ism_steepDesc(f,x0,tol,maxit)
 % linesearch parms
 
 if nargin < 4                   %Maximum number of iterations
-maxit=15; 
+maxit=30; 
 end
 if nargin < 3                   %Tolerance, as fraction (xc - xn)/xc
-tol=0.1;
+tol=0.01;
 end
 
 itc=1; xc=x0;                   %Initialize                    
@@ -42,14 +42,15 @@ chng = Inf;
 exitflag = 0;
 
 
-tau = 0.5;                     %Line stepping parameters
+tau = 0.7;                     %Line stepping parameters
 lambda = 10;
 
 disp(['Initial Cost: ', num2str(fc)])
 
 
 while(chng > tol && itc <= maxit)
-    disp(['Iteration: ', num2str(itc)])    
+    disp(['Iteration: ', num2str(itc)]) 
+    
     xn=xc-lambda*gc;
     fn = feval(f,xn); 
     
@@ -73,13 +74,13 @@ while(chng > tol && itc <= maxit)
                 
     iarm=iarm+1;
     end
-    
+        
     lambda = lambda*(1/tau);
     
     chng = (fc-fp)/fc;          %Iteration information
     itc = itc + 1;    
     
-    disp(['Updated Cost: ', num2str(fn)])
+    disp(['Updated Cost: ', num2str(fp)])
     disp(['% Change: ', num2str(100*chng)])
     
 	xc=xp; 

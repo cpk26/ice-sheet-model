@@ -42,6 +42,7 @@ pp.C_rp = pd.C_rp;
 pp.U_rp = pd.U_rp/ps.u;
 pp.L_vel = pd.L_vel;
 pp.L_smooth = pd.L_smooth;  
+pp.mdR = pd.mdR;
 pp.acoeff_nx = pd.acoeff_nx; 
 pp.acoeff_ny = pd.acoeff_ny; 
 

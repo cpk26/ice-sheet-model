@@ -36,8 +36,7 @@ end
 U_d = sqrt((u_d).^2 + (v_d).^2);
 
 %% Determine Basal Velocities
-F = 0.80;
-U_d(U_d > F*U_obs) = F*U_obs(U_d > F*U_obs);        %Limit deformational velocity to fraction of observed velocity. 
+U_d(U_d > pp.mdR*U_obs) = pp.mdR*U_obs(U_d > pp.mdR*U_obs);        %Limit deformational velocity to fraction of observed velocity. 
 U_b = U_obs - U_d;                                  %This acts a smoothing on C. Note: allow a minimum slip to prevent C = Inf 
 
 
