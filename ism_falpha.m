@@ -9,17 +9,29 @@ function [ F ] = ism_falpha(alpha,nEff,vv,aa,pp,gg,oo )
 % Outputs:
 %   F     F integral
 
-vl = 14;                                %Number of layers, must even so vl+1 is odd.
-Fz = zeros(gg.nha,vl+1);                %value in each layer
-sp = gg.S_h *aa.h(:)/vl;                 %Depth of each layer
+nl = 50;                                %Number of layers, must even so vl+1 is odd.
+Frun = zeros(gg.nha,1);                 %Value in each layer
+sp = gg.S_h *aa.h(:)/nl;                %Depth of each layer
 
-for k =[0:vl]
-tmpa = gg.S_h * (aa.s(:) - aa.b(:)) - k*sp;
-Fz(:,k+1) = (pp.vis_i*nEff).^(-1) .* (tmpa./(gg.S_h *aa.h(:))).^alpha;  
+for k =[0:nl]
+tmpa = gg.S_h * aa.h(:) - k*sp;
+F_l = (pp.vis_i*nEff).^(-1) .* (tmpa./(gg.S_h *aa.h(:))).^alpha; 
+
+%% Running simpsons rule integration
+if k==0 
+    Frun = Frun + F_l;      %First Layer
+elseif k==nl, 
+    Frun = Frun + F_l;      %Last Layers
+elseif mod(k,2), 
+    Frun = Frun + 4*F_l;    %Odd layers
+else
+    Frun = Frun + 2*F_l;    %Even Layers
+end;
+
+
 end
     
-tmpVec = [Fz(:,[1,end]), 2*Fz(:,(2:2:end-1)), 4*Fz(:,(3:2:end-2))];
-F = (pp.z*sp/3) .* sum(tmpVec,2);
+F = (pp.z)*(sp/3) .* Frun;
 
 
 end

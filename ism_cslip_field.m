@@ -17,6 +17,8 @@ Cslip = exp(vv.acoeff);
    
 end
 
+Cslip(gg.m ~=2) = 0;            %Reimpose Cslip = 0 outside of the ice sheet
+
 
 
 end

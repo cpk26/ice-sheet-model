@@ -24,7 +24,7 @@ if ~isfield(dd,'nfxd'), dd.nfxd = []; end
 %Topography
 aa.s = s;
 aa.b = b;
-aa.h = max(s-b,0);
+aa.h = s-b;
 
 %Fixed Boundary Conditions. 
 
@@ -59,6 +59,7 @@ for j=[1:10]                                 %Self consistent viscosity
 F2 = ism_falpha(2,nEff,vv2,aa,pp,gg,oo );    %Effective Basal Slipperiness
 C = Cb(:)./(1 + Cb(:).*(gg.S_h'*F2));
 nEff = ism_visc_di(U,nEff,gg.S_h*C(:),aa,pp,gg,oo); %Updated Viscosity
+
 end   
 
 vv2.nEff = nEff;

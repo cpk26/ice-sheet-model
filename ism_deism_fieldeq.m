@@ -19,8 +19,8 @@ nva = full(gg.nva);
 
 %% Variables (Non-Dimensionalized)
 
-Cslip_u = (gg.c_hu*gg.S_h*C(:))./(gg.c_hu*gg.S_h*(C(:) > 0));            %Slipperiness on u,v grids
-Cslip_v = (gg.c_hv*gg.S_h*C(:))./(gg.c_hv*gg.S_h*(C(:) > 0));
+Cslip_u = (gg.c_hu*gg.S_h*C(:))./(gg.c_hu*gg.S_h*(gg.m(:) ==2));            %Slipperiness on u,v grids
+Cslip_v = (gg.c_hv*gg.S_h*C(:))./(gg.c_hv*gg.S_h*(gg.m(:) ==2));
 
 Cslip_u(logical(gg.S_u*gg.nmgn_ugrid(:))) = 0;                           %Slipperiness is zero at margin for BC
 Cslip_v(logical(gg.S_v*gg.nmgn_vgrid(:))) = 0;

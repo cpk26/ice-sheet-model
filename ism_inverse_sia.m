@@ -46,8 +46,7 @@ A1 = -pp.c1 * gg.S_h * (h .* Sx);                   %Basal Slip multiplier
 A2 = -pp.c1 * gg.S_h * (h .* Sy);
 AA = sqrt(A1.^2 + A2.^2);
  
-C = gg.S_h' * (AA./U_b);    %Basal slipperiness
-C = C + pp.C_rp;            %Add regularization parameter
+C = gg.S_h' * (AA./U_b + pp.C_rp);    %Basal slipperiness
 
 vv.C = C;
 end

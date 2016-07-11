@@ -39,12 +39,12 @@ if isequal(oo.savePicIter,1),rr.Un(:,1) = U; end    %Save initial velocity
 %% Picard Iterations
 for j = 1:numIter
 
-if oo.hybrid                                %Determine viscosity, basal slipperiness appropriately
-nEff = ism_visc_di(U,nEff,gg.S_h*C(:),aa,pp,gg,oo); %Note: Update viscosity, then C, for AD purposes
+if oo.hybrid                                            %Determine viscosity, basal slipperiness appropriately
+nEff = ism_visc_di(U,nEff,gg.S_h*C(:),aa,pp,gg,oo);     %Note: Update viscosity, then C, for AD purposes
 F2 = ism_falpha(2,nEff,vv,aa,pp,gg,oo );    
-C = Cb(:)./(1 + Cb(:).*(gg.S_h'*F2));        %Effective Basal Slipperiness 
+C = Cb(:)./(1 + Cb(:).*(gg.S_h'*F2));                   %Effective Basal Slipperiness 
        
-else nEff = ism_visc(U,vv,aa,pp,gg,oo); end           %SSA Viscosity
+else nEff = ism_visc(U,vv,aa,pp,gg,oo); end             %SSA Viscosity
 
 [LHS, RHS] = ism_deism_fieldeq(C,nEff, aa,pp,gg,oo);              %Field Equations
 LHSf = LHS;
@@ -63,7 +63,9 @@ if any(gg.nmgn(:))  %Ice Margin Nodes
 hu = (gg.c_hu*gg.S_h*aa.h(:))./(gg.c_hu*gg.S_h*(aa.h(:) > 0));            %Thickness on u,v grids, linear extrapolation at the edges
 hv = (gg.c_hv*gg.S_h*aa.h(:))./(gg.c_hv*gg.S_h*(aa.h(:) > 0));
 
-t_mgn = [0.5*pp.c4*(0.5*hu).^2; 0.5*pp.c4*(0.5*hv).^2];                   %Boundary Condition at Ice Margin
+t_mgn = [0.5*pp.c4*(0.5*hu).^2; 0.5*pp.c4*(0.5*hv).^2];               %Boundary Condition at Ice Margin
+t_mgn = [0*pp.c4*(0.5*hu).^2; 0*pp.c4*(0.5*hv).^2];                   %Boundary Condition at Ice Margin
+
 mgn_mask = [gg.S_u*gg.nmgn_ugrid(:); gg.S_v*gg.nmgn_vgrid(:)];            %Ice Margin Node Mask
 
 RHS(logical(mgn_mask)) = 0;                                               %Insert Ice Margin BC
@@ -78,12 +80,14 @@ if oo.hybrid,                                     %Convert surface vel -> effect
 F1 = ism_falpha(1,nEff,vv,aa,pp,gg,oo );          %Calculate F alpha factors 
 F2 = ism_falpha(2,nEff,vv,aa,pp,gg,oo );
 tmp_c = (1 + (gg.S_h*Cb(:)).*F1)./(1 + (gg.S_h*Cb(:)).*F2);          %Un -> Us factor
-tmpc_u = (gg.c_hu*tmp_c)./(gg.c_hu*(tmp_c > 0));    %Interpolate onto u/v grids
-tmpc_v = (gg.c_hv*tmp_c)./(gg.c_hv*(tmp_c > 0));    %Extrapolate at edges
+tmpc_u = (gg.c_hu*tmp_c)./(gg.c_hu*(gg.m(:)==2));    %Interpolate onto u/v grids
+tmpc_v = (gg.c_hv*tmp_c)./(gg.c_hv*(gg.m(:)==2));    %Extrapolate at edges
 tmp_d = [tmpc_u; tmpc_v];            
 
 tmp_b = tmp_b./tmp_d;                                %effective velocities
 end
+
+
 
 
 RHS = RHS - LHS*tmp_b;

@@ -14,8 +14,8 @@ v = U(gg.nua+1:end);
 if oo.hybrid                                      %Hybrid Model; Compute surface velocities
 Cb = C;
 tmpa = (1 + Cb(:).*F1)./(1 + Cb(:).*F2);          %U_eff to U_surface factor on h-grid
-tmpa_u = (gg.c_hu*tmpa)./(gg.c_hu*(tmpa > 0));    %Interpolate onto u/v grids
-tmpa_v = (gg.c_hv*tmpa)./(gg.c_hv*(tmpa > 0));    %Extrapolate at edges
+tmpa_u = (gg.c_hu*tmpa)./(gg.c_hu*(gg.m(:) ==2));    %Interpolate onto u/v grids
+tmpa_v = (gg.c_hv*tmpa)./(gg.c_hv*(gg.m(:) ==2));    %Extrapolate at edges
 
 if any(gg.nmgn(:))                                  %Ice Margin Nodes
 tmpa_u(gg.nmgn_ugrid) = 1;                          %No vertical variation in velocity at ice margin                                       
