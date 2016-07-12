@@ -1,4 +1,4 @@
-function [gg] = ism_mask(gg,dd,oo)
+function [gg] = ism_mask(m,gg,dd,oo)
 % Apply mask to grid. 
 % UNDERSTAND: It is important to note that dh_x/dh_y
 % and dhv_x/dhu_y are modified so that they equal zero across the margin of
@@ -14,25 +14,25 @@ function [gg] = ism_mask(gg,dd,oo)
 
 % 16 Feb 2015 
 
-if ~isfield(dd,'nfxd'), dd.nfxd = zeros(size(dd.mask)); end;
+if ~isfield(dd,'nfxd'), dd.nfxd = zeros(size(m)); end;
 
 %% Categorize nodes (h-grid)
-nbnd = bwperim(dd.m>1,4);                      %Boundary Cells
-nin = (dd.m == 2) & ~nbnd;                          %Interior Cells
+nbnd = bwperim(m>1,4);                      %Boundary Cells
+nin = (m == 2) & ~nbnd;                          %Interior Cells
 nfxd = dd.nfxd;                                 %Direchlet BC Cells
-nmgn = zeros(size(dd.m));                    %Ice Margin Cells (sans direchlet bc nodes)
+nmgn = zeros(size(m));                    %Ice Margin Cells (sans direchlet bc nodes)
 [i,j] = find(nbnd); 
 for p=1:numel(i), 
 A1 = max(i(p)-1,1); A2 = min(i(p)+1,gg.nJ); A3 = max(j(p)-1,1); A4 = min(j(p)+1,gg.nI);
 if ismember(0,dd.h(A1:A2,A3:A4)); nmgn(i(p),j(p))=1;
 end,end
 nmgn = nmgn & ~nfxd;                       
-E = dd.m > 0; E(:,2:end-1) = 0;               %Periodic BC nodes (must be on domain edge)
-F = dd.m > 0; F(2:end-1,:) = 0;
+E = m > 0; E(:,2:end-1) = 0;               %Periodic BC nodes (must be on domain edge)
+F = m > 0; F(2:end-1,:) = 0;
 AA = (E & fliplr(E)); BB = (F & flipud(F));   
 nperbc = AA | BB;
 nbndr = nbnd & ~(nmgn | nfxd | nperbc);         %Remnant boundary cells, not belonging to another category
-next = ~(dd.m==2);                                %Cells outside of the mask
+next = ~(m==2);                                %Cells outside of the mask
 
 
 %Determine nodes on the bottom row and rightmost column of the u/v grids which periodic BC apply to.
@@ -41,10 +41,10 @@ next = ~(dd.m==2);                                %Cells outside of the mask
 
 %% Sampling Operators
 %H-grid
-S_h = spdiags([dd.m(:) == 2],0,gg.nIJ,gg.nIJ); S_h = S_h(any(S_h,2),:);  
+S_h = spdiags([m(:) == 2],0,gg.nIJ,gg.nIJ); S_h = S_h(any(S_h,2),:);  
 
 % U-grid;
-AA = conv2(single((dd.m == 2) - dd.nntks), [1 1]/2) > 0;                                           
+AA = conv2(single((m == 2) - dd.nntks), [1 1]/2) > 0;                                           
 S_u = spdiags(AA(:) > 0,0,(gg.nI+1)*(gg.nJ),(gg.nI+1)*(gg.nJ)); S_u = S_u(any(S_u,2),:);
 
 %u-grid nodes which periodic BC apply to. Of each pair, one is positive, the other
@@ -56,7 +56,7 @@ S_u_perBC = DD - circshift(DD,(gg.nI)*gg.nJ,2);   %Add corresponding node (-)
 
 
 % V-grid;
-AA = conv2(single((dd.m == 2) - dd.nntks), [1 1]'/2) > 0;                                          
+AA = conv2(single((m == 2) - dd.nntks), [1 1]'/2) > 0;                                          
 S_v = spdiags(AA(:) > 0, 0,(gg.nI)*(gg.nJ+1),(gg.nI)*(gg.nJ+1)); S_v = S_v(any(S_v,2),:); 
 
 %v-grid nodes which periodic BC apply to. Of each pair, one is positive, the other
@@ -67,7 +67,7 @@ CC = spdiags(BB(:),0,(gg.nI)*(gg.nJ+1),(gg.nI)*(gg.nJ+1)); DD = CC(any(CC,2),:);
 S_v_perBC = DD - circshift(DD,gg.nJ,2);                                  %Add corresponding node (-)
 
 %C-grid
-AA = padarray(single(dd.m==2),[1,1], 'symmetric');      %Symmetric padding for mask
+AA = padarray(single(m==2),[1,1], 'symmetric');      %Symmetric padding for mask
 AA2 = padarray(single(dd.h>0),[1,1], 'replicate');      %Extend ice mask
 BB = conv2(AA,[1 1; 1 1]/4, 'valid');                   %Identify margin of mask
 BB2 = conv2(AA2,[1 1; 1 1]/4, 'valid');                 %Identify ice edge margin
@@ -92,8 +92,8 @@ nperbc_vgrid = zeros(gg.nJ+1,gg.nI);
 end
 
 % Boundary Nodes (u/v) grid
-nbnd_ugrid = (gg.dh_x * dd.m(:) > 1); nbnd_ugrid = reshape(nbnd_ugrid, gg.nJ,gg.nI+1);
-nbnd_vgrid = (gg.dh_y * dd.m(:) > 1); nbnd_vgrid = reshape(nbnd_vgrid, gg.nJ +1,gg.nI);
+nbnd_ugrid = (gg.dh_x * m(:) > 1); nbnd_ugrid = reshape(nbnd_ugrid, gg.nJ,gg.nI+1);
+nbnd_vgrid = (gg.dh_y * m(:) > 1); nbnd_vgrid = reshape(nbnd_vgrid, gg.nJ +1,gg.nI);
 
 nbnd_ugrid = nbnd_ugrid + nperbc_ugrid;
 nbnd_vgrid = nbnd_vgrid + nperbc_vgrid;
@@ -158,7 +158,7 @@ gg.duh_y = gg.c_vu*gg.dh_y;                                                %deri
 
 
 %% Assign variables to output structure
-gg.m = dd.m; 
+gg.m = m; 
 
 gg.nha = full(sum(S_h(:)));                               %number of active h/u/v grid nodes
 gg.nua = full(sum(S_u(:)));

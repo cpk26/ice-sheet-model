@@ -30,11 +30,11 @@ end
 if strcmp(oo.inv_cst,'abs') 
     cu = gg.c_uh*(u-aa.u).^2;
     cv = gg.c_vh*(v-aa.v).^2;   
-    cst = pp.c9*0.5*sum( cu + cv )*gg.dx*gg.dy;
+cst = pp.c9*0.5*sum( cu + cv )*gg.dx*gg.dy;
 elseif strcmp(oo.inv_cst,'rel') 
-    cu = gg.c_uh*min( ((u-aa.u)./aa.u).^2,1) ;
-    cv = gg.c_uh*min( ((u-aa.u)./aa.u).^2,1);
-    cst = pp.c10*0.5*sum( cu + cv )*gg.dx*gg.dy;  
+    cu = gg.c_uh*min( ((u-aa.u)./aa.u).^2,4e4) ;
+    cv = gg.c_uh*min( ((u-aa.u)./aa.u).^2,4e4);
+cst = pp.c10*0.5*sum( cu + cv )*gg.dx*gg.dy;  
 end
 
 cst = pp.L_vel*cst;

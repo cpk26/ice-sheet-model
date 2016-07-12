@@ -63,8 +63,13 @@ if any(gg.nmgn(:))  %Ice Margin Nodes
 hu = (gg.c_hu*gg.S_h*aa.h(:))./(gg.c_hu*gg.S_h*(aa.h(:) > 0));            %Thickness on u,v grids, linear extrapolation at the edges
 hv = (gg.c_hv*gg.S_h*aa.h(:))./(gg.c_hv*gg.S_h*(aa.h(:) > 0));
 
-t_mgn = [0.5*pp.c4*(0.5*hu).^2; 0.5*pp.c4*(0.5*hv).^2];               %Boundary Condition at Ice Margin
-t_mgn = [0*pp.c4*(0.5*hu).^2; 0*pp.c4*(0.5*hv).^2];                   %Boundary Condition at Ice Margin
+du = (gg.c_hu*gg.S_h*abs(min(0,aa.b(:))))./(gg.c_hu*gg.S_h*(aa.h(:) > 0));   %Draft on u,v grids, linear extrapolation at the edges
+dv = (gg.c_hv*gg.S_h*abs(min(0,aa.b(:))))./(gg.c_hv*gg.S_h*(aa.h(:) > 0));
+
+
+%t_mgn = [0.5*pp.c4*(hu.^2 - pp.c5*du.^2);...
+%        0.5*pp.c4*(hv.^2 - pp.c5*dv.^2)];                            %Boundary Condition at Ice Margin
+t_mgn = [0*pp.c4*(hu).^2; 0*pp.c4*(hv).^2];                           %Boundary Condition at Ice Margin
 
 mgn_mask = [gg.S_u*gg.nmgn_ugrid(:); gg.S_v*gg.nmgn_vgrid(:)];            %Ice Margin Node Mask
 
@@ -80,8 +85,8 @@ if oo.hybrid,                                     %Convert surface vel -> effect
 F1 = ism_falpha(1,nEff,vv,aa,pp,gg,oo );          %Calculate F alpha factors 
 F2 = ism_falpha(2,nEff,vv,aa,pp,gg,oo );
 tmp_c = (1 + (gg.S_h*Cb(:)).*F1)./(1 + (gg.S_h*Cb(:)).*F2);          %Un -> Us factor
-tmpc_u = (gg.c_hu*tmp_c)./(gg.c_hu*(gg.m(:)==2));    %Interpolate onto u/v grids
-tmpc_v = (gg.c_hv*tmp_c)./(gg.c_hv*(gg.m(:)==2));    %Extrapolate at edges
+tmpc_u = (gg.c_hu*tmp_c)./(gg.c_hu*(gg.S_h*gg.m(:)==2));    %Interpolate onto u/v grids
+tmpc_v = (gg.c_hv*tmp_c)./(gg.c_hv*(gg.S_h*gg.m(:)==2));    %Extrapolate at edges
 tmp_d = [tmpc_u; tmpc_v];            
 
 tmp_b = tmp_b./tmp_d;                                %effective velocities

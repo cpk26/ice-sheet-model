@@ -61,13 +61,13 @@ if nargout > 1 % gradient required
     %imagesc(reshape(gg.S_h'*rr.adjC(:),gg.nJ,gg.nI))
     rr = ism_adjAD_main(vv,rr,aa,pp,gg,oo );
     
-    grad = rr.runC.*(exp(acoeff(:)));
-    gradN = grad./max(abs(grad));
+    gradN = rr.runC.*(exp(acoeff(:)));
+    %gradN = grad./max(abs(grad));
     %imagesc(reshape(gradN,gg.nJ,gg.nI))
     
     %acoeff_orig = acoeff;
     %cst_orig = cst;
-    %acoeff = acoeff_orig - 50*gradN;
+    %acoeff = acoeff_orig - .75*gradN;
 
 end
 

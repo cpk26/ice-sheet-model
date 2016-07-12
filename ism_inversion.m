@@ -36,23 +36,37 @@ vv2.C = ism_cslip_field(vv2, pp, gg, oo);    %Reconstruct basal slipperiness
 
 
 
-%% Optimization
+%% Optimization Options
+
+%% FMINUNC
   options = optimoptions(@fminunc,'Display','iter','Algorithm','quasi-newton',...
   'HessUpdate', 'bfgs','GradObj','on','TolFun', 1e-10);
 % options = optimoptions(@fminunc, 'Display','iter','Algorithm','quasi-newton',...
 %     'HessUpdate', 'steepdesc','GradObj','on','TolFun', 1e-10);
 %  
- if strcmp(oo.inv_meth, 'LM')
- %[vv2.acoeff,cst,exitflag,output] = fminunc(@(x)ism_adjLM_optWrapper(x,vv2,aa, pp, gg, oo),vv2.acoeff(:),options);
- [vv2.acoeff,cst,exitflag,output] = ism_steepDesc(@(x)ism_adjLM_optWrapper(x,{},aa, pp, gg, oo),vv2.acoeff(:));
 
- elseif strcmp(oo.inv_meth, 'AD')
- ism_adjAD_generate( vv2,aa, pp, gg, oo );
- [vv2.acoeff,cst,exitflag,output] = ism_steepDesc(@(x)ism_adjAD_optWrapper(x,{},aa, pp, gg, oo),vv2.acoeff(:));
-  %[vv2.acoeff,cst,exitflag,output] = fminunc(@(x)ism_adjAD_optWrapper(x,vv2,aa, pp, gg, oo),vv2.acoeff(:),options);
- else
- error('Inversion Method not specified')
- end
+
+%% MINFUNC
+% options = struct();
+% options.Method = 'lbfgs';
+% options.Display = 'full';
+% 
+%  
+
+
+if strcmp(oo.inv_meth, 'LM')
+%[vv2.acoeff,cst,exitflag,output] = fminunc(@(x)ism_adjLM_optWrapper(x,vv2,aa, pp, gg, oo),vv2.acoeff(:),options);
+[vv2.acoeff,cst,exitflag,output] = ism_steepDesc(@(x)ism_adjLM_optWrapper(x,{},aa, pp, gg, oo),vv2.acoeff(:));
+
+elseif strcmp(oo.inv_meth, 'AD')
+ism_adjAD_generate( vv2,aa, pp, gg, oo );
+[vv2.acoeff,cst,exitflag,output] = ism_steepDesc(@(x)ism_adjAD_optWrapper(x,{},aa, pp, gg, oo),vv2.acoeff(:));
+%[vv2.acoeff,cst,exitflag,output] = fminunc(@(x)ism_adjAD_optWrapper(x,vv2,aa, pp, gg, oo),vv2.acoeff(:),options);
+%[vv2.acoeff,cst,exitflag,output] = minFunc(@(x)ism_adjAD_optWrapper(x,vv2,aa, pp, gg, oo),vv2.acoeff(:),options);
+
+else
+error('Inversion Method not specified')
+end
      
      
 % %% cs.ubc.ca function minimizer

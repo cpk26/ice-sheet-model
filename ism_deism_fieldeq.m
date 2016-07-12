@@ -40,8 +40,10 @@ jj(jj~=0) = jj(jj~=0)./abs(jj(jj~=0));
 Sx(ii~=0) =  aa.h(ii~=0)./(ii(ii~=0)*2*gg.dx);
 Sy(jj~=0) =  aa.h(jj~=0)./(jj(jj~=0)*2*gg.dy);
 
-Sx = Sx(:); Sy = -Sy(:);                            %Vectorize, flip the sign in y-direction due to convention
-
+Sx = Sx(:);                            %Vectorize, flip the sign in y-direction due to convention
+Sx(logical(gg.nmgn)) = 0;
+Sy(logical(gg.nmgn)) = 0;
+Sy = -Sy(:); 
 nEff_diag = spdiags(nEff(:),0,nha,nha);                                  
 
 

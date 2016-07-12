@@ -37,6 +37,7 @@ pp.x = ps.x;
 pp.z = ps.z;
 pp.vis_i = ps.vis_i;
 pp.rho_i = pd.rho_i;
+pp.rho_w = 1000;
 pp.n_rp = pd.n_rp/(ps.u/ps.x);
 pp.C_rp = pd.C_rp;
 pp.U_rp = pd.U_rp/ps.u;
@@ -52,8 +53,9 @@ pp.c2 = 0.5*pp.A*(ps.u^-1)*(pd.rho_i*pd.g*ps.z/ps.x)^pp.n_Glen * ps.z^(pp.n_Glen
 
 pp.c3 = (ps.x^2)/(ps.z*ps.vis_i);                             %SSTREAM
 pp.c4 = (ps.x*ps.z*pp.rho_i*pp.g)/(ps.vis_i*ps.u);
+pp.c5 = pp.rho_w/pp.rho_i;
 
-pp.c5 = NaN;                               %Inversion
+%pp.c5 = NaN;                               %Inversion
 pp.c6 = (ps.vis_i * ps.z)/(ps.x^2);
 pp.c7 = ps.u;
 pp.c8 = (ps.x^2)*ps.u;
