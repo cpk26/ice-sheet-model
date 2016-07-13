@@ -43,13 +43,14 @@ exitflag = 0;
 
 
 tau = 0.7;                     %Line stepping parameters
-lambda = 10;
+lambda = 1;
 
 disp(['Initial Cost: ', num2str(fc)])
 
 
 while(chng > tol && itc <= maxit)
     disp(['Iteration: ', num2str(itc)]) 
+    lambda = 1;
     
     xn=xc-lambda*gc;
     fn = feval(f,xn); 
@@ -74,9 +75,7 @@ while(chng > tol && itc <= maxit)
                 
     iarm=iarm+1;
     end
-        
-    lambda = lambda*(1/tau);
-    
+            
     chng = (fc-fp)/fc;          %Iteration information
     itc = itc + 1;    
     

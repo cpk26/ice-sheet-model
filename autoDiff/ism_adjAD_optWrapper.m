@@ -30,8 +30,8 @@ vv.nEff = nEff;
 end
 
 oo.savePicIter = 0;                                     %Depth Integrated Model
-
-[vv, rr] = ism_deism(vv,aa,pp,gg,oo );           
+oo.pic_iter = 10; 
+[vv, ~] = ism_deism(vv,aa,pp,gg,oo );           
 
 F1 = ism_falpha(1,vv.nEff,vv,aa,pp,gg,oo );          %Calculate F alpha factors 
 F2 = ism_falpha(2,vv.nEff,vv,aa,pp,gg,oo );
@@ -61,13 +61,14 @@ if nargout > 1 % gradient required
     %imagesc(reshape(gg.S_h'*rr.adjC(:),gg.nJ,gg.nI))
     rr = ism_adjAD_main(vv,rr,aa,pp,gg,oo );
     
-    gradN = rr.runC.*(exp(acoeff(:)));
+    grad = rr.runC.*(exp(acoeff(:)));
+    gradN = grad./max(abs(grad));
     %gradN = grad./max(abs(grad));
     %imagesc(reshape(gradN,gg.nJ,gg.nI))
     
     %acoeff_orig = acoeff;
     %cst_orig = cst;
-    %acoeff = acoeff_orig - .75*gradN;
+    %acoeff = acoeff_orig - .1*gradN;
 
 end
 

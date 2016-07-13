@@ -35,6 +35,7 @@ pp.B = pd.B;
 pp.g = pd.g;
 pp.x = ps.x;
 pp.z = ps.z;
+pp.ty = pd.ty;
 pp.vis_i = ps.vis_i;
 pp.rho_i = pd.rho_i;
 pp.rho_w = 1000;

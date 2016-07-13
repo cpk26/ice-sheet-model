@@ -109,8 +109,11 @@ nmgn_vgrid = zeros(gg.nJ+1,gg.nI);
 end
 
 % Fixed Boundary Nodes (u/v grid)
-nfxd_ugrid = (gg.c_hu*nfxd(:) == 0.5); nfxd_ugrid = reshape(nfxd_ugrid, gg.nJ,gg.nI+1);
-nfxd_vgrid = (gg.c_hv*nfxd(:) == 0.5); nfxd_vgrid = reshape(nfxd_vgrid, gg.nJ+1,gg.nI);
+% nfxd_ugrid = (gg.c_hu*nfxd(:) == 0.5); nfxd_ugrid = reshape(nfxd_ugrid, gg.nJ,gg.nI+1);
+% nfxd_vgrid = (gg.c_hv*nfxd(:) == 0.5); nfxd_vgrid = reshape(nfxd_vgrid, gg.nJ+1,gg.nI);
+
+nfxd_ugrid = (gg.c_hu*nfxd(:) >0); nfxd_ugrid = reshape(nfxd_ugrid, gg.nJ,gg.nI+1);
+nfxd_vgrid = (gg.c_hv*nfxd(:) >0); nfxd_vgrid = reshape(nfxd_vgrid, gg.nJ+1,gg.nI);
 
 % Remnant Boundary Nodes (u/v grid)
 nbndr_ugrid = nbnd_ugrid - nperbc_ugrid - nmgn_ugrid - nfxd_ugrid;
