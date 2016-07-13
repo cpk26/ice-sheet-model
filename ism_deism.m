@@ -69,7 +69,7 @@ dv = (gg.c_hv*gg.S_h*abs(min(0,aa.b(:))))./(gg.c_hv*gg.S_h*(aa.h(:) > 0));
 
 %t_mgn = [0.5*pp.c4*(hu.^2 - pp.c5*du.^2);...
 %        0.5*pp.c4*(hv.^2 - pp.c5*dv.^2)];                            %Boundary Condition at Ice Margin
-t_mgn = [0*pp.c4*(hu).^2; 0*pp.c4*(hv).^2];                           %Boundary Condition at Ice Margin
+t_mgn = [0.5*pp.c4*min(hu,30/pp.z).^2; 0.5*pp.c4*min(hv,30/pp.z).^2];                           %Boundary Condition at Ice Margin
 
 mgn_mask = [gg.S_u*gg.nmgn_ugrid(:); gg.S_v*gg.nmgn_vgrid(:)];            %Ice Margin Node Mask
 

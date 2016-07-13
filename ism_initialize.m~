@@ -17,9 +17,9 @@ function [aa,vv2] = ism_initialize(b,s, u, v, C,vv, dd,gg,pp,oo)
 
 if nargin<5, oo = struct; end
 if ~isfield(dd,'nfxd'), dd.nfxd = []; end
-if ~isfield(dd,'errvx_u'), dd.errvx_u = ones(size(u))*pp.u; end 
-if ~isfield(dd,'errvy_v'), dd.errvy_v = ones(size(v))*pp.u; end
-if ~isfield(dd,'errv'), dd.errv = ones(size(C))*pp.u; end
+if ~isfield(dd,'errvx_u'), dd.errvx_u = ones(size(u)); end 
+if ~isfield(dd,'errvy_v'), dd.errvy_v = ones(size(v)); end
+if ~isfield(dd,'errv'), dd.errv = ones(size(C)); end
 
 
 %% put fields and variables in structs
@@ -52,10 +52,9 @@ vv2.v = vv.v(:);
 aa.U = [u(:); v(:)];
 aa.u = u(:); 
 aa.v = v(:);
-
-aa.errvx_u = gg.S_u*dd.errvx_u(:)/pp.u; 
-aa.errvy_v = gg.S_v*dd.errvy_v(:)/pp.u; 
-aa.errv = gg.S_h*dd.errv(:)/pp.u;
+aa.errvx_u = dd.errvx_u/ps.u; 
+aa.errvy_v = dd.errvy_v/ps.u; 
+aa.errv = dd.errv/ps.u;
 
 end
 

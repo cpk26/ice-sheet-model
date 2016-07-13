@@ -40,7 +40,10 @@ elseif strcmp(oo.inv_cst,'log')
     cm = sqrt( (gg.c_uh*u).^2 + (gg.c_vh*v).^2 ) + vn;
     co = sqrt( (gg.c_uh*aa.u).^2 + (gg.c_vh*aa.v).^2 ) + vn;
     cst = sum( (log(cm./co)).^2 );
-    
+elseif strcmp(oo.inv_cst,'wls')
+    cu = gg.c_uh*( (u-aa.u)./(0.03*abs(aa.u)+aa.errvx_u) ).^2;
+    cv = gg.c_vh*( (v-aa.v)./(0.03*abs(aa.v)+aa.errvy_v) ).^2;  
+    cst = pp.c9*0.5*sum( cu + cv )*gg.dx*gg.dy;
 end
 
 cst = pp.L_vel*cst;

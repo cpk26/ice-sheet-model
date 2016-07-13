@@ -43,7 +43,6 @@ exitflag = 0;
 
 
 tau = 0.7;                     %Line stepping parameters
-lambda = 1;
 
 disp(['Initial Cost: ', num2str(fc)])
 
