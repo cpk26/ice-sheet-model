@@ -55,12 +55,13 @@ cst = pp.L_vel*cst;
 
 %% Tikanov Regularization
 if pp.L_smooth > 0
+
 in_u = ((gg.c_hu*gg.S_h*ones(gg.nIJ,1)) == 1);      %Interior nodes on ugrid   
-C1 = (1/pp.x)*in_u.*(gg.dh_x*Cb);                    %gradient of alpha coefficients, x-dir/ugrid
+C1 = (1/pp.x)*in_u.*(gg.dh_x*sqrt(Cb));                    %gradient of alpha coefficients, x-dir/ugrid
 
 
 in_v = ((gg.c_hv*gg.S_h*ones(gg.nIJ,1)) == 1);      %Interior nodes on vgrid  
-C2 = (1/pp.x)*in_v.*(gg.dh_y*Cb);                    %gradient of alpha coefficients, y-dir/vgrid
+C2 = (1/pp.x)*in_v.*(gg.dh_y*sqrt(Cb));                    %gradient of alpha coefficients, y-dir/vgrid
 
 tik = 0.5*pp.c10*(sum(C1(:).^2) + sum(C2(:).^2))*gg.dx*gg.dy;
 cst = cst + pp.L_smooth*tik;

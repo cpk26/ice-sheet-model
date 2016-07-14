@@ -85,6 +85,10 @@ while(chng > tol && itc <= maxit)
     fc = fp;
     if chng > tol, [fc,gc]=feval(f,xc); end; %Update Values
     costdata(itc) = fc;
+    
+    if itc == 3
+       pause 
+    end
 end
 
 x=xc;

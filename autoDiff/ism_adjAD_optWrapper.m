@@ -75,6 +75,7 @@ if nargout > 1 % gradient required
     %Gradient of cst function w.r.t acoeff
     
     gradN = rr.runC.*(exp(acoeff(:)));
+    gradN = gradN/max(abs(gradN));
     %gradN = grad./max(abs(grad));
     %gradN = grad./max(abs(grad));
     %imagesc(reshape(gradN,gg.nJ,gg.nI))

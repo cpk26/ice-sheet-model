@@ -32,7 +32,6 @@ options = struct();
 options.Method = 'lbfgs';
 options.Display = 'full';
 options.LS_init = 2;
-options.optTol = 1e-10
  
 %% Optimization
 
@@ -42,9 +41,9 @@ if strcmp(oo.inv_meth, 'LM')
 
 elseif strcmp(oo.inv_meth, 'AD')
 ism_adjAD_generate( vv2,aa, pp, gg, oo );
-%[vv2.acoeff,cst,exitflag,output] = ism_steepDesc(@(x)ism_adjAD_optWrapper(x,{},aa, pp, gg, oo),vv2.acoeff(:));
+[vv2.acoeff,cst,exitflag,output] = ism_steepDesc(@(x)ism_adjAD_optWrapper(x,{},aa, pp, gg, oo),vv2.acoeff(:));
 %[vv2.acoeff,cst,exitflag,output] = fminunc(@(x)ism_adjAD_optWrapper(x,vv2,aa, pp, gg, oo),vv2.acoeff(:),options);
-[vv2.acoeff,cst,exitflag,output] = minFunc(@(x)ism_adjAD_optWrapper(x,vv2,aa, pp, gg, oo),vv2.acoeff(:),options);
+%[vv2.acoeff,cst,exitflag,output] = minFunc(@(x)ism_adjAD_optWrapper(x,vv2,aa, pp, gg, oo),vv2.acoeff(:),options);
 
 else
 error('Inversion Method not specified')
@@ -52,6 +51,7 @@ end
      
 %% Finish up 
 vv2.output = output;
+vv2.C = ism_cslip_field(vv2, pp, gg, oo);  
 [vv2] = ism_deism(vv2,aa,pp,gg,oo );   %Optimized Velocities and reconstructed C       
 
 
