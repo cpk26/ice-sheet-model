@@ -1,17 +1,21 @@
 
 function [cst,gradN] = ism_adjAD_optWrapper(acoeff,vv,aa, pp, gg, oo)
 % Inputs:
+%   acoeff  alpha coefficients determining basal cslip (C)
 %   vv      struct containing initial solution variables
 %   aa      prescribed fields, including inputs and boundary conditions
 %   pp      parameters
 %   gg      grid and operators
 %   oo      options
 % Outputs:
-%   vv2     updated struct with new alpha coefficients
+%   cst     cst function of misfit between observed and predicted velocities
+%   grad    gradient of cost function w.r.t acoeff
 
-
+%% Construct Basal Slip Field
 vv.acoeff = reshape(acoeff,gg.nJ,gg.nI);   %Array=>matrix
 vv.C = ism_cslip_field(vv, pp, gg, oo);    %Construct basal slipperiness
+
+%% Initial velocites and viscosity
 
 [vv] = ism_sia(aa.s,aa.h,vv.C,vv, pp,gg,oo);    %SIA
 
@@ -29,6 +33,8 @@ end
 vv.nEff = nEff;
 end
 
+%% DEISM
+
 oo.savePicIter = 0;                                     %Depth Integrated Model
 oo.pic_iter = 10; 
 [vv, ~] = ism_deism(vv,aa,pp,gg,oo );           
@@ -36,30 +42,37 @@ oo.pic_iter = 10;
 F1 = ism_falpha(1,vv.nEff,vv,aa,pp,gg,oo );          %Calculate F alpha factors 
 F2 = ism_falpha(2,vv.nEff,vv,aa,pp,gg,oo );
 
+%% Cost
+
 cst = ism_inv_cost(vv.U,gg.S_h*vv.C(:),F1,F2,vv,aa,pp,gg, oo);  %Current misfit
+
+%% Return gradient if optimization routine requests it
 
 if nargout > 1 % gradient required
     
-    %Depth Integrated Model
-    %Second ism_deism call, such that our initial guess no longer is the
-    %SIA
+    %% Depth Integrated Model
+    %Second DEISM call, save parameters for adjoint method
     oo.savePicIter = 1;                                     %Save picard iterations
     oo.pic_iter = 1;                                        %Reduced number of picard iteration
     [vv, rr] = ism_deism(vv,aa,pp,gg,oo );   
     
-    %Call ism_AD_inv_Cst
+    %% Adjoint method with automatic differentiation
+    % Adjoint variable Uf*
     U_adi = struct('f', vv.U, 'dU',ones(gg.nua+gg.nva,1));
     UAD = ism_inv_cost_ADu(U_adi,gg.S_h*vv.C(:),F1,F2,vv,aa,pp,gg,oo);
     rr.adjU = UAD.dU;
     
-    %imagesc(reshape(rr.adjU(1:gg.nua),75,76))
+    % For the hybrid approximation, determine adjoint state of Cf* 
     if oo.hybrid
     C_adi = struct('f', gg.S_h*vv.C(:), 'dC',ones(gg.nha,1));
     UAC = ism_inv_cost_ADc(vv.U,C_adi,F1,F2,vv,aa,pp,gg,oo);
     rr.adjC = UAC.dC;
     end
-    %imagesc(reshape(gg.S_h'*rr.adjC(:),gg.nJ,gg.nI))
+    
+    %Determine adjoint variable C*
     rr = ism_adjAD_main(vv,rr,aa,pp,gg,oo );
+    
+    %Gradient of cst function w.r.t acoeff
     
     gradN = rr.runC.*(exp(acoeff(:)));
     %gradN = grad./max(abs(grad));
