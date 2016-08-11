@@ -69,16 +69,16 @@ else
 end
 
 %% Handle BC for A matrix and Velocity Array 
-
-if any(gg.nmgn(:)); %ice margin nodes
-tmp_a = [gg.S_u*gg.nmgn_ugrid(:); gg.S_v*gg.nmgn_vgrid(:)];
-
-DEL = DEL + tmp_a;
-DEL2 = DEL2 + tmp_a;
-
-clear tmp_a 
-end; 
-
+% 
+% if any(gg.nmgn(:)); %ice margin nodes
+% tmp_a = [gg.S_u*gg.nmgn_ugrid(:); gg.S_v*gg.nmgn_vgrid(:)];
+% 
+% DEL = DEL + tmp_a;
+% DEL2 = DEL2 + tmp_a;
+% 
+% clear tmp_a 
+% end; 
+% 
 if any(gg.nfxd(:))  %Dirichlet BC Nodes
 tmp_a = [gg.S_u*gg.nfxd_ugrid(:); gg.S_v*gg.nfxd_vgrid(:)];               %Location of fixed values
 

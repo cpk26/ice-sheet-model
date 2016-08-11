@@ -31,7 +31,7 @@ if nargin < 4                   %Maximum number of iterations
 maxit=30; 
 end
 if nargin < 3                   %Tolerance, as fraction (xc - xn)/xc
-tol=0.01;
+tol=0.05;
 end
 
 itc=1; xc=x0;                   %Initialize                    
@@ -86,9 +86,6 @@ while(chng > tol && itc <= maxit)
     if chng > tol, [fc,gc]=feval(f,xc); end; %Update Values
     costdata(itc) = fc;
     
-    if itc == 3
-       pause 
-    end
 end
 
 x=xc;

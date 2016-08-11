@@ -56,6 +56,7 @@ c_hc = kron(c_ij_per(nI), c_ij_per(nJ));
 c_uc = kron(speye(nI+1),c_ij_per(nJ));
 c_vc = kron(c_ij_per(nI),speye(nJ+1));
 
+%c_vc = 
 
 c_vu = kron(c_ij_per(nI), c_ij(nJ));
 c_uv = kron(c_ij(nI),c_ij_per(nJ));
@@ -106,10 +107,6 @@ gg.dh_y = dh_y;
 
 
 gg.c_ch = c_ch; %Centering (Interpolation) Operators
-gg.c_hc = c_hc;
-gg.c_uc = c_uc;
-gg.c_vc = c_vc;
-
 gg.c_vu = c_vu;
 gg.c_uv = c_uv;
 gg.c_uh = c_uh; 

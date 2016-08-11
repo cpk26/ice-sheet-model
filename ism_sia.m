@@ -25,8 +25,8 @@ v_b = -pp.c1 * (gg.S_h * C.^-1) .* (gg.S_h * (h .* Sy));
 
 %% Deformational Velocity
 if oo.hybrid,                                                 %Deformational velocity
-u_d = -0*gg.S_h * (pp.c2*(Sx.^2 + Sy.^2).*(h.^4).*Sx);
-v_d = -0*gg.S_h * (pp.c2*(Sx.^2 + Sy.^2).*(h.^4).*Sy);
+u_d = -gg.S_h * (pp.c2*(Sx.^2 + Sy.^2).*(h.^4).*Sx);
+v_d = -gg.S_h * (pp.c2*(Sx.^2 + Sy.^2).*(h.^4).*Sy);
 
 u_d(logical(gg.S_h*gg.nmgn(:))) = 0;                          %Except at ice margin
 v_d(logical(gg.S_h*gg.nmgn(:))) = 0;

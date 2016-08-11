@@ -66,5 +66,8 @@ pp.c11 = (ps.x./ps.vis_i);
 pp.c12 = (ps.z*ps.vis_i*ps.u)/(ps.x^2);
 
 
+pp.c13 = (pp.z/pp.vis_i);
+
+
 end
 

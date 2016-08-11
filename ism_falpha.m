@@ -1,4 +1,4 @@
-function [ F ] = ism_falpha(alpha,nEff,vv,aa,pp,gg,oo )
+function [ F ] = ism_falpha(alpha,U,nEff_lyrs,vv,aa,pp,gg,oo )
 %ism_falpha Calculate F_alpha integrals from Arthern, 2015
 % Inputs:
 %   vv      struct containing initial solution variables
@@ -9,13 +9,24 @@ function [ F ] = ism_falpha(alpha,nEff,vv,aa,pp,gg,oo )
 % Outputs:
 %   F     F integral
 
-nl = 50;                                %Number of layers, must even so vl+1 is odd.
+if ~isfield(oo,'nl'), oo.nl = 50; end                   %%Number of layers, must even so vl+1 is odd.
+nl = oo.nl;      
+
 Frun = zeros(gg.nha,1);                 %Value in each layer
 sp = gg.S_h *aa.h(:)/nl;                %Depth of each layer
 
+u = U(1:gg.nua); u_h = gg.c_uh*u;       %Setup velocity,topographic parameters
+v = U(gg.nua+1:end); v_h = gg.c_vh*v;
+s = gg.S_h*aa.s(:);
+
+
 for k =[0:nl]
-tmpa = gg.S_h * aa.h(:) - k*sp;
-F_l = (pp.vis_i*nEff).^(-1) .* (tmpa./(gg.S_h *aa.h(:))).^alpha; 
+
+%% Viscosity of Current Layer
+tmpz = gg.S_h*aa.b(:) + (k)*sp;
+
+F_l = (nEff_lyrs(:,k+1)).^(-1) .* ((s-tmpz)./(gg.S_h *aa.h(:))).^alpha; 
+
 
 %% Running simpsons rule integration
 if k==0 
@@ -31,7 +42,7 @@ end;
 
 end
     
-F = (pp.z)*(sp/3) .* Frun;
+F = (sp/3) .* Frun;
 
 
 end

@@ -22,17 +22,20 @@ if ~isfield(pd,'A'), pd.A = pd.E*3.5*10^(-25); end                 % ice rheolog
 if ~isfield(pd,'B'), pd.B = pd.A^(-1/pd.n_Glen); end;              % Ice stiffness parameter (associated rate factor)
 if ~isfield(pd,'n_rp'), pd.n_rp = 10^-5/(pd.ty); end;              % Effective Viscosity regularization parameter (m/s) (Arthern et al, 2015)
 if ~isfield(pd,'C_rp'), pd.C_rp = 10^6; end;                       % Basal Slipperiness regularation parameter for SIA (to avoid vel=Inf)
-if ~isfield(pd,'U_rp'), pd.U_rp = 1/pd.ty; end;                    % Velocity regularization parameter for inversion s.t. there are no zero vels
-if ~isfield(pd,'sR'), pd.mdR = 0.8; end;                           % Limit maximum deformational velocity to a fraction of surface velocity in ism_inverse_sia.
+if ~isfield(pd,'U_rp'), pd.U_rp = .001/pd.ty; end;                    % Velocity regularization parameter for inversion s.t. there are no zero vels
+if ~isfield(pd,'mdR'), pd.mdR = 0.8; end;                           % Limit maximum deformational velocity to a fraction of surface velocity in ism_inverse_sia.
                                                                    % This acts to smooth the initial guess of C
 if ~isfield(pd,'L_vel'), pd.L_vel = 1; end                         % Velocity mismatch regularization parameter (Tikhonov reg)
 if ~isfield(pd,'L_smooth'), pd.L_smooth = 1; end                   % Smoothness cost regularization parameter (Tikhonov reg)
 if ~isfield(pd,'acoeff_nx'), pd.acoeff_nx = 45; end                % Number of terms in x,y directions to keep in DCT2
 if ~isfield(pd,'acoeff_ny'), pd.acoeff_ny = 45; end         
 
+if ~isfield(oo,'mdR'), oo.mdR = 0.8; end;                           % Limit maximum deformational velocity to a fraction of surface velocity in ism_inverse_sia.
+
 if ~isfield(oo,'pT'), oo.pT = 'forward'; end                       %problem type: 'forward' or 'inverse'
 if ~isfield(oo,'inv_iter'), oo.pic_iter = 10; end;                 %number of picard iterations iterations
 if ~isfield(oo,'hybrid'), oo.hybrid = 1; end                       %Approximation: 1 for hybrid, else default to SSA
+if ~isfield(oo,'nl'), oo.nl = 50; end                              %Number of vertical layers to use for Simpson's Rule
 if ~isfield(oo,'inv_meth'), oo.inv_meth = 'AD'; end                %Inversion Method, either LM or AD
 if ~isfield(oo,'savePicIter'), oo.savePicIter = 0; end             %Flag to save intermediate arrays in picard iterations
 if ~isfield(oo,'inv_opt'), oo.inv_opt = 'dg'; end                  %Inversion acoeff optimization algorithm: 'dg'/'lbfgs': downgradient/lBFGS 

@@ -10,8 +10,6 @@ function [LHS, RHS] = ism_deism_fieldeq(C,nEff,aa,pp,gg,oo)
 %   LHS     Left hand side. 
 %   RHS     Right hand side.
 
-n = pp.n_Glen;                          
-
 
 nha = full(gg.nha);                               %number of active h/u/v grid nodes
 nua = full(gg.nua);
@@ -29,20 +27,19 @@ h_diag = spdiags(gg.S_h*aa.h(:),0,nha,nha);         %Diagonalize thickness and s
 Cslip_udiag = spdiags(Cslip_u(:),0,nua,nua);
 Cslip_vdiag = spdiags(Cslip_v(:),0,nva,nva);
 
+%% Surface Gradient
 %Use gradient instead of gg.nddx/y since periodic BC conditions do not apply 
-[Sx,Sy] = gradient(aa.s, gg.dx, gg.dy);             %Surface Gradient        
+[Sx,Sy] = gradient(aa.s, gg.dx, gg.dy);             %For interior of ice Sheet      
 
-[ii,jj] = gradient(double(aa.h >0), gg.dx, gg.dy); %Set gradient to aa.h/(dx or dy) at ice margin
-ii = ii.*(aa.h>0); jj = jj.*(aa.h>0);              %Mask to limit gradient to ice sheet margin
-ii(ii~=0) = ii(ii~=0)./abs(ii(ii~=0));             %Normalized gradient direction at margin 
-jj(jj~=0) = jj(jj~=0)./abs(jj(jj~=0));
+su = (gg.c_hu*gg.S_h*aa.s(:))./(gg.c_hu*gg.S_h*(aa.h(:) > 0));  %For ice margin
+sv = (gg.c_hv*gg.S_h*aa.s(:))./(gg.c_hv*gg.S_h*(aa.h(:) > 0));  %Thickness on u,v grids, linear extrapolation at the edges
 
-Sx(ii~=0) =  aa.h(ii~=0)./(ii(ii~=0)*2*gg.dx);
-Sy(jj~=0) =  aa.h(jj~=0)./(jj(jj~=0)*2*gg.dy);
+dx = gg.S_h'*gg.du_x*su;
+dy = gg.S_h'*gg.dv_y*sv;
 
 Sx = Sx(:);                            %Vectorize, flip the sign in y-direction due to convention
-Sx(logical(gg.nmgn)) = 0;
-Sy(logical(gg.nmgn)) = 0;
+Sx(logical(gg.nmgn)) = dx(logical(gg.nmgn)); %Update gradient at ice margin
+Sy(logical(gg.nmgn)) = -dy(logical(gg.nmgn));
 Sy = -Sy(:); 
 nEff_diag = spdiags(nEff(:),0,nha,nha);                                  
 
