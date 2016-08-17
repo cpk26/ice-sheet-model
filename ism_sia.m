@@ -39,8 +39,8 @@ end
 
 %% Depth Integrated Velocity
 
-u_di = u_b + 0.8*u_d;                                              
-v_di = v_b + 0.8*v_d;
+u_di = u_b + pp.mdR*u_d;                                              
+v_di = v_b + pp.mdR*v_d;
 
 u = gg.c_hu*u_di(:)./(gg.c_hu*(gg.S_h*gg.m(:) == 2));  %Transfer onto u/v grids
 v = gg.c_hv*v_di(:)./(gg.c_hv*(gg.S_h*gg.m(:) == 2));  

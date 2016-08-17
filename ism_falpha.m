@@ -25,7 +25,8 @@ for k =[0:nl]
 %% Viscosity of Current Layer
 tmpz = gg.S_h*aa.b(:) + (k)*sp;
 
-F_l = (nEff_lyrs(:,k+1)).^(-1) .* ((s-tmpz)./(gg.S_h *aa.h(:))).^alpha; 
+nEff_l = gg.c_ch*(gg.c_hc*nEff_lyrs(:,k+1));
+F_l = (nEff_l).^(-1) .* ((s-tmpz)./(gg.S_h *aa.h(:))).^alpha; 
 
 
 %% Running simpsons rule integration

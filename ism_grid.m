@@ -8,12 +8,13 @@ function [gg] = ism_grid(nI,nJ,xl,xr,yb,yt,oo)
 %   gg grid struct [see below for contents]
 %
 
+
 nIJ = nI*nJ;            %Number of nodes
 
 Lx = abs(xr-xl);        %Domain dimensions (u,v grids)
 Ly = abs(yt-yb);
-dx = abs(Lx)/(nI-1);    %Grid spacing
-dy = abs(Ly)/(nJ-1); 
+dx = abs(Lx)/(nI);    %Grid spacing
+dy = abs(Ly)/(nJ); 
 
 xl_h = xl + dx/2;       %min x coordinate (h-grid)
 xr_h = xr-dx/2;         %max x coordinate

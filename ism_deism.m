@@ -15,16 +15,14 @@ eq_norm = zeros(numIter,1);
 
 
 if strcmp(oo.pT, 'forward'); 
-    if oo.hybrid, Cb = aa.Cb; C = vv.C; nEff = vv.nEff; nEff_lyrs = vv.nEff_lyrs;
+    if oo.hybrid, Cb = aa.Cb; C = vv.C; nEff_lyrs = vv.nEff_lyrs;
     else C = aa.C ;end; end
 if strcmp(oo.pT, 'inverse'); 
-    if oo.hybrid, Cb = vv.Cb; C = vv.C; nEff = vv.nEff; nEff_lyrs = vv.nEff_lyrs;
+    if oo.hybrid, Cb = vv.Cb; C = vv.C; nEff_lyrs = vv.nEff_lyrs;
     else C = vv.C ;end; end
 
 
 U = vv.U;                                   %Initial iterate velocity
-u = vv.u;                                   
-v = vv.v;
 
 rr = struct();                              %Preallocate arrays if we are saving picard iterations
 if isequal(oo.savePicIter,1)
@@ -42,19 +40,18 @@ for j = 1:numIter
     
 if oo.hybrid                                            %Determine viscosity, basal slipperiness appropriately
 
-F2 = ism_falpha(2,U,nEff_lyrs,vv,aa,pp,gg,oo );                  %Note: Update viscosity, then C, for AD purposes
+F2 = ism_falpha(2,U,nEff_lyrs,vv,aa,pp,gg,oo );   %Note: Update viscosity, then C, for AD purposes
 [nEff, nEff_lyrs] = ism_visc_di(U,nEff_lyrs,gg.S_h*C(:),aa,pp,gg,oo); %Updated Viscosity
-C = Cb(:)./(1 + (pp.c13*Cb(:)).*(gg.S_h'*F2));                   %Effective Basal Slipperiness 
-
-fltr = fspecial('average',5');
-C = filter2(fltr,reshape(C,gg.nJ,gg.nI));
+C = Cb(:)./(1 + (pp.c13*Cb(:)).*(gg.S_h'*F2));                   %Effective Basal Slipperiness
 
 else nEff = ism_visc(U,vv,aa,pp,gg,oo); end             %SSA Viscosity
 
 
 %% Field Equations
 [LHS, RHS] = ism_deism_fieldeq(C,nEff, aa,pp,gg,oo);              %Field Equations
-sstream_norm(j) = norm(RHS-LHS*U)./norm(RHS); %iteration norm (using Um)
+LHSf = LHS;
+RHSf = RHS;
+sstream_norm(j) = norm(RHS-LHS*U)./norm(RHS); %iteration norm (using last iterations U)
 
 
 U = Inf(size(LHS,2),1);                                                 %Velocity vector, full length   
@@ -134,14 +131,6 @@ RHS(DEL2,:) = [];
 
 Um = LHS\RHS;               %Solve modified field equations
 
-% else
-% U_adi = struct('f', Um, 'dU',ones(13122,1));    
-% UAD = ism_deism_res_ADu(LHS,RHS,U_adi,aa,pp,gg,oo );    
-% R_U = sparse(UAD.dU_location(:,1),UAD.dU_location(:,2), UAD.dU, UAD.dU_size(1), UAD.dU_size(2)); 
-% R = RHS-LHS*Um;
-% dU = R_U\R;
-% Um = Um - 0.1*dU;
-% end
 
 %% Return to original velocity vector
 U(DEL) = NaN;
@@ -169,29 +158,33 @@ U(tmp_a) = U(tmp_b);
 clear tmp_a tmp_b;
 end
 
+
 u = U(1:gg.nua);    %u,v velocity fields
 v = U(gg.nua+1:end);
 if isequal(oo.savePicIter,1),rr.Un(:,j+1) = U; end                %Save Intermediate velocity array
 
 
-% %% Plot Velocities
-u_h = gg.S_h'*gg.c_uh*u; %Solution Velocities
-v_h = gg.S_h'*gg.c_vh*v;
-
-if oo.hybrid                        %Hybrid Model specific
-F1 = ism_falpha(1,U,nEff_lyrs,vv,aa,pp,gg,oo );
-F2 = ism_falpha(2,U,nEff_lyrs,vv,aa,pp,gg,oo );
-
-
-tmpa = (1 + pp.c13*Cb(:).*F1)./(1 + pp.c13*Cb(:).*F2);          %Use to Surface Velocities
-
-u_h = u_h.*tmpa;                    
-v_h = v_h.*tmpa;
-end
-
-imagesc(reshape(u_h,gg.nJ,gg.nI))
+% % %% Plot Velocities
+% u_h = gg.S_h'*gg.c_uh*u; %Solution Velocities
+% v_h = gg.S_h'*gg.c_vh*v;
+% 
+% if oo.hybrid                        %Hybrid Model specific
+% F1 = ism_falpha(1,U,nEff_lyrs,vv,aa,pp,gg,oo );
+% F2 = ism_falpha(2,U,nEff_lyrs,vv,aa,pp,gg,oo );
+% 
+% 
+% tmpa = (1 + pp.c13*Cb(:).*F1)./(1 + pp.c13*Cb(:).*F2);          %Use to Surface Velocities
+% %tmpa = F1./F2;
+% 
+% u_h = u_h.*tmpa;                    
+% v_h = v_h.*tmpa;
+% end
+% 
+% imagesc(reshape(u_h,gg.nJ,gg.nI))
 
 % %%
+
+eq_norm(j) = norm(RHSf-LHSf*U)./norm(RHS);
 
 
 vv.U = U;

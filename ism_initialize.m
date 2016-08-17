@@ -31,6 +31,10 @@ if ~isfield(dd,'errv'), dd.errv = ones(size(C))*pp.u; end
 aa.s = s;
 aa.b = b;
 aa.h = s-b;
+if oo.hybrid
+aa.s_c = dd.s_c/pp.z;
+aa.b_c = dd.b_c/pp.z;
+end
 [Bx,By] = gradient(aa.b, gg.dx, gg.dy);             %Bed Gradient
 aa.prj = sqrt(1+ Bx.^2 + By.^2);
 
@@ -45,8 +49,8 @@ aa.nfxd_uval = zeros(gg.nJ,gg.nI+1); aa.nfxd_vval = zeros(gg.nJ+1,gg.nI);
 end
 
 if strcmp(oo.pT, 'forward')                     %Forward Problem
-if oo.hybrid, Cb = C(:); aa.Cb = Cb;   
-else aa.C = C(:); end                   
+if oo.hybrid, Cb = aa.prj(:).*C(:); aa.Cb = Cb;   
+else aa.C = aa.prj(:).*C(:); end                   
 vv2.U = [u(:); v(:)];
 vv2.u = u(:);
 vv2.v = v(:);
@@ -75,7 +79,7 @@ U = [vv2.u(:);vv2.v(:)];
 nEff = ism_visc(U,vv2,aa,pp,gg,oo);          %Initial viscosity (SSA);
 nEff_lyrs = repmat(nEff,1,nl+1);
 
-for j=[1:50]                                 %Self consistent viscosity
+for j=[1:25]                                 %Self consistent viscosity
 F2 = ism_falpha(2,U,nEff_lyrs,vv2,aa,pp,gg,oo );    %Effective Basal Slipperiness
 C = Cb(:)./(1 + (pp.c13*Cb(:)).*(gg.S_h'*F2)); 
 [nEff, nEff_lyrs] = ism_visc_di(U,nEff_lyrs,gg.S_h*C(:),aa,pp,gg,oo); %Updated Viscosity
