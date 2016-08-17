@@ -17,19 +17,11 @@ nl = oo.nl;
 
 nEffrun = zeros(gg.nha,1);
 nEff_lyrs2 = zeros(gg.nha,nl+1);
-sp = gg.S_h*aa.h(:)/nl;                 %Depth of each layer
 
-u = U(1:gg.nua); u_h = gg.c_uh*u;       %Setup velocity,topographic parameters
-v = U(gg.nua+1:end); v_h = gg.c_vh*v;
-s = gg.S_h*aa.s(:);
-b = gg.S_h*aa.b(:);
-h = gg.S_h*aa.h(:);
-n = pp.n_Glen;
-
-
-exx = gg.du_x*u;                         %Calculate Longitudinal Strain Rates
-eyy = gg.dv_y*v;
-exy = 0.5*(gg.dhu_y*u + gg.dhv_x*v);
+u = U(1:gg.nua);        u_h = gg.c_uh*u;       %Setup velocity,topographic parameters
+v = U(gg.nua+1:end);    v_h = gg.c_vh*v;
+h_h = gg.S_h*aa.h(:);
+sp_h = gg.S_h*aa.h(:)/nl;                 %Depth of each layer
 
 
 u_c = gg.c_uc*u;
@@ -38,6 +30,16 @@ s_c = gg.S_c*aa.s_c(:);
 b_c = gg.S_c*aa.b_c(:);
 h_c = s_c-b_c;
 sp_c = h_c/nl; 
+
+n = pp.n_Glen;
+
+
+exx = gg.du_x*u;                         %Calculate Longitudinal Strain Rates
+eyy = gg.dv_y*v;
+exy = 0.5*(gg.dhu_y*u + gg.dhv_x*v);
+
+
+
 
 
 %% Depth Integrated Viscosity
@@ -81,7 +83,7 @@ end;
 
 end
 
-nEff_di = (1./h).*(sp/3) .* nEffrun;
+nEff_di = (1./h_h).*(sp_h/3) .* nEffrun;
 
 end
 
