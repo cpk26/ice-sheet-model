@@ -20,7 +20,6 @@ vv2.C = ism_cslip_field(vv2, pp, gg, oo);
 [vv2] = ism_sia(aa.s,aa.h,vv2.C,vv2,pp,gg,oo);  %SIA 
 [vv2] = ism_deism(vv2,aa,pp,gg,oo );          %SSA 
 
-
 %% Optimization Options
 
 %% FMINUNC

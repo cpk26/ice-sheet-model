@@ -20,8 +20,8 @@ nl = oo.nl;
 
 if nargin<5, oo = struct; end
 if ~isfield(dd,'nfxd'), dd.nfxd = []; end
-if ~isfield(dd,'errvx'), dd.errvx = ones(size(u))*pp.u; end 
-if ~isfield(dd,'errvy'), dd.errvy = ones(size(v))*pp.u; end
+if ~isfield(dd,'errvx'), dd.errvx = ones(gg.nIJ,1)*pp.u; end 
+if ~isfield(dd,'errvy'), dd.errvy = ones(gg.nIJ,1)*pp.u; end
 if ~isfield(dd,'errv'), dd.errv = ones(size(C))*pp.u; end
 
 
@@ -64,11 +64,11 @@ vv2.u = u(:);
 vv2.v = v(:);
 
 
-aa.u = gg.S_h*dd.vx(:)/pp.u; 
+aa.u = gg.S_h*dd.vx(:)/pp.u;                    %h-grid
 aa.v = gg.S_h*dd.vy(:)/pp.u; 
 
 
-aa.err = gg.S_h*dd.errv(:)/pp.u;
+aa.err = gg.S_h*dd.errv(:)/pp.u;                %h-grid
 aa.erru = gg.S_h*dd.errvx(:)/pp.u; 
 aa.errv = gg.S_h*dd.errvy(:)/pp.u; 
 

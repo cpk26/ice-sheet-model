@@ -36,12 +36,14 @@ U = adigatorCreateDerivInput([gg.nua+gg.nva,1], 'U');
 adigator('ism_visc', {U,vv,aa,pp,gg,oo},'ism_visc_AD')
 clear U;
 
+if oo.hybrid
 %Depth Integrated Viscosity w.r.t velocity
 U = adigatorCreateDerivInput([gg.nua+gg.nva,1], 'U');
-nEff = adigatorCreateAuxInput([gg.nha,1]);
+nEff_lyrs = adigatorCreateAuxInput([gg.nha,oo.nl+1]);
 C = adigatorCreateAuxInput([gg.nha,1]);
-adigator('ism_visc_di', {U,nEff,C,aa,pp,gg,oo},'ism_visc_diAD')
+adigator('ism_visc_di', {U,nEff_lyrs,C,aa,pp,gg,oo},'ism_visc_diAD')
 clear z U nEff C;
+end
 
 %Diagonal of A matrix w.r.t Basal slipperiness
 C = adigatorCreateDerivInput([gg.nha,1], 'C');

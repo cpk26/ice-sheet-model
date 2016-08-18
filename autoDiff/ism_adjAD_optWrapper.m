@@ -39,8 +39,13 @@ oo.savePicIter = 0;                                     %Depth Integrated Model
 oo.pic_iter = 10; 
 [vv, ~] = ism_deism(vv,aa,pp,gg,oo );           
 
-F1 = ism_falpha(1,vv.nEff,vv,aa,pp,gg,oo );          %Calculate F alpha factors 
+if oo.hybrid
+F1 = ism_falpha(1,vv.nEff,vv,aa,pp,gg,oo );          %Calculate F alpha factors [Hybrid]
 F2 = ism_falpha(2,vv.nEff,vv,aa,pp,gg,oo );
+else
+F1 = ones(gg.nha,1);                                   %Placeholders for SSA
+F2 = F1;
+end
 
 %% Cost
 
