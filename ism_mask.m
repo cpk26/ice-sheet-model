@@ -117,8 +117,8 @@ nfxd_ugrid = (gg.c_hu*nfxd(:) >0); nfxd_ugrid = reshape(nfxd_ugrid, gg.nJ,gg.nI+
 nfxd_vgrid = (gg.c_hv*nfxd(:) >0); nfxd_vgrid = reshape(nfxd_vgrid, gg.nJ+1,gg.nI);
 
 % Remnant Boundary Nodes (u/v grid)
-nbndr_ugrid = nbnd_ugrid - nperbc_ugrid - nmgn_ugrid - nfxd_ugrid;
-nbndr_vgrid = nbnd_vgrid - nperbc_vgrid - nmgn_vgrid - nfxd_vgrid;
+nbndr_ugrid = nbnd_ugrid - abs(nperbc_ugrid) - nmgn_ugrid - nfxd_ugrid;
+nbndr_vgrid = nbnd_vgrid - abs(nperbc_vgrid) - nmgn_vgrid - nfxd_vgrid;
 
 %% Mask Operators
 
@@ -142,10 +142,11 @@ gg.dv_y = S_h*gg.dv_y*S_v';
 Mu = ones(gg.nu,1) - (nbnd_ugrid(:) - nmgn_ugrid(:)); Mu = spdiags(Mu, 0, gg.nu,gg.nu);    %masks (force to be zero) dh_x/dh_y
 Mv = ones(gg.nv,1) - (nbnd_vgrid(:) - nmgn_vgrid(:)); Mv = spdiags(Mv, 0, gg.nv,gg.nv);    %across the mask boundary at all boundary u/v 
                                                                                            %nodes except the ice margin
-%gg.dh_x = S_u*Mu*gg.dh_x*S_h';
-%gg.dh_y = S_v*Mv*gg.dh_y*S_h';
-gg.dh_x = S_u*gg.dh_x*S_h';                                             %Sans masking at border
-gg.dh_y = S_v*gg.dh_y*S_h';
+% gg.dh_x = S_u*Mu*gg.dh_x*S_h';
+% gg.dh_y = S_v*Mv*gg.dh_y*S_h';
+
+ gg.dh_x = S_u*gg.dh_x*S_h';                                             %Sans masking at border
+ gg.dh_y = S_v*gg.dh_y*S_h';
 
 cnbnd1 = (gg.dv_x*S_v'*S_v*ones(gg.nv,1) ~= 0);                            %c-nodes where dv_x/du_y are across mask boundary
 cnbnd2 = (gg.du_y*S_u'*S_u*ones(gg.nu,1) ~= 0);
@@ -157,8 +158,8 @@ Mc2 = ones(gg.nc,1) - (cnbnd2); Mc2 = spdiags(Mc2, 0, gg.nc,gg.nc);        %acro
 %gg.dhv_x = gg.c_ch*S_c*Mc1*gg.dv_x*S_v';                                   %derivative of v in x-direction from v grid onto h-grid
 %gg.dhu_y = gg.c_ch*S_c*Mc2*gg.du_y*S_u';                                   %derivative of u in y-direction from u grid onto h-grid
 
-  gg.dhv_x = gg.c_ch*S_c*gg.dv_x*S_v';                                    %Sans masking at border
-  gg.dhu_y = gg.c_ch*S_c*gg.du_y*S_u'; 
+gg.dhv_x = gg.c_ch*S_c*gg.dv_x*S_v';                                    %Sans masking at border
+gg.dhu_y = gg.c_ch*S_c*gg.du_y*S_u'; 
 
 
 gg.dvh_x = gg.c_uv*gg.dh_x ;                                               %derivative of h in x direction from h-grid onto v-grid

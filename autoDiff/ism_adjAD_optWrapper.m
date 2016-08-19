@@ -30,8 +30,12 @@ C = Cb(:)./(1 + Cb(:).*(gg.S_h'*F2));
 nEff = ism_visc_di(U,nEff,gg.S_h*C(:),aa,pp,gg,oo); %Updated Viscosity
 end   
 
-vv.nEff = nEff;
+else
+U = vv.U;
+nEff = ism_visc(U,vv,aa,pp,gg,oo);
 end
+
+vv.nEff = nEff;
 
 %% DEISM
 
@@ -68,11 +72,11 @@ if nargout > 1 % gradient required
     rr.adjU = UAD.dU;
     
     % For the hybrid approximation, determine adjoint state of Cf* 
-    if oo.hybrid
+    %if oo.hybrid
     C_adi = struct('f', gg.S_h*vv.C(:), 'dC',ones(gg.nha,1));
     UAC = ism_inv_cost_ADc(vv.U,C_adi,F1,F2,vv,aa,pp,gg,oo);
     rr.adjC = UAC.dC;
-    end
+    %end
     
     %Determine adjoint variable C*
     rr = ism_adjAD_main(vv,rr,aa,pp,gg,oo );

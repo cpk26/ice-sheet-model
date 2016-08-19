@@ -11,7 +11,7 @@ function [rr] = ism_adjAD_main(vv,rr ,aa,pp,gg,oo )
 
 numIter = oo.pic_iter;                               %Number of Picard Iterations
 
-if isfield(oo,'runC'), runC = vv.runC;               %Variable accumalating the adjoint of C
+if isfield(oo,'runC'), runC = oo.runC;               %Variable accumalating the adjoint of C
 else runC = zeros(gg.nha,1); end;                    %initialize to vv.runC if provided
 
 
@@ -89,48 +89,44 @@ clear tmp_a
 end
 
 if any(gg.nperbc)
-tmp_a = [gg.S_u*(gg.nperbc_ugrid(:) ~= 0); gg.S_v*(gg.nperbc_vgrid(:) ~= 0)]; tmp_a = logical(tmp_a);
+tmp_a = [(gg.c_hu*gg.nperbc(:) == 1); (gg.c_hv*gg.nperbc(:) == 1)]; tmp_a = logical(tmp_a);
+adjU_r(tmp_a) = 0; 
 
-%DEL = DEL + tmp_a;
 DEL2 = DEL2 + tmp_a;
-
+  
+clear tmp_a tmp_b tmp_c;
 end
 
 DEL = logical(DEL);
 DEL2 = logical(DEL2);
 
 
-%A_r(:,DEL) = [];
+A_r(:,DEL) = [];
 A_r(DEL2,:) = [];
 
 %A_sp(:,DEL) = 0;
 %A_sp(DEL2,:) = 0;
 
-adjU_r(DEL2) = 0;   
+%adjU_r(DEL2) = 0;   
 
 %% Intermediate step to determining the adjoint of A matrix
 b_r = A_r'\adjU_r;
 
+
+%Return to original velocity vector
 b(~DEL2) = b_r;
+
 %% Apply BC to b array
 
-if any(gg.nperbc)
-tmp_a = [gg.S_u*(gg.nperbc_ugrid(:) ~= 0); gg.S_v*(gg.nperbc_vgrid(:) ~= 0)]; tmp_a = logical(tmp_a);
-
-b(~tmp_a) = b_r;
-clear tmp_a;
-
-%  tmp_a = [gg.S_u*(gg.nperbc_ugrid(:) < 0); gg.S_v*(gg.nperbc_vgrid(:) < 0)]; tmp_a = logical(tmp_a);
-%  tmp_b = [gg.S_u*(gg.nperbc_ugrid(:) > 0); gg.S_v*(gg.nperbc_vgrid(:) > 0)]; tmp_b = logical(tmp_b); 
+% if any(gg.nperbc)
+% tmp_a = [gg.S_u*(gg.nperbc_ugrid(:) > 0); gg.S_v*(gg.nperbc_vgrid(:) > 0)]; tmp_a = logical(tmp_a);
+% tmp_b = [gg.S_u*(gg.nperbc_ugrid(:) < 0); gg.S_v*(gg.nperbc_vgrid(:) < 0)]; tmp_b = logical(tmp_b);
 % 
 % b(tmp_a) = b(tmp_b);
-% clear tmp_a tmp_b;
-
-end   
+% 
+% clear tmp_a;
+% end   
   
-%Return to original velocity vector
-
-
 NN = b(1:gg.nua);
 figure; imagesc(reshape(NN,gg.nJ,gg.nI+1))
 
