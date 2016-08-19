@@ -72,10 +72,12 @@ if nargout > 1 % gradient required
     rr.adjU = UAD.dU;
     
     % For the hybrid approximation, determine adjoint state of Cf* 
+    %
     %if oo.hybrid
     C_adi = struct('f', gg.S_h*vv.C(:), 'dC',ones(gg.nha,1));
     UAC = ism_inv_cost_ADc(vv.U,C_adi,F1,F2,vv,aa,pp,gg,oo);
     rr.adjC = UAC.dC;
+    rr.runC = rr.adjC;
     %end
     
     %Determine adjoint variable C*

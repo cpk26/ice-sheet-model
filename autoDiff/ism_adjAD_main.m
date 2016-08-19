@@ -88,14 +88,16 @@ DEL2 = DEL2 + tmp_a;
 clear tmp_a 
 end
 
-if any(gg.nperbc)
-tmp_a = [gg.S_u*(gg.nperbc_ugrid(:) ~= 0); gg.S_v*(gg.nperbc_vgrid(:) ~= 0)]; tmp_a = logical(tmp_a);
-adjU_r(tmp_a) = 0;
+if any(gg.nperbc)   %Periodic BC
+
+tmp_a = [gg.S_u*(gg.nperbc_ugrid(:) < 0); gg.S_v*(gg.nperbc_vgrid(:) < 0)]; tmp_a = logical(tmp_a);
+tmp_b = [gg.S_u*(gg.nperbc_ugrid(:) > 0); gg.S_v*(gg.nperbc_vgrid(:) > 0)]; tmp_b = logical(tmp_b);
+
+A_r(tmp_b,:) = A_r(tmp_b,:) + A_r(tmp_a,:);
 
 DEL2 = DEL2 + tmp_a;
-%A_r(tmp_a,:) = [];
-  
 clear tmp_a tmp_b tmp_c;
+
 end
 
 DEL = logical(DEL);
@@ -105,34 +107,32 @@ DEL2 = logical(DEL2);
 A_r(:,DEL) = [];
 A_r(DEL2,:) = [];
 
-%A_sp(:,DEL) = 0;
-%A_sp(DEL2,:) = 0;
 
 adjU_r(DEL) = [];   
 
 %% Intermediate step to determining the adjoint of A matrix
 b_r = A_r'\adjU_r;
 
+%% Return to original velocity vector
+b(~DEL2) = b_r;
+
 %% Apply BC to b array
 
 if any(gg.nperbc)
-tmp_a = [gg.S_u*(gg.nperbc_ugrid(:) ~= 0); gg.S_v*(gg.nperbc_vgrid(:) ~= 0)]; tmp_a = logical(tmp_a);
 
-b(~tmp_a) = b_r;
-clear tmp_a;
+tmp_a = [gg.S_u*(gg.nperbc_ugrid(:) < 0); gg.S_v*(gg.nperbc_vgrid(:) < 0)]; tmp_a = logical(tmp_a);
+tmp_b = [gg.S_u*(gg.nperbc_ugrid(:) > 0); gg.S_v*(gg.nperbc_vgrid(:) > 0)]; tmp_b = logical(tmp_b);
+
+b(tmp_a) = b(tmp_b);
+clear tmp_a tmp_b;
+
 end   
   
-%Return to original velocity vector
-b(~DEL2) = b_r;
+
 
 %% Determine adjoint of A matrix
 
-
 adjA = -spdiags(b,0,gg.nua+gg.nva,gg.nua+gg.nva)*A_sp*spdiags(Uf,0,gg.nua+gg.nva,gg.nua+gg.nva);
-
-%adjA1 = -b*Uf';  
-
-
 
 clear b tmp_a;
 
