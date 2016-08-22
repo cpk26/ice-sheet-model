@@ -28,7 +28,7 @@ function [x,f, exitflag,costdata] = ism_steepDesc(f,x0,tol,maxit)
 % linesearch parms
 
 if nargin < 4                   %Maximum number of iterations
-maxit=20; 
+maxit=35; 
 end
 if nargin < 3                   %Tolerance, as fraction (xc - xn)/xc
 tol=0.05;
