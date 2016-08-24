@@ -32,8 +32,8 @@ options.Method = 'lbfgs';
 options.Display = 'full';
 options.LS_init = 2;
 options.Corr = 35;
-options.MaxIter = 250;
-options.progTol = 1e-7;
+options.MaxIter = 100;
+options.optTol = 5e-4;
  
 %% Optimization
 
