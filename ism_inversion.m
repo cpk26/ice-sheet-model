@@ -38,15 +38,29 @@ options.optTol = 5e-4;
 %% Optimization
 
 if strcmp(oo.inv_meth, 'LM')
-%[vv2.acoeff,cst,exitflag,output] = fminunc(@(x)ism_adjLM_optWrapper(x,vv2,aa, pp, gg, oo),vv2.acoeff(:),options);
+    
+if strcmp(oo.inv_opt,'gd')
 [vv2.acoeff,cst,exitflag,output] = ism_steepDesc(@(x)ism_adjLM_optWrapper(x,{},aa, pp, gg, oo),vv2.acoeff(:));
+elseif strcmp(oo.inv_opt,'lbfgs')
+[vv2.acoeff,cst,exitflag,output] = fminunc(@(x)ism_adjLM_optWrapper(x,vv2,aa, pp, gg, oo),vv2.acoeff(:),options);
+else
+error('Optimization method not specified')
+end  
 
 elseif strcmp(oo.inv_meth, 'AD')
 ism_adjAD_generate( vv2,aa, pp, gg, oo );
+
+if strcmp(oo.inv_opt,'gd')
+[vv2.acoeff,cst,exitflag,output] = ism_steepDesc(@(x)ism_adjAD_optWrapper(x,{},aa, pp, gg, oo),vv2.acoeff(:));
+elseif strcmp(oo.inv_opt,'lbfgs')
+[vv2.acoeff,cst,exitflag,output] = minFunc(@(x)ism_adjAD_optWrapper(x,vv2,aa, pp, gg, oo),vv2.acoeff(:),options);
+else
+error('Optimization method not specified')
+end  
+
 %[vv2.acoeff,cst,exitflag,output] = ism_steepDesc(@(x)ism_adjAD_optWrapper(x,{},aa, pp, gg, oo),vv2.acoeff(:));
 %[vv2.acoeff,cst,exitflag,output] = fminunc(@(x)ism_adjAD_optWrapper(x,vv2,aa, pp, gg, oo),vv2.acoeff(:),options);
-[vv2.acoeff,cst,exitflag,output] = minFunc(@(x)ism_adjAD_optWrapper(x,vv2,aa, pp, gg, oo),vv2.acoeff(:),options);
-
+%[vv2.acoeff,cst,exitflag,output] = minFunc(@(x)ism_adjAD_optWrapper(x,vv2,aa, pp, gg, oo),vv2.acoeff(:),options);
 else
 error('Inversion Method not specified')
 end
