@@ -20,16 +20,11 @@ nEff_lyrs2 = zeros(gg.nha,nl+1);
 
 u = U(1:gg.nua);        u_h = gg.c_uh*u;       %Setup velocity,topographic parameters
 v = U(gg.nua+1:end);    v_h = gg.c_vh*v;
-h_h = gg.S_h*aa.h(:);
-sp_h = gg.S_h*aa.h(:)/nl;                 %Depth of each layer
+h = gg.S_h*aa.h(:);
+s = gg.S_h*aa.s(:);
+b = gg.S_h*aa.b(:);
+sp = gg.S_h*aa.h(:)/nl;                 %Depth of each layer
 
-
-u_c = gg.c_uc*u;
-v_c = gg.c_vc*v;
-s_c = gg.S_c*aa.s_c(:);
-b_c = gg.S_c*aa.b_c(:);
-h_c = s_c-b_c;
-sp_c = h_c/nl; 
 
 n = pp.n_Glen;
 
@@ -47,25 +42,21 @@ for k =[0:nl]
 
 
 %% Viscosity of Current Layer
-%tmpz = b(:) + (k)*sp;
-tmpz = b_c + (k)*sp_c;
+tmpz = b(:) + (k)*sp;
 
 nEff_l = nEff_lyrs(:,k+1);
-for ii = [1:15]
-%exz = pp.c11*C.*u_h.*(s-tmpz)./(nEff_l.*h);
-%eyz = pp.c11*C.*v_h.*(s-tmpz)./(nEff_l.*h);
 
-exz = pp.c11.*u_c.*(gg.c_hc*C(:)).*(s_c-tmpz)./((gg.c_hc*nEff_l).*h_c);         %C-grid
-eyz = pp.c11.*v_c.*(gg.c_hc*C(:)).*(s_c-tmpz)./((gg.c_hc*nEff_l).*h_c);
 
-exz = gg.c_ch*exz(:);                %H-grid 
-eyz = gg.c_ch*eyz(:);
+for ii = [1:2]
+exz = pp.c11*C.*u_h.*(s-tmpz)./(nEff_l.*h);
+eyz = pp.c11*C.*v_h.*(s-tmpz)./(nEff_l.*h);
 
 edeff = sqrt(exx.^2 + eyy.^2 + exx.*eyy + exy.^2 + (1/4)*exz.^2 + (1/4)*eyz.^2 + pp.n_rp.^2);
 
 nEff_l = edeff.^((1-n)/n);
 end
 
+%nEff_lyrs(:,k+1) = nEff_l;
 nEff_lyrs2(:,k+1) = nEff_l;
 
 
@@ -83,7 +74,7 @@ end;
 
 end
 
-nEff_di = (1./h_h).*(sp_h/3) .* nEffrun;
+nEff_di = (1./h).*(sp/3) .* nEffrun;
 
 end
 

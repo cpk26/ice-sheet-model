@@ -18,15 +18,17 @@ sp = gg.S_h *aa.h(:)/nl;                %Depth of each layer
 u = U(1:gg.nua); u_h = gg.c_uh*u;       %Setup velocity,topographic parameters
 v = U(gg.nua+1:end); v_h = gg.c_vh*v;
 s = gg.S_h*aa.s(:);
+b = gg.S_h*aa.b(:);
+h = gg.S_h*aa.h(:);
 
-
-for k =[0:nl]
+parfor k =[0:nl]
 
 %% Viscosity of Current Layer
-tmpz = gg.S_h*aa.b(:) + (k)*sp;
+tmpz = b + (k)*sp;
 
-nEff_l = gg.c_ch*(gg.c_hc*nEff_lyrs(:,k+1));
-F_l = (nEff_l).^(-1) .* ((s-tmpz)./(gg.S_h *aa.h(:))).^alpha; 
+nEff_l = (nEff_lyrs(:,k+1));
+
+F_l = (nEff_l).^(-1) .* ((s-tmpz)./(h)).^alpha; 
 
 
 %% Running simpsons rule integration

@@ -49,6 +49,10 @@ vv.u = u;                              %Non-dimensional velocity
 vv.v = v;
 vv.U = [u;v];
 
+% vv.u_d = 0.5*gg.c_hu*u_d(:)./(gg.c_hu*(gg.S_h*gg.m(:) == 2));  %Transfer onto u/v grids
+% vv.v_d = 0.5*gg.c_hv*v_d(:)./(gg.c_hv*(gg.S_h*gg.m(:) == 2));  
+% vv.U_d = [u_d;v_d];
+
 
 
 end

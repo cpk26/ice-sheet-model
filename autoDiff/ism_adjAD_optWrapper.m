@@ -23,16 +23,16 @@ if oo.hybrid,                               %Setup Hybrid Approximation
 Cb = vv.C;                                  %Basal Slipperiness
 U = vv.U;
 nEff = ism_visc(U,vv,aa,pp,gg,oo);          %Initial viscosity;
+nEff_lyrs = repmat(nEff,1,oo.nl+1);
 
-for j=[1:10]                                %Self consistent viscosity
-F2 = ism_falpha(2,nEff,vv,aa,pp,gg,oo );    %Effective Basal Slipperiness
-C = Cb(:)./(1 + Cb(:).*(gg.S_h'*F2));
-nEff = ism_visc_di(U,nEff,gg.S_h*C(:),aa,pp,gg,oo); %Updated Viscosity
-end   
+F2 = ism_falpha(2,U,nEff_lyrs,vv,aa,pp,gg,oo );
+vv.C = Cb(:)./(1 + (pp.c13*Cb(:)).*(gg.S_h'*F2));                   %Effective Basal Slipperiness
+   
 
 else
 U = vv.U;
 nEff = ism_visc(U,vv,aa,pp,gg,oo);
+
 end
 
 vv.nEff = nEff;
@@ -44,8 +44,9 @@ oo.pic_iter = 10;
 [vv, ~] = ism_deism(vv,aa,pp,gg,oo );           
 
 if oo.hybrid
-F1 = ism_falpha(1,vv.nEff,vv,aa,pp,gg,oo );          %Calculate F alpha factors [Hybrid]
-F2 = ism_falpha(2,vv.nEff,vv,aa,pp,gg,oo );
+F1 = ism_falpha(1,U,nEff_lyrs,vv,aa,pp,gg,oo );          %Calculate F alpha factors [Hybrid]
+F2 = ism_falpha(2,U,nEff_lyrs,vv,aa,pp,gg,oo );
+
 else
 F1 = ones(gg.nha,1);                                   %Placeholders for SSA
 F2 = F1;
