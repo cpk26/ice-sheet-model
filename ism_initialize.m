@@ -96,7 +96,7 @@ end
 %% Initialize Hybrid or SSA variables
 U = vv2.U;
 
-if oo.hybrid,                                   %Hybrid                                                      
+if oo.hybrid,                                       %Hybrid                                                      
 nEff = ism_visc(U,vv2,aa,pp,gg,oo);         
 nEff_lyrs = repmat(nEff,1,nl+1);
 F2 = ism_falpha(2,U,nEff_lyrs,vv2,aa,pp,gg,oo );    %Effective Basal Slipperiness
@@ -107,7 +107,7 @@ vv2.F2 = F2;
 vv2.nEff = nEff;
 vv2.nEff_lyrs = nEff_lyrs;
 
-else
+else                                                %SSA
 nEff = ism_visc(U,vv2,aa,pp,gg,oo);         
 vv2.nEff = nEff;   
 end

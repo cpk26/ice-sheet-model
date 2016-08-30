@@ -14,7 +14,8 @@ vv2 = vv;
 
 %% Discretize Basal slipperiness into coefficients                                    
 vv2.acoeff = ism_cslip_acoeff(vv, pp, gg, oo);
-if oo.hybrid; 
+
+if oo.hybrid;                                           %Rediscretize [Unnecessary if removing fourier discretization]
 Cb = ism_cslip_field(vv2, pp, gg, oo); 
 C = Cb(:)./(1 + (pp.c13*Cb(:)).*(gg.S_h'*vv.F2));
 vv2.Cb = Cb; vv2.C = C; 
@@ -23,7 +24,7 @@ else vv2.C = ism_cslip_field(vv2, pp, gg, oo);   end
 
  
 %% Solve Initial Forward problem
-%[vv2] = ism_sia(aa.s,aa.h,vv2.C,vv2,pp,gg,oo);  %SIA 
+[vv2] = ism_sia(aa.s,aa.h,vv2.C,vv2,pp,gg,oo);  %SIA [can remove]
 [vv2] = ism_deism(vv2,aa,pp,gg,oo );          %SSA 
 
 %% Optimization Options
