@@ -32,13 +32,14 @@ if ~isfield(pd,'acoeff_ny'), pd.acoeff_ny = 45; end
 
 
 if ~isfield(oo,'pT'), oo.pT = 'forward'; end                       %problem type: 'forward' or 'inverse'
-if ~isfield(oo,'inv_iter'), oo.pic_iter = 10; end;                 %number of picard iterations iterations
+if ~isfield(oo,'pic_iter'), oo.pic_iter = 15; end;                 %number of picard iterations iterations
 if ~isfield(oo,'hybrid'), oo.hybrid = 1; end                       %Approximation: 1 for hybrid, else default to SSA
 if ~isfield(oo,'nl'), oo.nl = 50; end                              %Number of vertical layers to use for Simpson's Rule
 if ~isfield(oo,'inv_meth'), oo.inv_meth = 'AD'; end                %Inversion Method, either LM or AD
 if ~isfield(oo,'savePicIter'), oo.savePicIter = 0; end             %Flag to save intermediate arrays in picard iterations
 if ~isfield(oo,'inv_opt'), oo.inv_opt = 'gd'; end                  %Inversion acoeff optimization algorithm: 'gd'/'lbfgs': gradientDescent/lBFGS 
 if ~isfield(oo,'inv_cst'), oo.inv_msft = 'abs'; end                %Least square solution using absolute or relative error
+if ~isfield(oo,'inv_iter'), oo.inv_iter = 100; end                 %Maximum number of inversion iterations
 if ~isfield(oo,'norm'), oo.norm = 2; end                           %solution norm for testing convergence. see norm()
 if ~isfield(oo,'Cdisc'), oo.Cdisc = 'dct2'; end                    %Discritization of C slip coefficient. Either 'dct2' or 'grid'
 

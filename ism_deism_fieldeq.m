@@ -29,6 +29,7 @@ Cslip_vdiag = spdiags(Cslip_v(:),0,nva,nva);
 
 %% Surface Gradient
 %Use gradient instead of gg.nddx/y since periodic BC conditions do not apply 
+tic
 [Sx,Sy] = gradient(aa.s, gg.dx, gg.dy);             %For interior of ice Sheet      
 
 su = (gg.c_hu*gg.S_h*aa.s(:))./(gg.c_hu*gg.S_h*(aa.h(:) > 0));  %For ice margin
@@ -41,6 +42,8 @@ Sx = Sx(:);                            %Vectorize, flip the sign in y-direction 
 Sx(logical(gg.nmgn)) = dx(logical(gg.nmgn)); %Update gradient at ice margin
 Sy(logical(gg.nmgn)) = -dy(logical(gg.nmgn));
 Sy = -Sy(:); 
+
+toc
 nEff_diag = spdiags(nEff(:),0,nha,nha);                                  
 
 
