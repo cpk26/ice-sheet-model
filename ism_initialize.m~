@@ -54,8 +54,8 @@ Sx(logical(gg.nmgn)) = ddx(logical(gg.nmgn)); %Update gradient at ice margin
 Sy(logical(gg.nmgn)) = -ddy(logical(gg.nmgn));
 Sy = -Sy(:); 
 
-aa.Sx = Sx;     %Save
-aa.Sy = Sy;
+aa.Sx = Sx;
+aa.Sy = Sy
 
 
 

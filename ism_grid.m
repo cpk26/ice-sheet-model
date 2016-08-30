@@ -21,9 +21,6 @@ xr_h = xr-dx/2;         %max x coordinate
 yb_h = yb + dy/2;       %min y coordinate
 yt_h = yt - dy/2;       %max y coordinate
 
-Lx_h = abs(xr_h-xl_h);   %Domain dimensions (h grid)
-Ly_h = abs(yt_h-yb_h);   %Domain dimensions (h grid)
-
 x = linspace(xl_h,xr_h,nI);  %array of x coords (h-grid)
 y = linspace(yt_h,yb_h,nJ);  %array of y coords
 
@@ -94,9 +91,6 @@ gg.dx = dx;
 gg.dy = dy;
 gg.Lx = Lx;
 gg.Ly = Ly;
-gg.Lx_h = Lx_h;
-gg.Ly_h = Ly_h;
-
 
 gg.du_x = du_x; %Finite Difference Operators
 gg.dv_y = dv_y;
