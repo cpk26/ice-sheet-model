@@ -15,7 +15,7 @@ function [aa,vv2] = ism_initialize(b,s, u, v, C,vv, dd,gg,pp,oo)
 %   vv2 structure containing initial variables
 %
 
-if ~isfield(oo,'nl'), oo.nl = 50; end                   %%Number of layers, must even so vl+1 is odd.
+if ~isfield(oo,'nl'), oo.nl = 50; end                   %Number of layers, must even so vl+1 is odd.
 nl = oo.nl;      
 
 if nargin<5, oo = struct; end
@@ -27,18 +27,16 @@ if ~isfield(dd,'errv'), dd.errv = ones(size(C))*pp.u; end
 
 %% put fields and variables in structs
 
-%Topography
+%% Topography
 aa.s = s;
 aa.b = b;
 aa.h = s-b;
-if oo.hybrid
 
-end
 [Bx,By] = gradient(aa.b, gg.dx, gg.dy);             %Bed Gradient
 aa.prj = sqrt(1+ Bx.^2 + By.^2);
 
 
-%Fixed Boundary Conditions. 
+%% Fixed Boundary Conditions. 
 
 if any(dd.nfxd(:))
 aa.nfxd_uval = dd.vx_u.*gg.nfxd_ugrid/pp.u;
@@ -47,25 +45,24 @@ else
 aa.nfxd_uval = zeros(gg.nJ,gg.nI+1); aa.nfxd_vval = zeros(gg.nJ+1,gg.nI);
 end
 
-if strcmp(oo.pT, 'forward')                     %Forward Problem
-if oo.hybrid, Cb = aa.prj(:).*C(:); aa.Cb = Cb;   
-else aa.C = aa.prj(:).*C(:); end                   
+%% Forward/Inverse Problem Settings
 vv2.U = [u(:); v(:)];
 vv2.u = u(:);
 vv2.v = v(:);
+
+
+if strcmp(oo.pT, 'forward')                     %Forward Problem
+if oo.hybrid, Cb = aa.prj(:).*C(:); aa.Cb = Cb;   
+else aa.C = aa.prj(:).*C(:); end   
+
 
 elseif strcmp(oo.pT, 'inverse')                 %Inverse Problem
 if oo.hybrid, Cb = C(:); vv2.Cb = Cb; 
-else vv2.C = C(:); end;         
-
-vv2.U = [u(:); v(:)];
-vv2.u = u(:);
-vv2.v = v(:);
+else vv2.C = C(:); end;  
 
 
 aa.u = gg.S_h*dd.vx(:)/pp.u;                    %h-grid
 aa.v = gg.S_h*dd.vy(:)/pp.u; 
-
 
 aa.err = gg.S_h*dd.errv(:)/pp.u;                %h-grid
 aa.erru = gg.S_h*dd.errvx(:)/pp.u; 
@@ -73,31 +70,24 @@ aa.errv = gg.S_h*dd.errvy(:)/pp.u;
 
 end
 
-if oo.hybrid,                               %Determine initial viscosity for Hybrid Approximation                           
-U = [vv2.u;vv.v];
-nEff = ism_visc(U,vv2,aa,pp,gg,oo);          %Initial viscosity (SSA);
-nEff_lyrs = repmat(nEff,1,nl+1);
+%% Hybrid vs SSA settings
+U = vv2.U;
 
-for j=[1:1]                                 %Self consistent viscosity
+if oo.hybrid,                                   %Hybrid                                                      
+nEff = ism_visc(U,vv2,aa,pp,gg,oo);         
+nEff_lyrs = repmat(nEff,1,nl+1);
 F2 = ism_falpha(2,U,nEff_lyrs,vv2,aa,pp,gg,oo );    %Effective Basal Slipperiness
 C = Cb(:)./(1 + (pp.c13*Cb(:)).*(gg.S_h'*F2)); 
-%[nEff, nEff_lyrs] = ism_visc_di(U,nEff_lyrs,gg.S_h*C(:),aa,pp,gg,oo); %Updated Viscosity
-
-end   
-
 
 vv2.C = C;
+vv2.F2 = F2;
 vv2.nEff = nEff;
 vv2.nEff_lyrs = nEff_lyrs;
+
+else
+nEff = ism_visc(U,vv2,aa,pp,gg,oo);         
+vv2.nEff = nEff;   
 end
-
-
-
-% aa.u(aa.u <= 0) = aa.u(aa.u <= 0) - pp.U_rp; %Regularize
-% aa.u(aa.u > 0) = aa.u(aa.u > 0) + pp.U_rp;
-% aa.v(aa.v <= 0) = aa.v(aa.v <= 0) - pp.U_rp; 
-% aa.v(aa.v > 0) = aa.v(aa.v > 0) + pp.U_rp;
-
 
 
 end

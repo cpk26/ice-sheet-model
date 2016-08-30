@@ -17,7 +17,7 @@ Cb = C;                                           %Basal Slip
 
 if oo.hybrid                                      %Hybrid Model; Compute surface velocities
 
-tmpa = (1 + Cb(:).*F1)./(1 + Cb(:).*F2);          %U_eff to U_surface factor on h-grid
+tmpa = (1 + (pp.c13*Cb(:)).*F1)./(1 + (pp.c13*Cb(:)).*F2);          %U_eff to U_surface factor on h-grid
 tmpa_u = (gg.c_hu*tmpa)./(gg.c_hu*(gg.S_h*gg.m(:) ==2));    %Interpolate onto u/v grids
 tmpa_v = (gg.c_hv*tmpa)./(gg.c_hv*(gg.S_h*gg.m(:) ==2));    %Extrapolate at edges
 

@@ -9,11 +9,13 @@ function [acoeff] = ism_cslip_acoeff(vv, pp, gg, oo)
 %   vv       solution variables
 
 if ~isfield(pp,'acoeff_nx'), pp.acoeff_nx = 45; end;    %Number of terms in x,y directions to keep in DCT2
-if ~isfield(pp,'acoeff_ny'), pp.acoeff_ny = 45; end;    
+if ~isfield(pp,'acoeff_ny'), pp.acoeff_ny = 45; end;  
+
+if oo.hybrid, C = vv.Cb; else C = vv.C; end;
 
 
-aField = reshape(log(vv.C),gg.nJ,gg.nI);                %Set slipperiness, C = exp(a(:)*F(:))
-aField(vv.C == 0) = mean(gg.S_h*log(vv.C(:)));          %Remove INF values outside of mask
+aField = reshape(log(C),gg.nJ,gg.nI);                %Set slipperiness, C = exp(a(:)*F(:))
+aField(C == 0) = mean(gg.S_h*log(C(:)));          %Remove INF values outside of mask
 
 if isequal(oo.Cdisc, 'dct2')
 %% Discretize Basal slipperiness using discrete cosine series

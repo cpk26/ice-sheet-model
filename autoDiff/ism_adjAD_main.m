@@ -14,12 +14,9 @@ numIter = oo.pic_iter;                               %Number of Picard Iteration
 if isfield(rr,'runC'), runC = rr.runC;               %Variable accumalating the adjoint of C
 else runC = zeros(gg.nha,1); end;                    %initialize to vv.runC if provided
 
-
-
-if strcmp(oo.pT, 'forward'); C = aa.C; end; %Problem Type
-if strcmp(oo.pT, 'inverse'); C = vv.C; end;
-if oo.hybrid, Cb = C; end
-
+                                             
+if oo.hybrid, Cb = vv.Cb;                           %Initialize Basal Drag
+else C = vv.C; end
 
 X = [gg.du_x gg.dv_y; gg.du_x -gg.dv_y; gg.dhu_y gg.dhv_x; speye(gg.nua,gg.nua) sparse(gg.nua,gg.nva); sparse(gg.nva,gg.nua) speye(gg.nva,gg.nva)];
 X2 = [gg.dh_x gg.dh_x gg.duh_y speye(gg.nua,gg.nua) sparse(gg.nva,gg.nua)'; gg.dh_y -gg.dh_y gg.dvh_x sparse(gg.nua,gg.nva)' speye(gg.nva,gg.nva)];
@@ -40,12 +37,13 @@ disp(['Inverse Picard Iteration: ', num2str(j)])
 A_r = rr.An{j};                             %A matrix from current iteration (r indicates that it will be reduced during application of BC)
 A_sp = (rr.An{j} ~= 0);
 Uf = rr.Un(:,j+1);                          %Velocity from iteration n+1 (forward iteration)
-nEff = rr.nEffn(:,j);
 b = zeros(numel(Uf),1);                     %Preallocate  b array
 
 if oo.hybrid, 
-F2 = ism_falpha(2,nEff,vv,aa,pp,gg,oo );    
-C = Cb(:)./(1 + Cb(:).*(gg.S_h'*F2)); end;
+F2 = rr.F2n(:,j);
+C = Cb(:)./(1 + (pp.c13*Cb(:)).*(gg.S_h'*F2)); 
+
+end;
 
 if firstpass
     adjU = rr.adjU; adjU_r = adjU;               %Adjoint of U from cost function for first iteration
@@ -55,7 +53,7 @@ else
     U_adi = struct('f', Uf, 'dU',ones(gg.nua+gg.nva,1));             %Otherwise calculate from adjoint of viscosity
     
     if oo.hybrid
-    UAD = ism_visc_diAD(U_adi,rr.nEffn(:,j),gg.S_h*C(:),aa,pp,gg,oo);    
+    UAD = ism_visc_diSAD(U_adi,rr.nEffn(:,j),gg.S_h*C(:),aa,pp,gg,oo);    
     U_visc = sparse(UAD.dU_location(:,1),UAD.dU_location(:,2), UAD.dU, UAD.dU_size(1), UAD.dU_size(2));        
     else
     UAD = ism_visc_AD(U_adi,vv,aa,pp,gg,oo);    
@@ -174,8 +172,13 @@ C_form = sparse(CAD.dC_location(:,1),CAD.dC_location(:,2), CAD.dC, CAD.dC_size(1
 adjC = C_form'*adjC;
 end
 
+if oo.hybrid
+adjC = adjC.*(1+(pp.c13*Cb(:)).*F2).^-2;   %Move from C effective to C basal
+end
 
 runC = runC + adjC;
+
+
 clear C_adi CAD C_Ddiag tmp;
 
 

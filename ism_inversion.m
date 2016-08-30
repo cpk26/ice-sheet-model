@@ -14,17 +14,19 @@ vv2 = vv;
 
 %% Discretize Basal slipperiness into coefficients                                    
 vv2.acoeff = ism_cslip_acoeff(vv, pp, gg, oo);
-vv2.C = ism_cslip_field(vv2, pp, gg, oo);    
+if oo.hybrid; 
+Cb = ism_cslip_field(vv2, pp, gg, oo); 
+C = Cb(:)./(1 + (pp.c13*Cb(:)).*(gg.S_h'*vv.F2));
+vv2.Cb = Cb; vv2.C = C; 
+    
+else vv2.C = ism_cslip_field(vv2, pp, gg, oo);   end
+
  
 %% Solve Initial Forward problem
-[vv2] = ism_sia(aa.s,aa.h,vv2.C,vv2,pp,gg,oo);  %SIA 
+%[vv2] = ism_sia(aa.s,aa.h,vv2.C,vv2,pp,gg,oo);  %SIA 
 [vv2] = ism_deism(vv2,aa,pp,gg,oo );          %SSA 
 
 %% Optimization Options
-
-%% FMINUNC
-  options = optimoptions(@fminunc,'Display','iter','Algorithm','quasi-newton',...
-  'HessUpdate', 'bfgs','GradObj','on','TolFun', 1e-10);
 
 %% MINFUNC [https://www.cs.ubc.ca/~schmidtm/Software/minFunc.html]
 options = struct();
@@ -58,16 +60,15 @@ else
 error('Optimization method not specified')
 end  
 
-%[vv2.acoeff,cst,exitflag,output] = ism_steepDesc(@(x)ism_adjAD_optWrapper(x,{},aa, pp, gg, oo),vv2.acoeff(:));
-%[vv2.acoeff,cst,exitflag,output] = fminunc(@(x)ism_adjAD_optWrapper(x,vv2,aa, pp, gg, oo),vv2.acoeff(:),options);
-%[vv2.acoeff,cst,exitflag,output] = minFunc(@(x)ism_adjAD_optWrapper(x,vv2,aa, pp, gg, oo),vv2.acoeff(:),options);
 else
 error('Inversion Method not specified')
 end
      
 %% Finish up 
 vv2.output = output;
-vv2.C = ism_cslip_field(vv2, pp, gg, oo);  
+if oo.hybrid, vv2.Cb = ism_cslip_field(vv2, pp, gg, oo); 
+else vv2.C = ism_cslip_field(vv2, pp, gg, oo); end;
+
 [vv2] = ism_deism(vv2,aa,pp,gg,oo );   %Optimized Velocities and reconstructed C       
 
 

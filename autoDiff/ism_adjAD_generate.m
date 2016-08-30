@@ -4,7 +4,7 @@ function [] = ism_adjAD_generate( vv,aa, pp, gg, oo )
 
 %% Clear working directory of previously generated AD function
 fn = {'ism_inv_cost_ADu', 'ism_inv_cost_ADc','ism_visc_AD',...
-    'ism_visc_diAD','ism_dim_Ddiag_ADc','ism_dim_Ddiag_ADnEff','ism_cslip_form_ADc'};
+    'ism_visc_diAD','ism_dim_Ddiag_ADc','ism_dim_Ddiag_ADnEff','ism_cslip_form_ADc', 'ism_visc_diSAD'};
 for j = 1:numel(fn)
     tmpA = char(strcat(fn(j), '.m')); tmpB = char(strcat(fn(j), '.mat'));
     if exist(tmpA, 'file'), delete(tmpA); end; 
@@ -41,7 +41,7 @@ if oo.hybrid
 U = adigatorCreateDerivInput([gg.nua+gg.nva,1], 'U');
 nEff_lyrs = adigatorCreateAuxInput([gg.nha,oo.nl+1]);
 C = adigatorCreateAuxInput([gg.nha,1]);
-adigator('ism_visc_di', {U,nEff_lyrs,C,aa,pp,gg,oo},'ism_visc_diAD')
+adigator('ism_visc_diS', {U,nEff_lyrs,C,aa,pp,gg,oo},'ism_visc_diSAD')
 clear z U nEff C;
 end
 

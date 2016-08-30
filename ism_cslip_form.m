@@ -13,9 +13,9 @@ function [ C2 ] = ism_cslip_form(flag,F2,C,aa,pp,gg,oo )
 %   C       Cslip parameter
 
 if flag
-    C2 = C(:)./(1 + C(:).*F2);             %Cslip basal -> Cslip effective
+    C2 = C(:)./(1 + (pp.c13*C(:)).*F2);             %Cslip basal -> Cslip effective
 else
-    C2 = C(:)./(1 - C(:).*F2);             %Cslip effective -> Cslip basal
+    C2 = C(:)./(1 - (pp.c13*C(:)).*F2);             %Cslip effective -> Cslip basal
 end
 
 end

@@ -1,5 +1,5 @@
-function [nEff_di, nEff_lyrs] = ism_visc_di(U,nEff_lyrs,C,aa,pp,gg,oo)
-%% Calculate Ice Viscosity 
+function [nEff_di] = ism_visc_diS(U,nEff_lyrs,C,aa,pp,gg,oo)
+%% Calculate Ice Viscosity  [Simplified version of ism_visc_di, for Adigator]
 % Inputs:
 %   z       Depth at each grid cell at which to evaluate viscosity
 %   U       [u;v] ice velocities in the x,y directions
@@ -12,11 +12,9 @@ function [nEff_di, nEff_lyrs] = ism_visc_di(U,nEff_lyrs,C,aa,pp,gg,oo)
 %   LHS     Left hand side. 
 %   RHS     Right hand side.
 
-if ~isfield(oo,'nl'), oo.nl = 50; end                   %%Number of layers, must even so vl+1 is odd.
 nl = oo.nl; 
 
 nEffrun = zeros(gg.nha,1);
-nEff_lyrs2 = zeros(gg.nha,nl+1);
 
 u = U(1:gg.nua);        u_h = gg.c_uh*u;       %Setup velocity,topographic parameters
 v = U(gg.nua+1:end);    v_h = gg.c_vh*v;
@@ -28,7 +26,6 @@ sp = gg.S_h*aa.h(:)/nl;                 %Depth of each layer
 
 n = pp.n_Glen;
 
-
 exx = gg.du_x*u;                         %Calculate Longitudinal Strain Rates
 eyy = gg.dv_y*v;
 exy = 0.5*(gg.dhu_y*u + gg.dhv_x*v);
@@ -38,7 +35,7 @@ exy = 0.5*(gg.dhu_y*u + gg.dhv_x*v);
 
 
 %% Depth Integrated Viscosity
-parfor k =[0:nl]
+for k =[0:nl]
 
 
 %% Viscosity of Current Layer
@@ -54,8 +51,6 @@ edeff = sqrt(exx.^2 + eyy.^2 + exx.*eyy + exy.^2 + (1/4)*exz.^2 + (1/4)*eyz.^2 +
 
 nEff_l = edeff.^((1-n)/n);
 end
-
-nEff_lyrs(:,k+1) = nEff_l;
 
 
 %% Running simpsons rule integration
