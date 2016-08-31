@@ -86,7 +86,7 @@ tmp_a = [gg.S_u*gg.nfxd_ugrid(:); gg.S_v*gg.nfxd_vgrid(:)];               %Locat
 tmp_b = [gg.S_u*aa.nfxd_uval(:); gg.S_v*aa.nfxd_vval(:)];                 %Vector of fixed values
 
 if oo.hybrid,                                     %Convert surface vel -> effective vel
-F2 = ism_falpha(1,U,nEff_lyrs,vv,aa,pp,gg,oo );          %Calculate F alpha factors 
+F1 = ism_falpha(1,U,nEff_lyrs,vv,aa,pp,gg,oo );          %Calculate F alpha factors 
 F2 = ism_falpha(2,U,nEff_lyrs,vv,aa,pp,gg,oo );
 tmp_c = (1 + pp.c13*(gg.S_h*Cb(:)).*F1)./(1 + pp.c13*(gg.S_h*Cb(:)).*F2);          %Un -> Us factor
 tmpc_u = (gg.c_hu*tmp_c)./(gg.c_hu*(gg.S_h*gg.m(:)==2));    %Interpolate onto u/v grids

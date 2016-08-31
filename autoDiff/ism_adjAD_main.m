@@ -173,7 +173,7 @@ adjC = C_form'*adjC;
 end
 
 if oo.hybrid
-adjC = adjC.*(1+(pp.c13*Cb(:)).*F2).^-2;   %Move from C effective to C basal
+adjC = adjC.*(1+(pp.c13*gg.S_h*Cb(:)).*F2).^-2; %Move from C effective to C basal
 end
 
 runC = runC + adjC;
