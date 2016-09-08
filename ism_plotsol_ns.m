@@ -28,11 +28,11 @@ v_h = gg.S_h'*gg.c_vh*vv.v;       %u,v grids onto h-grid
 U = sqrt(u_h.^2 + v_h.^2);
 
 if oo.hybrid                        %For hybrid model, convert u_Eff to u_surface; Need to update C to Cb
-F1 = ism_falpha(1,vv.nEff, vv,aa,pp,gg,oo ); F1 = gg.S_h'*F1;
-F2 = ism_falpha(2,vv.nEff,vv,aa,pp,gg,oo ); F2 = gg.S_h'*F2;
+F1 = ism_falpha(1,vv.U,vv.nEff_lyrs,vv,aa,pp,gg,oo ); F1 = gg.S_h'*F1;
+F2 = ism_falpha(2,vv.U,vv.nEff_lyrs,vv,aa,pp,gg,oo ); F2 = gg.S_h'*F2;
 
-Cb = C(:)./(1 - C(:).*F2);    %Cslip effective -> Cslip basal
-tmpa = (1 + Cb(:).*F1)./(1 + Cb(:).*F2);
+Cb = C(:)./(1 - pp.c13*C(:).*F2);    %Cslip effective -> Cslip basal
+tmpa = (1 + pp.c13*Cb(:).*F1)./(1 + pp.c13*Cb(:).*F2);
 
 u_h = u_h.*tmpa;
 v_h = v_h.*tmpa;
@@ -99,6 +99,19 @@ hold on
 hh = imagesc(blnkImage);
 set(hh, 'AlphaData', imMask)
 
+if oo.hybrid                                    %Plot Ratio of Basal to Surface Velocities
+
+figure
+velRatio = gg.S_h'*(gg.S_h*(1+pp.c13*vv.C.*F1).^-1);
+imagesc(reshape(velRatio,gg.nJ,gg.nI));
+title('Ratio of basal to sliding velocity')
+colorbar()  
+axis equal
+axis tight
+    
+    
+end
+
 end
 
 if oo.plot_obs
@@ -135,23 +148,51 @@ end
 
 if oo.plot_topo
 figure()                                                %Plot Topography
-subplot(3,1,1)
 imagesc(s)
+axis equal
+axis tight
 title('Surface Elevation');
 colorbar()
 hold on
 % hh = imagesc(blnkImage);
 % set(hh, 'AlphaData', imMask)
 
-subplot(3,1,2)
+figure;
 imagesc(b)
+axis equal
+axis tight
 title('Bed Elevation');
 colorbar()
+caxis([-500 500])
 hold on
-% hh = imagesc(blnkImage);
-% set(hh, 'AlphaData', imMask)
 
-subplot(3,1,3)
+axis equal
+axis tight
+set(gca, 'FontSize', 9)
+set(gca, 'FontName', 'Arial')
+
+XTicks = [1, 176];
+XLabels = {'-214075', '-99505'};
+YTicks = [1,140];
+YLabels = {'-2196035';'-2271905'};
+
+%set(gca,'YDir','normal')
+axis equal
+axis([XTicks YTicks])
+
+set(gca,'XTick',XTicks)
+set(gca,'XTickLabel',XLabels)
+
+set(gca,'YTick',YTicks)
+set(gca,'YTickLabel',YLabels)
+
+xlabel('Easting (m)')
+ylabel('Northing (m)')
+
+set(gcf,'color','w');
+set(gca,'TickLength',[0 0]);
+
+figure
 imagesc(h)
 title('Ice Thickness');
 colorbar()
@@ -161,9 +202,11 @@ hold on
 
 end
 
-if oo.plot_C
+if oo.plot_C                                    %Basal Drag Figure
 figure
 imagesc(vv2.C)
+axis equal
+axis tight
 title('Basal Slipperiness');
 c = colorbar();
 hold on
@@ -173,10 +216,7 @@ end
 
 if oo.plot_err
 
-
-
-%Absolute Error Figure
-figure()
+figure()                                        %Absolute Error Figure
 imagesc(((U-obs.U)))
 axis equal
 axis tight
@@ -211,12 +251,7 @@ hold on
 %set(hh, 'AlphaData', imMask)   
 
 
-
-
-
-
-%Relative Error Figure
-figure
+figure()                                    %Relative Error Figure
 imagesc(((100*(U-obs.U)./obs.U)))
 
 axis equal
@@ -252,13 +287,37 @@ colormap(jet(5))
 
 ylabel(c,'Error (%)')
 
+
+figure()
+%%Error Propogation
+DUu = aa.u.*(aa.u.^2 + aa.v.^2).^(-1/2);
+DUv = aa.v.*(aa.u.^2 + aa.v.^2).^(-1/2);
+
+velErr = sqrt(...
+    (DUu.*(aa.erru + 0.03*abs(aa.u))).^2 +...
+    (DUv.*(aa.errv + 0.03*abs(aa.v))).^2 ...
+    );
+
+
+velErr = sqrt(...
+    ((aa.erru + 0.03*abs(aa.u))).^2 +...
+    ((aa.errv + 0.03*abs(aa.v))).^2 ...
+    );
+
+
+U = (aa.u.^2 + aa.v.^2).^(1/2);
+relErr = 100*velErr.*(U.^-1);
+imagesc(reshape(gg.S_h'*relErr,gg.nJ,gg.nI))
+colorbar()
+caxis([-25 25])
+colormap(jet(5))
 end
 
 
-hold on
-hh = imagesc(blnkImage);
-set(hh, 'AlphaData', imMask)   
-set(gcf,'PaperUnits','inches','PaperPosition',[0 0.25 7.0 5.0])
+% hold on
+% hh = imagesc(blnkImage);
+% set(hh, 'AlphaData', imMask)   
+% set(gcf,'PaperUnits','inches','PaperPosition',[0 0.25 7.0 5.0])
 
 end
 

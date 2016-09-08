@@ -36,21 +36,18 @@ if strcmp(oo.inv_cst,'abs')
     cv = (gg.c_vh*v-aa.v).^2;   
     cst = pp.c9*0.5*sum( [cu; cv] )*gg.dx*gg.dy;
 elseif strcmp(oo.inv_cst,'rel') 
-    N = 1e-10;
     cu = ((gg.c_uh*u-aa.u)./aa.u).^2;
     cv = ((gg.c_vh*v-aa.v)./aa.v).^2;
-    cst = N*pp.c10*0.5*sum( [cu; cv] )*gg.dx*gg.dy; 
+    cst = pp.c10*0.5*sum( [cu; cv] )*gg.dx*gg.dy; 
 elseif strcmp(oo.inv_cst,'log') 
-    N = 1e-10;
     vn = (10/pp.ty)/pp.u;               %Velocity normalization 
     cm = sqrt( (gg.c_uh*u).^2 + (gg.c_vh*v).^2 ) + vn;
     co = sqrt( (aa.u).^2 + (aa.v).^2 ) + vn;
-    cst = N*pp.c10*0.5*sum( (log(cm./co)).^2 );
+    cst = pp.c10*0.5*sum( (log(cm./co)).^2 );
 elseif strcmp(oo.inv_cst,'wls')
-    N = 1e-10;
     cu = ( (gg.c_uh*u-aa.u)./(0.03*abs(aa.u)+aa.erru) ).^2;
     cv = ( (gg.c_vh*v-aa.v)./(0.03*abs(aa.v)+aa.errv) ).^2;  
-    cst = N*pp.c10*0.5*sum( [cu; cv] )*gg.dx*gg.dy;
+    cst = pp.c10*0.5*sum( [cu; cv] )*gg.dx*gg.dy;
 end
 
 cst = pp.L_vel*cst;

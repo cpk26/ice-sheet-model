@@ -35,7 +35,8 @@ end
 if isequal(oo.savePicIter,1),   %Save initial velocity/viscosity; 
 rr.Un(:,1) = U; 
 rr.nEffn(:,1) = nEff(:);
-rr.F2n(:,1) = vv.F2(:);
+if oo.hybrid
+rr.F2n(:,1) = vv.F2(:); end;
 end                      
 
         
@@ -72,9 +73,6 @@ dv = (gg.c_hv*gg.S_h*abs(min(0,aa.b(:))))./(gg.c_hv*gg.S_h*(aa.h(:) > 0));
 t_mgn = [0.5*pp.c4*(hu.^2 - pp.c5*du.^2);...                            %Boundary Condition at Ice Margin
         0.5*pp.c4*(hv.^2 - pp.c5*dv.^2)];                            
   
-% mgn_lim = 0.5*pp.c4*(30/pp.z)^2;                                              %Upper limit of stress at land-terminating margin, corresponding to 30m ice cliff
-% t_mgn([du;dv] == 0) = min(t_mgn([du;dv] == 0),mgn_lim);
-
 mgn_mask = [gg.S_u*gg.nmgn_ugrid(:); gg.S_v*gg.nmgn_vgrid(:)];            %Ice Margin Node Mask
 
 RHS(logical(mgn_mask)) = 0;                                               %Insert Ice Margin BC
@@ -176,7 +174,7 @@ if isequal(oo.savePicIter,1),
 end                %Save Intermediate velocity array
 
 
-%% Plot Velocities
+%% Plot Velocities [For manual testing]
 % u_h = gg.S_h'*gg.c_uh*u; %Solution Velocities
 % v_h = gg.S_h'*gg.c_vh*v;
 % 
@@ -193,8 +191,6 @@ end                %Save Intermediate velocity array
 % end
 % 
 % imagesc(reshape(u_h,gg.nJ,gg.nI))
-% 
-
 % %%
 
 
@@ -218,39 +214,4 @@ vv2=vv;
 end
 
       
-%Test Code
-% U1 = U;
-% U2 = U; U2(1) = U2(1) + 1e-12;
-% nEff1 = ism_visc_di(U1,gg.S_h*nEff,C(:),aa,pp,gg,oo);    
-% nEff2 = ism_visc_di(U2,gg.S_h*nEff,C(:),aa,pp,gg,oo);    
-% d = (nEff2(1) - nEff1(1)) / 1e-12;
-% 
-% 
-% U_adi = struct('f', U, 'dU',ones(gg.nua+gg.nva,1)); 
-% UAD = ism_visc_diAD(U_adi,gg.S_h*nEff,C(:),aa,pp,gg,oo);    
-% U_visc = sparse(UAD.dU_location(:,1),UAD.dU_location(:,2), UAD.dU, UAD.dU_size(1), UAD.dU_size(2));
-% 
-% adjnEff = ones(75*75,1);
-% adjU = U_visc'*adjnEff;
-% aa = reshape(adjU(1:gg.nua),75,76);
-% imagesc(aa);
-% colorbar();
-% caxis([-.1,.1]);
-% figure
-% 
-% 
-% UAD = ism_visc_AD(U_adi,vv,aa,pp,gg,oo);    
-% U_visc = sparse(UAD.dU_location(:,1),UAD.dU_location(:,2), UAD.dU, UAD.dU_size(1), UAD.dU_size(2));
-% 
-% adjnEff = ones(75*75,1);
-% adjU = U_visc'*adjnEff;
-% aa1 = reshape(adjU(1:gg.nua),75,76);
-% imagesc(aa);
-% colorbar();
-% caxis([-.1,.1]);
-% 
-% figure;
-% imagesc(aa-aa1);
-
-
 

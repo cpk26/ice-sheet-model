@@ -22,7 +22,6 @@ if nargin<5, oo = struct; end
 if ~isfield(dd,'nfxd'), dd.nfxd = []; end
 if ~isfield(dd,'errvx'), dd.errvx = ones(gg.nIJ,1)*pp.u; end 
 if ~isfield(dd,'errvy'), dd.errvy = ones(gg.nIJ,1)*pp.u; end
-if ~isfield(dd,'errv'), dd.errv = ones(size(C))*pp.u; end
 
 
 %% Put fields and variables in structs
@@ -87,8 +86,8 @@ else vv2.C = C(:); end;
 aa.u = gg.S_h*dd.vx(:)/pp.u;                    %h-grid
 aa.v = gg.S_h*dd.vy(:)/pp.u; 
 
-aa.err = gg.S_h*dd.errv(:)/pp.u;                %h-grid
-aa.erru = gg.S_h*dd.errvx(:)/pp.u; 
+                
+aa.erru = gg.S_h*dd.errvx(:)/pp.u;              %h-grid 
 aa.errv = gg.S_h*dd.errvy(:)/pp.u; 
 
 end
