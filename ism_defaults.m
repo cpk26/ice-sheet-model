@@ -21,7 +21,7 @@ if ~isfield(pd,'E'), pd.E = 1; end                                 % Enhancement
 if ~isfield(pd,'A'), pd.A = pd.E*3.5*10^(-25); end                 % ice rheological parameter [Pa^(-n)/s], see Cuffey/Paterson 2010
 if ~isfield(pd,'B'), pd.B = pd.A^(-1/pd.n_Glen); end;              % Ice stiffness parameter (associated rate factor)
 if ~isfield(pd,'n_rp'), pd.n_rp = 10^-5/(pd.ty); end;              % Effective Viscosity regularization parameter (m/s) (Arthern et al, 2015)
-if ~isfield(pd,'C_rp'), pd.C_rp = 10^6; end;                       % Basal Slipperiness regularation parameter for SIA (to avoid vel=Inf)
+if ~isfield(pd,'C_rp'), pd.C_rp = 10^2; end;                       % Basal Slipperiness regularation parameter for SIA (to avoid vel=Inf)
 if ~isfield(pd,'U_rp'), pd.U_rp = .001/pd.ty; end;                 % Velocity regularization parameter for inversion s.t. there are no zero vels
 if ~isfield(pd,'mdR'), pd.mdR = 0; end;                            % Limit maximum deformational velocity to a fraction of surface velocity in ism_inverse_sia.
                                                                    % This acts to smooth the initial guess of C

@@ -15,13 +15,13 @@ function [gg] = ism_mask(m,gg,dd,oo)
 % 16 Feb 2015 
 
 if ~isfield(dd,'nfxd'), dd.nfxd = zeros(size(m)); end;
-if ~isfield(dd,'nntks'), dd.nntks = zeros(size(m)); end;
+if ~isfield(dd,'nntks'), dd.nntks = (m==3); end;
 
 %% Categorize nodes (h-grid)
 nbnd = bwperim(m>1,4);                      %Boundary Cells
-nin = (m == 2) & ~nbnd;                          %Interior Cells
-nfxd = dd.nfxd;                                 %Direchlet BC Cells
-nmgn = zeros(size(m));                    %Ice Margin Cells (sans direchlet bc nodes)
+nin = (m == 2) & ~nbnd;                     %Interior Cells
+nfxd = dd.nfxd;                             %Direchlet BC Cells
+nmgn = zeros(size(m));                      %Ice Margin Cells (sans direchlet bc nodes)
 [i,j] = find(nbnd); 
 for p=1:numel(i), 
 A1 = max(i(p)-1,1); A2 = min(i(p)+1,gg.nJ); A3 = max(j(p)-1,1); A4 = min(j(p)+1,gg.nI);
@@ -138,8 +138,7 @@ gg.dv_y = S_h*gg.dv_y*S_v';
 Mu = ones(gg.nu,1) - (nbnd_ugrid(:) & nfxd_ugrid(:)); Mu = spdiags(Mu, 0, gg.nu,gg.nu);    %masks (force to be zero) dh_x/dh_y
 Mv = ones(gg.nv,1) - (nbnd_vgrid(:) & nfxd_vgrid(:)); Mv = spdiags(Mv, 0, gg.nv,gg.nv);    %across the mask boundary at all boundary u/v
                                                                                            %nodes except the ice margin. Note, for fxd nodes
-                                                                                           %this is the outermost node.
-
+                                                                                           %this is the outermost node
 gg.dh_x = S_u*Mu*gg.dh_x*S_h';
 gg.dh_y = S_v*Mv*gg.dh_y*S_h';
 
@@ -156,7 +155,7 @@ Mc2 = ones(gg.nc,1) - (cnbnd2); Mc2 = spdiags(Mc2, 0, gg.nc,gg.nc);        %acro
 gg.dhv_x = gg.c_ch*S_c*Mc1*gg.dv_x*S_v';                                   %derivative of v in x-direction from v grid onto h-grid
 gg.dhu_y = gg.c_ch*S_c*Mc2*gg.du_y*S_u';                                   %derivative of u in y-direction from u grid onto h-grid
 
-%gg.dhv_x = gg.c_ch*S_c*gg.dv_x*S_v';                                    %Sans masking at border
+%gg.dhv_x = gg.c_ch*S_c*gg.dv_x*S_v';                                      %Sans masking at border
 %gg.dhu_y = gg.c_ch*S_c*gg.du_y*S_u'; 
 
 

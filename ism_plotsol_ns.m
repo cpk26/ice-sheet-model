@@ -16,8 +16,13 @@ if ~isfield(oo,'plot_err'), oo.plot_err = 1; end
 if ~isfield(oo,'plot_C'), oo.plot_C = 1; end  
 if ~isfield(oo,'plot_topo'), oo.plot_topo = 1; end                        
 
-if strcmp(oo.pT, 'forward'); C = aa.C; end;             %Problem Type
-if strcmp(oo.pT, 'inverse'); C = vv.C; end;
+if strcmp(oo.pT, 'forward');                            %Problem Type
+if oo.hybrid, Cb = aa.Cb; C = vv.C;             
+else, C = aa.C; end; end;
+
+if strcmp(oo.pT, 'inverse'); C = vv.C; 
+if oo.hybrid, Cb = vv.Cb; end;
+end;
 
 blnk = ones(size(gg.m));                                       %Mask for background of images
 blnkImage = double(cat(3,blnk, blnk, blnk));
@@ -27,11 +32,10 @@ u_h = gg.S_h'*gg.c_uh*vv.u;       %Solved Velocities
 v_h = gg.S_h'*gg.c_vh*vv.v;       %u,v grids onto h-grid 
 U = sqrt(u_h.^2 + v_h.^2);
 
-if oo.hybrid                        %For hybrid model, convert u_Eff to u_surface; Need to update C to Cb
+if oo.hybrid                        %For hybrid model, convert u_Eff to u_surface; Need to d
 F1 = ism_falpha(1,vv.U,vv.nEff_lyrs,vv,aa,pp,gg,oo ); F1 = gg.S_h'*F1;
 F2 = ism_falpha(2,vv.U,vv.nEff_lyrs,vv,aa,pp,gg,oo ); F2 = gg.S_h'*F2;
 
-Cb = C(:)./(1 - pp.c13*C(:).*F2);    %Cslip effective -> Cslip basal
 tmpa = (1 + pp.c13*Cb(:).*F1)./(1 + pp.c13*Cb(:).*F2);
 
 u_h = u_h.*tmpa;
@@ -61,7 +65,13 @@ vmin = min([v_h(:); obs.v(:)]); vmax = max([v_h(:); obs.v(:)]);
 Umin = min([U(:); obs.U(:)]); Umax = max([U(:); obs.U(:)]);
 Umax = 500;
 
-if strcmp(oo.pT, 'inverse'); vv2.C = reshape(vv.C, gg.nJ, gg.nI); end; %Basal Slipperiness
+if strcmp(oo.pT, 'inverse');                                         %Basal Slipperiness
+vv2.C = reshape(vv.C, gg.nJ, gg.nI); 
+if oo.hybrid, 
+vv2.Cb = reshape(vv.Cb, gg.nJ, gg.nI); 
+vv2.F1 = F1; vv2.F2 = F2;
+end;  
+end;
 
 
 h = dd.h;                                                           %Topography
@@ -102,7 +112,7 @@ set(hh, 'AlphaData', imMask)
 if oo.hybrid                                    %Plot Ratio of Basal to Surface Velocities
 
 figure
-velRatio = gg.S_h'*(gg.S_h*(1+pp.c13*vv.C.*F1).^-1);
+velRatio = gg.S_h'*(gg.S_h*(1+pp.c13*Cb.*F1).^-1);
 imagesc(reshape(velRatio,gg.nJ,gg.nI));
 title('Ratio of basal to sliding velocity')
 colorbar()  
@@ -153,6 +163,8 @@ axis equal
 axis tight
 title('Surface Elevation');
 colorbar()
+caxis([0 2500])
+
 hold on
 % hh = imagesc(blnkImage);
 % set(hh, 'AlphaData', imMask)
@@ -203,8 +215,9 @@ hold on
 end
 
 if oo.plot_C                                    %Basal Drag Figure
-figure
-imagesc(vv2.C)
+figure()
+if oo.hybrid, imagesc(reshape(Cb,gg.nJ,gg.nI))
+else, imagesc(reshape(C,gg.nJ,gg.nI)); end
 axis equal
 axis tight
 title('Basal Slipperiness');
@@ -288,29 +301,28 @@ colormap(jet(5))
 ylabel(c,'Error (%)')
 
 
-figure()
-%%Error Propogation
-DUu = aa.u.*(aa.u.^2 + aa.v.^2).^(-1/2);
-DUv = aa.v.*(aa.u.^2 + aa.v.^2).^(-1/2);
-
-velErr = sqrt(...
-    (DUu.*(aa.erru + 0.03*abs(aa.u))).^2 +...
-    (DUv.*(aa.errv + 0.03*abs(aa.v))).^2 ...
-    );
-
-
+figure()                                            %Error in Measurements
 velErr = sqrt(...
     ((aa.erru + 0.03*abs(aa.u))).^2 +...
     ((aa.errv + 0.03*abs(aa.v))).^2 ...
     );
-
-
-U = (aa.u.^2 + aa.v.^2).^(1/2);
-relErr = 100*velErr.*(U.^-1);
+relErr = 100*velErr.*((gg.S_h*U(:)).^-1);
 imagesc(reshape(gg.S_h'*relErr,gg.nJ,gg.nI))
 colorbar()
 caxis([-25 25])
 colormap(jet(5))
+
+figure()
+histogram(abs(gg.S_h*(U(:)-obs.U(:)))./velErr,[0:14],'Normalization', 'Probability')
+xlabel('Standard Deviation of Measurement Error')
+ylabel('Probability')
+
+figure()
+histogram(abs(gg.S_h*(U(:)-obs.U(:))), [0:5:115],'Normalization', 'Probability')
+xlabel('Difference between predicted vs measured velocities (ma^-1)')
+ylabel('Probability')
+
+
 end
 
 

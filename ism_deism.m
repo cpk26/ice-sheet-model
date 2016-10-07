@@ -174,7 +174,7 @@ if isequal(oo.savePicIter,1),
 end                %Save Intermediate velocity array
 
 
-%% Plot Velocities [For manual testing]
+%% Plot Velocities [For manual testing of picard iteration]
 % u_h = gg.S_h'*gg.c_uh*u; %Solution Velocities
 % v_h = gg.S_h'*gg.c_vh*v;
 % 

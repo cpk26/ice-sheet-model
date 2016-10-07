@@ -59,7 +59,6 @@ aa.Sy = Sy;
 
 
 %% Fixed Boundary Conditions. 
-
 if any(dd.nfxd(:))
 aa.nfxd_uval = dd.vx_u.*gg.nfxd_ugrid/pp.u;
 aa.nfxd_vval = dd.vy_v.*gg.nfxd_vgrid/pp.u;
@@ -74,18 +73,16 @@ vv2.v = v(:);
 
 
 if strcmp(oo.pT, 'forward')                     %Forward Problem
-if oo.hybrid, Cb = aa.prj(:).*C(:); aa.Cb = Cb;   
-else aa.C = aa.prj(:).*C(:); end   
+if oo.hybrid, Cb = C(:); aa.Cb = Cb;   
+else aa.C = C(:); end   
 
 
 elseif strcmp(oo.pT, 'inverse')                 %Inverse Problem
 if oo.hybrid, Cb = C(:); vv2.Cb = Cb; 
 else vv2.C = C(:); end;  
 
-
 aa.u = gg.S_h*dd.vx(:)/pp.u;                    %h-grid
 aa.v = gg.S_h*dd.vy(:)/pp.u; 
-
                 
 aa.erru = gg.S_h*dd.errvx(:)/pp.u;              %h-grid 
 aa.errv = gg.S_h*dd.errvy(:)/pp.u; 
