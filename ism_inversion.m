@@ -36,7 +36,8 @@ options.Display = 'full';
 options.LS_init = 2;
 options.Corr = 35;
 options.MaxIter = oo.inv_iter;
-options.optTol = 5e-4;
+options.MaxFunEvals = oo.inv_funcEval;
+options.progTol = oo.inv_progTol;
  
 %% Optimization
 
