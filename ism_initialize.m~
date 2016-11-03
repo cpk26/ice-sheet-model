@@ -91,18 +91,17 @@ aa.errv = gg.S_h*dd.errvy(:)/pp.u;
 end
 
 %% Initialize sliding law
-aa.B2 = C;                              % Covers Linear Case 
+aa.B2 = C;
+if strcmp(oo.slidinglaw, 'linear')              % Linear                       
+    aa.B2 = C;
+if strcmp(oo.slidinglaw, 'linear')                                          % Non Linear
 
-if ~strcmp(oo.slidinglaw, 'linear')     % Non Linear
-aa.N = dd.N;
-    
-B2 = gg.S_h*aa.B2(:);                   %Setup variables
-N = max(gg.S_h*dd.N(:),0);                              
+N = max(gg.S_h*dd.N(:),0);                              %Setup variables
 U = sqrt( (gg.c_uh*u).^2 + (gg.c_vh*v).^2 );
 
 if oo.hybrid,                                       %Basal vel for hybrid
 F2 = ism_falpha(2,vv.U,vv.nEff_lyrs,vv,aa,pp,gg,oo );
-tmpa = (1 + pp.c13*B2.*F2);
+tmpa = (1 + pp.c13*C(:).*F2);
 Ub = U./tmpa;
 else
 Ub = U;
@@ -127,7 +126,14 @@ end
 % Reshape and save
 mu = reshape(gg.S_h'*mu,gg.nJ,gg.nI);
 aa.mu = mu;
-end
+
+
+
+
+
+
+
+
 
 %% Initialize Hybrid or SSA variables
 U = vv2.U;

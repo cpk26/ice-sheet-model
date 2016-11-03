@@ -22,6 +22,7 @@ if ~isfield(ps,'u'), ps.u = 1/pd.ty; end                %Velocity scale
 if ~isfield(ps,'t'), ps.t = ps.x/ps.u; end              %Time scale
 if ~isfield(ps,'B'), ps.B = pd.B; end                   %Ice Stiffness parameter
 if ~isfield(ps,'A'), ps.A = pd.A; end                   %Rate Factor
+if ~isfield(ps,'N'), ps.N = pd.rho_i*pd.g*ps.z; end      %Effective Pressure Scale
 if ~isfield(ps,'sigma'), ps.sigma = pd.rho_i*pd.g*ps.z;
 if ~isfield(ps,'vis_i'),...                             %Ice viscosity 
     ps.vis_i = 0.5*ps.B*(ps.u/ps.x)^((1-pd.n_Glen)/pd.n_Glen); end; 
@@ -36,6 +37,10 @@ pp.g = pd.g;
 pp.x = ps.x;
 pp.z = ps.z;
 pp.ty = pd.ty;
+pp.p = pd.p;
+pp.q = pd.q;
+pp.lambda_b =  pd.lambda_b;
+pp.N = ps.N;
 pp.vis_i = ps.vis_i;
 pp.rho_i = pd.rho_i;
 pp.rho_w = 1000;
@@ -51,7 +56,6 @@ pp.acoeff_ny = pd.acoeff_ny;
 %pp.c1 = (ps.sigma/ps.u) * (ps.e).^3;                         %SIA
 pp.c1 = (pd.rho_i*pd.g*ps.z/ps.u) * (ps.z/ps.x);              %SIA
 pp.c2 = 0.5*pp.A*(ps.u^-1)*(pd.rho_i*pd.g*ps.z/ps.x)^pp.n_Glen * ps.z^(pp.n_Glen+1);
-
 pp.c3 = (ps.x^2)/(ps.z*ps.vis_i);                             %SSTREAM
 pp.c4 = (ps.x*ps.z*pp.rho_i*pp.g)/(ps.vis_i*ps.u);
 pp.c5 = pp.rho_w/pp.rho_i;
@@ -66,7 +70,16 @@ pp.c11 = (ps.x./ps.vis_i);
 pp.c12 = (ps.z*ps.vis_i*ps.u)/(ps.x^2);
 
 
-pp.c13 = (pp.z/pp.vis_i);
+pp.c13 = (pp.z/pp.vis_i);                   %Hybrid
+
+pp.c14 = (ps.N^pd.p)*(ps.u^pd.q)*(ps.u^-1);           %Sliding Law
+pp.c15 = ps.N * ps.u^(1/pp.n_Glen)*(ps.u^-1);
+pp.c16 = ps.u;
+pp.c17 = pp.lambda_b * pd.A * (ps.N^pp.n_Glen);
+
+
+
+
 
 
 end

@@ -20,6 +20,10 @@ if ~isfield(pd,'n_Glen'), pd.n_Glen = 3; end                       % exponent fo
 if ~isfield(pd,'E'), pd.E = 1; end                                 % Enhancement Factor, see Cuffey/Paterson 2010
 if ~isfield(pd,'A'), pd.A = pd.E*3.5*10^(-25); end                 % ice rheological parameter [Pa^(-n)/s], see Cuffey/Paterson 2010
 if ~isfield(pd,'B'), pd.B = pd.A^(-1/pd.n_Glen); end;              % Ice stiffness parameter (associated rate factor)
+if ~isfield(pd,'p'), pd.p = 1/3; end;                              % Power of effective pressure in weertman sliding law
+if ~isfield(pd,'q'), pd.q = 1/3; end;                              % Power of velocity in weertman sliding law
+if ~isfield(pd,'lambda_b'), pd.lambda_b = 1; end;                  % Bed roughness length for schoof sliding law
+
 if ~isfield(pd,'n_rp'), pd.n_rp = 10^-5/(pd.ty); end;              % Effective Viscosity regularization parameter (m/s) (Arthern et al, 2015)
 if ~isfield(pd,'C_rp'), pd.C_rp = 10^2; end;                       % Basal Slipperiness regularation parameter for SIA (to avoid vel=Inf)
 if ~isfield(pd,'U_rp'), pd.U_rp = .001/pd.ty; end;                 % Velocity regularization parameter for inversion s.t. there are no zero vels
@@ -34,16 +38,17 @@ if ~isfield(pd,'acoeff_ny'), pd.acoeff_ny = 45; end
 if ~isfield(oo,'pT'), oo.pT = 'forward'; end                       %problem type: 'forward' or 'inverse'
 if ~isfield(oo,'pic_iter'), oo.pic_iter = 15; end;                 %number of picard iterations iterations
 if ~isfield(oo,'hybrid'), oo.hybrid = 1; end                       %Approximation: 1 for hybrid, else default to SSA
+if ~isfield(oo,'slidinglaw'), oo.slidinglaw = 'linear'; end        %linear, weertman, or schoof
 if ~isfield(oo,'nl'), oo.nl = 50; end                              %Number of vertical layers to use for Simpson's Rule
 if ~isfield(oo,'inv_meth'), oo.inv_meth = 'AD'; end                %Inversion Method, either LM or AD
 if ~isfield(oo,'savePicIter'), oo.savePicIter = 0; end             %Flag to save intermediate arrays in picard iterations
-if ~isfield(oo,'inv_opt'), oo.inv_opt = 'gd'; end                  %Inversion acoeff optimization algorithm: 'gd'/'lbfgs': gradientDescent/lBFGS 
+if ~isfield(oo,'inv_opt'), oo.inv_opt = 'lbfgs'; end               %Inversion acoeff optimization algorithm: 'gd'/'lbfgs': gradientDescent/lBFGS 
 if ~isfield(oo,'inv_cst'), oo.inv_msft = 'abs'; end                %Least square solution using absolute or relative error
 if ~isfield(oo,'inv_iter'), oo.inv_iter = 125; end                 %Maximum number of inversion iterations
 if ~isfield(oo,'inv_funcEval'), oo.inv_funcEval = 200; end         %Maximum number of function evaluations allowed for minFunc()
-if ~isfield(oo,'inv_progTol'), oo.inv_progTol = 1e-7; end          %Progress Tolerance for minFunc()
+if ~isfield(oo,'inv_progTol'), oo.inv_progTol = 1e-10; end         %Progress Tolerance for minFunc()
 if ~isfield(oo,'norm'), oo.norm = 2; end                           %solution norm for testing convergence. see norm()
-if ~isfield(oo,'Cdisc'), oo.Cdisc = 'dct2'; end                    %Discritization of C slip coefficient. Either 'dct2' or 'grid'
+if ~isfield(oo,'Cdisc'), oo.Cdisc = 'grid'; end                    %Discritization of C slip coefficient. Either 'dct2' or 'grid'
 
                                                
 

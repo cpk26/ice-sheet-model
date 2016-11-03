@@ -160,9 +160,13 @@ v = U(gg.nua+1:end);
 %% Viscosity, effective basal drag    
     
 if oo.hybrid                                            %Determine viscosity, basal slipperiness appropriately
+
 [nEff, nEff_lyrs] = ism_visc_di(U,nEff_lyrs,gg.S_h*C(:),aa,pp,gg,oo); %Updated Viscosity
 F2 = ism_falpha(2,U,nEff_lyrs,vv,aa,pp,gg,oo );
+[Cb] = ism_slidinglaw(vv,aa,pp,gg,oo);
+
 C = Cb(:)./(1 + (pp.c13*Cb(:)).*(gg.S_h'*F2));                    %Effective Basal Slipperiness
+
 else nEff = ism_visc(U,vv,aa,pp,gg,oo); end             %SSA Viscosity
 
 

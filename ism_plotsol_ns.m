@@ -309,7 +309,7 @@ velErr = sqrt(...
 relErr = 100*velErr.*((gg.S_h*U(:)).^-1);
 imagesc(reshape(gg.S_h'*relErr,gg.nJ,gg.nI))
 colorbar()
-caxis([-25 25])
+caxis([0 25])
 colormap(jet(5))
 
 figure()
