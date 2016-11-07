@@ -74,8 +74,8 @@ vv2.v = v(:);
 
 
 if strcmp(oo.pT, 'forward')                     %Forward Problem
-if oo.hybrid, Cb = C(:); aa.Cb = Cb;   
-else aa.C = C(:); end   
+if oo.hybrid, Cb = C(:); aa.Cb = Cb; aa.C = NaN(size(Cb));  
+else aa.Cb = C(:); aa.C = aa.Cb; end   
 
 
 elseif strcmp(oo.pT, 'inverse')                 %Inverse Problem
@@ -126,6 +126,17 @@ end
 
 % Reshape and save
 mu = reshape(gg.S_h'*mu,gg.nJ,gg.nI);
+mu(gg.next) = NaN;
+
+% Fill regions where N (effective pressure) < eps
+eps = 1e4/pp.phi;
+mask = dd.N<eps;
+mask(gg.next) =0;
+
+mu(mask) = NaN;
+mu = inpaint_nans(mu);
+mu(gg.next)=0;
+
 aa.mu = mu;
 end
 

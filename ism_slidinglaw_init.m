@@ -56,8 +56,26 @@ elseif strcmp(oo.slidinglaw, 'schoof')              %6b of Hewitt (2012)
     mu = B2./F;
 end
 
-%% Reshape and save
+%% Reshape
 mu = reshape(gg.S_h'*mu,gg.nJ,gg.nI);
+
+
+% Fill regions where N (effective pressure) < eps
+eps = 1e4/pp.N;
+mask = dd.N<eps;
+mask(gg.next) =0;
+
+mu(mask) = NaN;
+mu = inpaint_nans(mu);
+mu(gg.next)=0;
+
 aa.mu = mu;
+
+%% Save
+aa.mu = mu;
+
+end
+
+
 
 end

@@ -1,13 +1,15 @@
-function [C] = ism_slidinglaw(vv,aa,pp,gg,oo)
+function [Cb2] = ism_slidinglaw(U,Cb,F2,vv,aa,pp,gg,oo)
 %% Field Equations for SSA velocities 
 % Inputs:
-%   v     	solution struct
+%   U     velocities
+%   Cb      basal drag
+%   vv     	solution struct
 %   aa      prescribed fields, including inputs and boundary conditions
 %   pp      parameters
 %   gg      grid and operators
 %   oo      options
 % Outputs: 
-%   C     
+%   Cb2     updated basal drag    
 
 
 if ~isfield(oo,'slidinglaw'), oo.slidinglaw = 'linear'; end 
@@ -16,27 +18,21 @@ if ~isfield(oo,'slidinglaw'), oo.slidinglaw = 'linear'; end
 %% Linear
 
 if strcmp(oo.slidinglaw, 'linear')                 
-    if isfield(aa,'B2'), B2 = aa.B2; 
-    elseif isfield(aa,'Cb'), B2 = aa.Cb;               %% Maintain backwards compatability
-    else B2 = aa.C; end;
-    
-    C = B2;
+    Cb2 = reshape(gg.S_h'*Cb,gg.nJ,gg.nI);    %Static
 else
 
 %% Non Linear
 
 %Setup variables
+u = U(1:gg.nua);      
+v = U(gg.nua+1:end); 
+
 mu = gg.S_h*aa.mu(:);
 N = max(gg.S_h*aa.N(:),0);
-U = sqrt( (gg.c_uh*vv.u).^2 + (gg.c_vh*vv.v).^2 );
+U = sqrt( (gg.c_uh*u).^2 + (gg.c_vh*v).^2 );
 
 %% Basal velocities in the case of hybrid ice sheet model
 if oo.hybrid
-
-if strcmp(oo.pT, 'forward'),Cb = gg.S_h*aa.Cb;   %Current basal drag
-else Cb = gg.S_h*vv.Cb; end  
-   
-F2 = ism_falpha(2,vv.U,vv.nEff_lyrs,vv,aa,pp,gg,oo ); 
 tmpa = (1 + pp.c13*Cb(:).*F2);
 Ub = U./tmpa;
 else
@@ -48,17 +44,17 @@ if strcmp(oo.slidinglaw, 'weertman')            %6a of Hewitt (2012)
     p = pp.p; q = pp.q;
     
     F = mu .* pp.c14 .*(N.^p .* Ub.^q);
-    C = F .* (abs(Ub).^-1); 
+    Cb2 = F .* (abs(Ub).^-1); 
         
 elseif strcmp(oo.slidinglaw, 'schoof')              %6b of Hewitt (2012)
     n = pp.n_Glen;
     F = mu*pp.c15 .* N .* (Ub./ (pp.c16.*Ub + pp.c17.*N.^n)).^(1/n); 
-    C = F .* (abs(Ub).^-1); 
+    Cb2 = F .* (abs(Ub).^-1); 
     
 end
 
 %% Reshape 
-C = reshape(gg.S_h'*C,gg.nJ,gg.nI);
+Cb2 = reshape(gg.S_h'*Cb2,gg.nJ,gg.nI);
 end
 
 

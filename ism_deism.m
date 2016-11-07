@@ -16,7 +16,7 @@ eq_norm = zeros(numIter,1);
 
 if strcmp(oo.pT, 'forward'); 
     if oo.hybrid, Cb = aa.Cb; C = vv.C; nEff = vv.nEff; nEff_lyrs = vv.nEff_lyrs;
-    else C = aa.C; nEff = vv.nEff; end; end
+    else C = aa.Cb; nEff = vv.nEff; end; end
 if strcmp(oo.pT, 'inverse'); 
     if oo.hybrid, Cb = vv.Cb; C = vv.C; nEff = vv.nEff; nEff_lyrs = vv.nEff_lyrs;
     else C = vv.C; nEff = vv.nEff; end; end
@@ -163,11 +163,14 @@ if oo.hybrid                                            %Determine viscosity, ba
 
 [nEff, nEff_lyrs] = ism_visc_di(U,nEff_lyrs,gg.S_h*C(:),aa,pp,gg,oo); %Updated Viscosity
 F2 = ism_falpha(2,U,nEff_lyrs,vv,aa,pp,gg,oo );
-[Cb] = ism_slidinglaw(vv,aa,pp,gg,oo);
+[Cb] = ism_slidinglaw(U,gg.S_h*Cb(:),F2,vv,aa,pp,gg,oo);
 
 C = Cb(:)./(1 + (pp.c13*Cb(:)).*(gg.S_h'*F2));                    %Effective Basal Slipperiness
 
-else nEff = ism_visc(U,vv,aa,pp,gg,oo); end             %SSA Viscosity
+else
+nEff = ism_visc(U,vv,aa,pp,gg,oo);
+[C] = ism_slidinglaw(U,gg.S_h*Cb(:),F2,vv,aa,pp,gg,oo);
+end             %SSA Viscosity
 
 
 
@@ -204,11 +207,20 @@ eq_norm(j) = norm(RHSf-LHSf*U)./norm(RHS);
 vv.U = U;
 vv.u = u;
 vv.v = v;
+
 vv.nEff = nEff;
 vv.sstream_norm = sstream_norm;
 vv.eq_norm = eq_norm;
 
-if oo.hybrid, vv.C = C; vv.nEff_lyrs = nEff_lyrs; vv.F2 = F2; end;
+if oo.hybrid
+vv.C = C;
+vv.Cb = Cb;
+vv.nEff_lyrs = nEff_lyrs; 
+vv.F2 = F2; 
+else
+vv.C = C;
+vv.Cb = C;
+end;
 
 end
 
