@@ -1,4 +1,4 @@
-function [Cb2] = ism_slidinglaw(U,Cb,F2,vv,aa,pp,gg,oo)
+function [Cb2] = ism_slidinglaw(uv,Cb,F2,vv,aa,pp,gg,oo)
 %% Field Equations for SSA velocities 
 % Inputs:
 %   U     velocities
@@ -24,8 +24,8 @@ else
 %% Non Linear
 
 %Setup variables
-u = U(1:gg.nua);      
-v = U(gg.nua+1:end); 
+u = uv(1:gg.nua);      
+v = uv(gg.nua+1:end); 
 
 mu = gg.S_h*aa.mu(:);
 N = max(gg.S_h*aa.N(:),0);

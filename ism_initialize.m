@@ -68,7 +68,7 @@ aa.nfxd_uval = zeros(gg.nJ,gg.nI+1); aa.nfxd_vval = zeros(gg.nJ+1,gg.nI);
 end
 
 %% Forward/Inverse Problem Settings
-vv2.U = [u(:); v(:)];
+vv2.uv = [u(:); v(:)];
 vv2.u = u(:);
 vv2.v = v(:);
 
@@ -98,10 +98,10 @@ aa.N = dd.N;
     
 B2 = gg.S_h*aa.B2(:);                   %Setup variables
 N = max(gg.S_h*dd.N(:),0);                              
-U = sqrt( (gg.c_uh*u).^2 + (gg.c_vh*v).^2 );
+U = vv.U;
 
 if oo.hybrid,                                       %Basal vel for hybrid
-F2 = ism_falpha(2,vv.U,vv.nEff_lyrs,vv,aa,pp,gg,oo );
+F2 = ism_falpha(2,vv.uv,vv.nEff_lyrs,vv,aa,pp,gg,oo );
 tmpa = (1 + pp.c13*B2.*F2);
 Ub = U./tmpa;
 else
@@ -141,12 +141,12 @@ aa.mu = mu;
 end
 
 %% Initialize Hybrid or SSA variables
-U = vv2.U;
+uv = vv2.uv;
 
 if oo.hybrid,                                       %Hybrid                                                      
-nEff = ism_visc(U,vv2,aa,pp,gg,oo);         
+nEff = ism_visc(uv,vv2,aa,pp,gg,oo);         
 nEff_lyrs = repmat(nEff,1,nl+1);
-F2 = ism_falpha(2,U,nEff_lyrs,vv2,aa,pp,gg,oo );    %Effective Basal Slipperiness
+F2 = ism_falpha(2,uv,nEff_lyrs,vv2,aa,pp,gg,oo );    %Effective Basal Slipperiness
 C = Cb(:)./(1 + (pp.c13*Cb(:)).*(gg.S_h'*F2)); 
 
 vv2.C = C;
@@ -155,7 +155,7 @@ vv2.nEff = nEff;
 vv2.nEff_lyrs = nEff_lyrs;
 
 else                                                %SSA
-nEff = ism_visc(U,vv2,aa,pp,gg,oo);         
+nEff = ism_visc(uv,vv2,aa,pp,gg,oo);         
 vv2.nEff = nEff;   
 end
 

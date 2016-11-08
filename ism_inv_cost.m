@@ -1,4 +1,4 @@
-function [ cst ] = ism_inv_cost(U,C,F1,F2,vv,aa,pp,gg, oo)
+function [ cst ] = ism_inv_cost(uv,C,F1,F2,vv,aa,pp,gg, oo)
 %% Inversion cost function
 % Inputs:
 %   vv      struct containing initial solution variables
@@ -10,8 +10,8 @@ function [ cst ] = ism_inv_cost(U,C,F1,F2,vv,aa,pp,gg, oo)
 %if ~isfield(pp,'L_smooth'), pp.L_smooth = 0; end 
 
 
-u = U(1:gg.nua); 
-v = U(gg.nua+1:end);
+u = uv(1:gg.nua); 
+v = uv(gg.nua+1:end);
 
 Cb = C;                                           %Basal Slip
 

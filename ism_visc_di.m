@@ -1,4 +1,4 @@
-function [nEff_di, nEff_lyrs] = ism_visc_di(U,nEff_lyrs,C,aa,pp,gg,oo)
+function [nEff_di, nEff_lyrs] = ism_visc_di(uv,nEff_lyrs,C,aa,pp,gg,oo)
 %% Calculate Ice Viscosity 
 % Inputs:
 %   z       Depth at each grid cell at which to evaluate viscosity
@@ -18,8 +18,8 @@ nl = oo.nl;
 nEffrun = zeros(gg.nha,1);
 nEff_lyrs2 = zeros(gg.nha,nl+1);
 
-u = U(1:gg.nua);        u_h = gg.c_uh*u;       %Setup velocity,topographic parameters
-v = U(gg.nua+1:end);    v_h = gg.c_vh*v;
+u = uv(1:gg.nua);        u_h = gg.c_uh*u;       %Setup velocity,topographic parameters
+v = uv(gg.nua+1:end);    v_h = gg.c_vh*v;
 h = gg.S_h*aa.h(:);
 s = gg.S_h*aa.s(:);
 b = gg.S_h*aa.b(:);
