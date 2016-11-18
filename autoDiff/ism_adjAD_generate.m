@@ -3,7 +3,7 @@ function [] = ism_adjAD_generate( vv,aa, pp, gg, oo )
 %input sizes from current simulation
 
 %% Clear working directory of previously generated AD function
-fn = {'ism_inv_cost_ADu', 'ism_inv_cost_ADc','ism_visc_AD',...
+fn = {'ism_slidinglaw_ADa', 'ism_inv_cost_ADu', 'ism_inv_cost_ADc', 'ism_inv_cost_ADa','ism_visc_AD',...
     'ism_visc_diAD','ism_dim_Ddiag_ADc','ism_dim_Ddiag_ADnEff','ism_cslip_form_ADc', 'ism_visc_diSAD'};
 for j = 1:numel(fn)
     tmpA = char(strcat(fn(j), '.m')); tmpB = char(strcat(fn(j), '.mat'));
@@ -13,22 +13,33 @@ end
 
 %% Apply Automatic Differentiation
 
+
 %Cost Function w.r.t velocity
 U = adigatorCreateDerivInput([gg.nua+gg.nva,1], 'U');
 C = adigatorCreateAuxInput([gg.nha,1]);
+alpha = adigatorCreateAuxInput([gg.nha,1]);
 F1 = adigatorCreateAuxInput([gg.nha,1]);
 F2 = adigatorCreateAuxInput([gg.nha,1]);
-adigator('ism_inv_cost', {U,C,F1,F2,vv,aa,pp,gg,oo},'ism_inv_cost_ADu')
-clear U C F1 F2;
-
+adigator('ism_inv_cost', {U,C,alpha,F1,F2,vv,aa,pp,gg,oo},'ism_inv_cost_ADu')
+clear U C alpha F1 F2;
 
 %Cost Function w.r.t Basal Slipperiness
 C = adigatorCreateDerivInput([gg.nha,1],'C');
 U = adigatorCreateAuxInput([gg.nua+gg.nva,1]);
+alpha = adigatorCreateAuxInput([gg.nha,1]);
 F1 = adigatorCreateAuxInput([gg.nha,1]);
 F2 = adigatorCreateAuxInput([gg.nha,1]);
-adigator('ism_inv_cost', {U,C,F1,F2,vv,aa,pp,gg,oo},'ism_inv_cost_ADc')
-clear U C F1 F2;
+adigator('ism_inv_cost', {U,C,alpha,F1,F2,vv,aa,pp,gg,oo},'ism_inv_cost_ADc')
+clear U C alpha F1 F2;
+
+%Cost Function w.r.t Alpha
+alpha = adigatorCreateDerivInput([gg.nha,1],'alpha');
+U = adigatorCreateAuxInput([gg.nua+gg.nva,1]);
+C = adigatorCreateAuxInput([gg.nha,1]);
+F1 = adigatorCreateAuxInput([gg.nha,1]);
+F2 = adigatorCreateAuxInput([gg.nha,1]);
+adigator('ism_inv_cost', {U,C,alpha,F1,F2,vv,aa,pp,gg,oo},'ism_inv_cost_ADa')
+clear U C alpha F1 F2;
 
 
 %Viscosity w.r.t velocity

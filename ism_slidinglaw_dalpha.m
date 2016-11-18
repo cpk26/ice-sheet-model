@@ -1,4 +1,4 @@
-function [Cb2] = ism_slidinglaw(alpha,uv,Cb,F2,vv,aa,pp,gg,oo)
+function [dalpha] = ism_slidinglaw_dalpha(alpha,uv,Cb,F2,vv,aa,pp,gg,oo)
 % Inputs:
 %   U     velocities
 %   Cb      basal drag
@@ -17,7 +17,7 @@ function [Cb2] = ism_slidinglaw(alpha,uv,Cb,F2,vv,aa,pp,gg,oo)
 %% Linear
 
 if strcmp(oo.slidinglaw,'linear')  
-Cb2 = alpha;    %Static
+dalpha = ones(gg.nha,1);   
 
 
 else
@@ -40,22 +40,19 @@ Ub = U;
 end
 
 
-
 % %% Handle different sliding laws
 if strcmp(oo.slidinglaw,'weertman')               %6a of Hewitt (2012)
     p = pp.p; 
     q = pp.q;
     
-    F = alpha .* pp.c14 .*(N.^p .* Ub.^q);
-    absUB = abs(Ub);
-    Cb2 = F .* (absUB.^-1); 
+    F = pp.c14 .*(N.^p .* Ub.^q);
+    dalpha = F .* (abs(Ub).^-1); 
 
         
 elseif strcmp(oo.slidinglaw,'schoof')              %6b of Hewitt (2012)
     n = pp.n_Glen;
-    F = alpha*pp.c15 .* N .* (Ub./ (pp.c16.*Ub + pp.c17.*N.^n)).^(1/n); 
-    absUB = abs(Ub);
-    Cb2 = F .* (absUB.^-1); 
+    F = pp.c15 .* N .* (Ub./ (pp.c16.*Ub + pp.c17.*N.^n)).^(1/n); 
+    dalpha = F .* (abs(Ub).^-1); 
     
 end
 

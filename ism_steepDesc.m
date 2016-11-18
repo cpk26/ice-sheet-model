@@ -36,6 +36,7 @@ end
 
 itc=1; xc=x0;                   %Initialize                    
 [fc,gc]=feval(f,xc);            %cost,gradient
+gc = gc/max(abs(gc));           %Normalize
 costdata = zeros(maxit,1);
 costdata(1) = fc;
 chng = Inf;
@@ -83,7 +84,10 @@ while(chng > tol && itc <= maxit)
     
 	xc=xp; 
     fc = fp;
-    if chng > tol, [fc,gc]=feval(f,xc); end; %Update Values
+    if chng > tol,              %Update Values
+        [fc,gc]=feval(f,xc); 
+        gc = gc/max(abs(gc));
+    end; 
     costdata(itc) = fc;
     
 end

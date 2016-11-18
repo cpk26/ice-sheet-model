@@ -17,8 +17,8 @@ nva = full(gg.nva);
 
 %% Variables (Non-Dimensionalized)
 
-Cslip_u = (gg.c_hu*gg.S_h*C(:))./(gg.c_hu*gg.S_h*(gg.m(:) ==2));            %Slipperiness on u,v grids
-Cslip_v = (gg.c_hv*gg.S_h*C(:))./(gg.c_hv*gg.S_h*(gg.m(:) ==2));
+Cslip_u = (gg.c_hu*C)./(gg.c_hu*gg.S_h*(gg.m(:) ==2));            %Slipperiness on u,v grids
+Cslip_v = (gg.c_hv*C)./(gg.c_hv*gg.S_h*(gg.m(:) ==2));
 
 Cslip_u(logical(gg.S_u*gg.nmgn_ugrid(:))) = 0;                           %Slipperiness is zero at margin for BC
 Cslip_v(logical(gg.S_v*gg.nmgn_vgrid(:))) = 0;
@@ -27,25 +27,12 @@ h_diag = spdiags(gg.S_h*aa.h(:),0,nha,nha);         %Diagonalize thickness and s
 Cslip_udiag = spdiags(Cslip_u(:),0,nua,nua);
 Cslip_vdiag = spdiags(Cslip_v(:),0,nva,nva);
 
+nEff_diag = spdiags(nEff(:),0,nha,nha);                                  
+
+
 %% Surface Gradient
 Sx = aa.Sx;
 Sy = aa.Sy;
-%Use gradient instead of gg.nddx/y since periodic BC conditions do not apply 
-% [Sx,Sy] = gradient(aa.s, gg.dx, gg.dy);             %For interior of ice Sheet      
-% 
-% su = (gg.c_hu*gg.S_h*aa.s(:))./(gg.c_hu*gg.S_h*(aa.h(:) > 0));  %For ice margin
-% sv = (gg.c_hv*gg.S_h*aa.s(:))./(gg.c_hv*gg.S_h*(aa.h(:) > 0));  %Thickness on u,v grids, linear extrapolation at the edges
-% 
-% dx = gg.S_h'*gg.du_x*su;
-% dy = gg.S_h'*gg.dv_y*sv;
-% 
-% Sx = Sx(:);                            %Vectorize, flip the sign in y-direction due to convention
-% Sx(logical(gg.nmgn)) = dx(logical(gg.nmgn)); %Update gradient at ice margin
-% Sy(logical(gg.nmgn)) = -dy(logical(gg.nmgn));
-% Sy = -Sy(:); 
-
-
-nEff_diag = spdiags(nEff(:),0,nha,nha);                                  
 
 
 %% Field equations for velocities

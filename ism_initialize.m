@@ -22,7 +22,7 @@ if nargin<5, oo = struct; end
 if ~isfield(dd,'nfxd'), dd.nfxd = []; end
 if ~isfield(dd,'errvx'), dd.errvx = ones(gg.nIJ,1)*pp.u; end 
 if ~isfield(dd,'errvy'), dd.errvy = ones(gg.nIJ,1)*pp.u; end
-if ~isfield(dd,'N'), dd.N = 0.1*(s-b)*pp.g*pp.rho_i; end
+if ~isfield(dd,'N'), dd.N = 0.1*(s-b)*pp.g*pp.rho_i/pp.phi; end
 
 
 %% Put fields and variables in structs
@@ -35,7 +35,6 @@ aa.h = s-b;
 
 %% Bed Gradient
 [Bx,By] = gradient(aa.b, gg.dx, gg.dy);             
-aa.prj = sqrt(1+ Bx.^2 + By.^2);
 
 %% Surface Gradient
  
@@ -73,14 +72,19 @@ vv2.u = u(:);
 vv2.v = v(:);
 
 
-if strcmp(oo.pT, 'forward')                     %Forward Problem
-if oo.hybrid, Cb = C(:); aa.Cb = Cb; aa.C = NaN(size(Cb));  
-else aa.Cb = C(:); aa.C = aa.Cb; end   
 
+Cb = gg.S_h*C(:); 
+vv2.Cb = Cb;
 
-elseif strcmp(oo.pT, 'inverse')                 %Inverse Problem
-if oo.hybrid, Cb = C(:); vv2.Cb = Cb; 
-else vv2.C = C(:); end;  
+if isequal(oo.slidinglaw, 'linear')  
+alpha = gg.S_h*C(:);
+else
+alpha = dd.alpha;
+aa.N =gg.S_h*dd.N(:)/pp.phi; end
+
+if strcmp(oo.pT, 'forward'), aa.alpha = alpha; 
+else
+vv2.alpha = alpha; 
 
 aa.u = gg.S_h*dd.vx(:)/pp.u;                    %h-grid
 aa.v = gg.S_h*dd.vy(:)/pp.u; 
@@ -90,55 +94,34 @@ aa.errv = gg.S_h*dd.errvy(:)/pp.u;
 
 end
 
-%% Initialize sliding law
-aa.B2 = C;                              % Covers Linear Case 
 
-if ~strcmp(oo.slidinglaw, 'linear')     % Non Linear
-aa.N = dd.N;
-    
-B2 = gg.S_h*aa.B2(:);                   %Setup variables
-N = max(gg.S_h*dd.N(:),0);                              
-U = vv.U;
+% if strcmp(oo.pT, 'forward')                     %Forward Problem
+% if oo.hybrid, Cb = gg.S_h*C(:); vv2.Cb = Cb; vv2.C = NaN(size(Cb));  
+% else aa.Cb = gg.S_h*C(:); vv2.C = vv2.Cb; end   
+% 
+% if isequal(oo.slidinglaw, 'linear')  
+% aa.alpha = gg.S_h*C(:);
+% else aa.alpha = dd.alpha; 
+% aa.N =gg.S_h*dd.N(:)/pp.phi; end
+% 
+% 
+% elseif strcmp(oo.pT, 'inverse')                 %Inverse Problem
+% if oo.hybrid, Cb = gg.S_h*C(:); vv2.Cb = Cb; 
+% else vv2.Cb =gg.S_h*C(:); vv2.C = Cb; end;  
+% 
+% if isequal(oo.slidinglaw, 'linear')   
+% vv2.alpha = gg.S_h*C(:);
+% else vv2.alpha = dd.alpha;
+% aa.N =gg.S_h*dd.N(:)/pp.phi; end
+% 
+% aa.u = gg.S_h*dd.vx(:)/pp.u;                    %h-grid
+% aa.v = gg.S_h*dd.vy(:)/pp.u; 
+%                 
+% aa.erru = gg.S_h*dd.errvx(:)/pp.u;              %h-grid 
+% aa.errv = gg.S_h*dd.errvy(:)/pp.u; 
+% 
+% end
 
-if oo.hybrid,                                       %Basal vel for hybrid
-F2 = ism_falpha(2,vv.uv,vv.nEff_lyrs,vv,aa,pp,gg,oo );
-tmpa = (1 + pp.c13*B2.*F2);
-Ub = U./tmpa;
-else
-Ub = U;
-end
-  
-% Handle different sliding laws
-if strcmp(oo.slidinglaw, 'weertman')            %6a of Hewitt (2012)
-    p = pp.p; q = pp.q;
-    
-    F = pp.c14 .*(N.^p .* Ub.^q);
-    F = F .* (abs(Ub).^-1); 
-    
-    mu = B2./F;
-
-elseif strcmp(oo.slidinglaw, 'schoof')              %6b of Hewitt (2012)
-    n = pp.n_Glen;
-    F = pp.c15 .* N .* (Ub./ (pp.c16.*Ub + pp.c17.*N.^n)).^(1/n); 
-    F = F .* (abs(Ub).^-1); 
-    mu = B2./F;
-end
-
-% Reshape and save
-mu = reshape(gg.S_h'*mu,gg.nJ,gg.nI);
-mu(gg.next) = NaN;
-
-% Fill regions where N (effective pressure) < eps
-eps = 1e4/pp.phi;
-mask = dd.N<eps;
-mask(gg.next) =0;
-
-mu(mask) = NaN;
-mu = inpaint_nans(mu);
-mu(gg.next)=0;
-
-aa.mu = mu;
-end
 
 %% Initialize Hybrid or SSA variables
 uv = vv2.uv;
@@ -147,7 +130,7 @@ if oo.hybrid,                                       %Hybrid
 nEff = ism_visc(uv,vv2,aa,pp,gg,oo);         
 nEff_lyrs = repmat(nEff,1,nl+1);
 F2 = ism_falpha(2,uv,nEff_lyrs,vv2,aa,pp,gg,oo );    %Effective Basal Slipperiness
-C = Cb(:)./(1 + (pp.c13*Cb(:)).*(gg.S_h'*F2)); 
+C = Cb./(1 + (pp.c13*Cb).*(F2)); 
 
 vv2.C = C;
 vv2.F2 = F2;
@@ -155,8 +138,10 @@ vv2.nEff = nEff;
 vv2.nEff_lyrs = nEff_lyrs;
 
 else                                                %SSA
+vv2.C = vv2.Cb;
 nEff = ism_visc(uv,vv2,aa,pp,gg,oo);         
 vv2.nEff = nEff;   
+vv2.F2 =[];
 end
 
 

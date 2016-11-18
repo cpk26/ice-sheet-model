@@ -14,28 +14,48 @@ sstream_norm = zeros(numIter,1);
 eq_norm = zeros(numIter,1);
 
 
-if strcmp(oo.pT, 'forward'); 
-    if oo.hybrid, Cb = aa.Cb; C = vv.C; nEff = vv.nEff; nEff_lyrs = vv.nEff_lyrs;
-    else C = aa.Cb; nEff = vv.nEff; end; end
-if strcmp(oo.pT, 'inverse'); 
-    if oo.hybrid, Cb = vv.Cb; C = vv.C; nEff = vv.nEff; nEff_lyrs = vv.nEff_lyrs;
-    else C = vv.C; nEff = vv.nEff; end; end
+
+uv = vv.uv;                                   %Initial Values
+Cb = vv.Cb; 
+C = vv.C; 
+nEff = vv.nEff; 
+if oo.hybrid
+nEff_lyrs = vv.nEff_lyrs; 
+F2 = vv.F2;
+end
+
+if strcmp(oo.pT, 'forward'), alpha = aa.alpha;  
+else alpha = vv.alpha; end;
 
 
-uv = vv.uv;                                   %Initial iterate velocity
+% if strcmp(oo.pT, 'forward');                %Forward/Inverse Problem Setup
+%     alpha = aa.alpha; 
+%     if oo.hybrid, Cb = vv.Cb; C = vv.C; nEff = vv.nEff; nEff_lyrs = vv.nEff_lyrs; F2 = vv.F2;
+%     else Cb = aa.Cb; C = Cb; nEff = vv.nEff; end; end
+% if strcmp(oo.pT, 'inverse'); 
+%     alpha = vv.alpha;
+%     if oo.hybrid, Cb = vv.Cb; C = vv.C; nEff = vv.nEff; nEff_lyrs = vv.nEff_lyrs; F2 = vv.F2;
+%     else Cb = vv.Cb; C = Cb; nEff = vv.nEff; end; end
+
 
 rr = struct();                              %Preallocate arrays if we are saving picard iterations
 if isequal(oo.savePicIter,1)
     rr.An = cell(1,numIter);
     rr.uvn = zeros(gg.nua+gg.nva,numIter+1);
     rr.nEffn = zeros(gg.nha,numIter);
-    if oo.hybrid; rr.F2n = zeros(gg.nha,numIter+1);end
+    if oo.hybrid; 
+        rr.nEff_lyrsn = cell(1,numIter);
+        rr.F2n = zeros(gg.nha,numIter+1);
+        rr.Cbn = zeros(gg.nha,numIter+1); end
 end
 
 if isequal(oo.savePicIter,1),   %Save initial velocity/viscosity; 
 rr.uvn(:,1) = uv; 
 rr.nEffn(:,1) = nEff(:);
+rr.Cbn(:,1) = Cb(:); 
+rr.Cn(:,1) = C(:); 
 if oo.hybrid
+rr.nEff_lyrsn{1} = nEff_lyrs;
 rr.F2n(:,1) = vv.F2(:); end;
 end                      
 
@@ -43,7 +63,7 @@ end
 %% Picard Iterations
 for j = 1:numIter
 
-
+    
 
 %% Field Equations
 [LHS, RHS] = ism_deism_fieldeq(C,nEff, aa,pp,gg,oo);              %Field Equations
@@ -86,7 +106,7 @@ tmp_b = [gg.S_u*aa.nfxd_uval(:); gg.S_v*aa.nfxd_vval(:)];                 %Vecto
 if oo.hybrid,                                     %Convert surface vel -> effective vel
 F1 = ism_falpha(1,uv,nEff_lyrs,vv,aa,pp,gg,oo );          %Calculate F alpha factors 
 F2 = ism_falpha(2,uv,nEff_lyrs,vv,aa,pp,gg,oo );
-tmp_c = (1 + pp.c13*(gg.S_h*Cb(:)).*F1)./(1 + pp.c13*(gg.S_h*Cb(:)).*F2);          %uvn -> uvs factor
+tmp_c = (1 + pp.c13*(Cb).*F1)./(1 + pp.c13*(Cb).*F2);          %uvn -> uvs factor
 tmpc_u = (gg.c_hu*tmp_c)./(gg.c_hu*(gg.S_h*gg.m(:)==2));    %Interpolate onto u/v grids
 tmpc_v = (gg.c_hv*tmp_c)./(gg.c_hv*(gg.S_h*gg.m(:)==2));    %Extrapolate at edges
 effVelFac = [tmpc_u; tmpc_v];            
@@ -161,15 +181,15 @@ v = uv(gg.nua+1:end);
     
 if oo.hybrid                                            %Determine viscosity, basal slipperiness appropriately
 
-[nEff, nEff_lyrs] = ism_visc_di(uv,nEff_lyrs,gg.S_h*C(:),aa,pp,gg,oo); %Updated Viscosity
+[nEff, nEff_lyrs] = ism_visc_di(uv,nEff_lyrs,C,aa,pp,gg,oo); %Updated Viscosity
 F2 = ism_falpha(2,uv,nEff_lyrs,vv,aa,pp,gg,oo );
-[Cb] = ism_slidinglaw(uv,gg.S_h*Cb(:),F2,vv,aa,pp,gg,oo);
+[Cb] = ism_slidinglaw(alpha,vv.uv,Cb,F2,vv,aa,pp,gg,oo);
 
-C = Cb(:)./(1 + (pp.c13*Cb(:)).*(gg.S_h'*F2));                    %Effective Basal Slipperiness
+C = Cb(:)./(1 + (pp.c13*Cb).*(F2));                    %Effective Basal Slipperiness
 
 else
 nEff = ism_visc(uv,vv,aa,pp,gg,oo);
-[C] = ism_slidinglaw(uv,gg.S_h*Cb(:),F2,vv,aa,pp,gg,oo);
+[C] = ism_slidinglaw(alpha,vv.uv,Cb,[],vv,aa,pp,gg,oo);
 end             %SSA Viscosity
 
 
@@ -177,7 +197,12 @@ end             %SSA Viscosity
 if isequal(oo.savePicIter,1),
     rr.uvn(:,j+1) = uv; 
     rr.nEffn(:,j+1) = nEff(:);
-    if oo.hybrid; rr.F2n(:,j+1) = F2; end
+    rr.Cbn(:,j+1) = Cb;
+    rr.Cn(:,j+1) = C;
+    if oo.hybrid; 
+        rr.F2n(:,j+1) = F2; 
+    rr.nEff_lyrsn{j+1} = nEff_lyrs;
+    end
 end                %Save Intermediate velocity array
 
 
@@ -204,31 +229,31 @@ end                %Save Intermediate velocity array
 eq_norm(j) = norm(RHSf-LHSf*uv)./norm(RHS);
 
 
-vv.uv = uv;
+vv.uv = uv;          %Store variables
 vv.u = u;
 vv.v = v;
-
-vv.nEff = nEff;
-vv.sstream_norm = sstream_norm;
-vv.eq_norm = eq_norm;
-
-if oo.hybrid
+vv.nEff = nEff;            
 vv.C = C;
+if oo.hybrid
 vv.Cb = Cb;
 vv.nEff_lyrs = nEff_lyrs; 
 vv.F2 = F2; 
 else
-vv.C = C;
 vv.Cb = C;
-end;
+end;      
+
+
 
 end
 
+%% Append solution norms
+vv.sstream_norm = sstream_norm;
+vv.eq_norm = eq_norm;
 
 %% Calculate effective velocity and basal velocity
 U = sqrt( (gg.c_uh*u).^2 + (gg.c_vh*v).^2 );
 if oo.hybrid
-tmpa = (1 + (pp.c13*gg.S_h*Cb(:)).*(F2));
+tmpa = (1 + (pp.c13*vv.Cb).*(F2)); %use corresponding Cb to u/v
 Ub = U./tmpa;
 
 vv.U = U;

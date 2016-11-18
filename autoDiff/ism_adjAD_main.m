@@ -11,37 +11,29 @@ function [rr] = ism_adjAD_main(vv,rr ,aa,pp,gg,oo )
 
 numIter = oo.pic_iter;                               %Number of Picard Iterations
 
-if isfield(rr,'runC'), runC = rr.runC;               %Variable accumalating the adjoint of C
-else runC = zeros(gg.nha,1); end;                    %initialize to vv.runC if provided
+if isfield(rr,'runalpha'), runalpha = rr.runalpha;       %Variable accumalating the adjoint of alpha
+else runalpha = zeros(gg.nha,1); end;                    %initialize to rr.runalpha if provided
 
-                                             
-if oo.hybrid, Cb = vv.Cb;                           %Initialize Basal Drag
-else C = vv.C; end
-
+%Initiate Constant matrices
 X = [gg.du_x gg.dv_y; gg.du_x -gg.dv_y; gg.dhu_y gg.dhv_x; speye(gg.nua,gg.nua) sparse(gg.nua,gg.nva); sparse(gg.nva,gg.nua) speye(gg.nva,gg.nva)];
 X2 = [gg.dh_x gg.dh_x gg.duh_y speye(gg.nua,gg.nua) sparse(gg.nva,gg.nua)'; gg.dh_y -gg.dh_y gg.dvh_x sparse(gg.nua,gg.nva)' speye(gg.nva,gg.nva)];
-
-
-DEL = zeros(gg.nua+gg.nva,1);                   %Columns to delete
-DEL2 = DEL;                                     %Rows to delete                 
-
-firstpass = 1;
-
+             
 disp('Adjoint Calculation')
-
+firstpass = 1;
 
 for j = numIter:-1:1
 disp(['Inverse Picard Iteration: ', num2str(j)])
 
 %% Initiate Variables
+Cb = rr.Cbn(:,j);                           %Basal Drag
 A_r = rr.An{j};                             %A matrix from current iteration (r indicates that it will be reduced during application of BC)
-A_sp = (rr.An{j} ~= 0);
-Uf = rr.Un(:,j+1);                          %Velocity from iteration n+1 (forward iteration)
-b = zeros(numel(Uf),1);                     %Preallocate  b array
+A_sp = (rr.An{j} ~= 0);                     %Sparsity pattern
+uvf = rr.uvn(:,j+1);                        %Velocity from iteration n+1 (forward iteration)
+b = zeros(numel(uvf),1);                    %Preallocate  b array
 
 if oo.hybrid, 
 F2 = rr.F2n(:,j);
-C = Cb(:)./(1 + (pp.c13*Cb(:)).*(gg.S_h'*F2)); 
+C = Cb./(1 + (pp.c13*Cb).*(F2)); 
 
 end;
 
@@ -50,10 +42,10 @@ if firstpass
     firstpass = 0;    
     
 else
-    U_adi = struct('f', Uf, 'dU',ones(gg.nua+gg.nva,1));             %Otherwise calculate from adjoint of viscosity
+    U_adi = struct('f', uvf, 'dU',ones(gg.nua+gg.nva,1));             %Otherwise calculate from adjoint of viscosity
     
     if oo.hybrid
-    UAD = ism_visc_diSAD(U_adi,rr.nEffn(:,j),gg.S_h*C(:),aa,pp,gg,oo);    
+    UAD = ism_visc_diSAD(U_adi,rr.nEff_lyrsn{j},C,aa,pp,gg,oo);    
     U_visc = sparse(UAD.dU_location(:,1),UAD.dU_location(:,2), UAD.dU, UAD.dU_size(1), UAD.dU_size(2));        
     else
     UAD = ism_visc_AD(U_adi,vv,aa,pp,gg,oo);    
@@ -67,6 +59,9 @@ else
 end
 
 %% Handle BC for A matrix and Velocity Array 
+
+DEL = zeros(gg.nua+gg.nva,1);                   %Columns to delete
+DEL2 = DEL;                                     %Rows to delete
 
 if any(gg.nmgn(:)); %ice margin nodes
 tmp_a = [gg.S_u*gg.nmgn_ugrid(:); gg.S_v*gg.nmgn_vgrid(:)];
@@ -130,13 +125,13 @@ end
 
 %% Determine adjoint of A matrix
 
-adjA = -spdiags(b,0,gg.nua+gg.nva,gg.nua+gg.nva)*A_sp*spdiags(Uf,0,gg.nua+gg.nva,gg.nua+gg.nva);
+adjA = -spdiags(b,0,gg.nua+gg.nva,gg.nua+gg.nva)*A_sp*spdiags(uvf,0,gg.nua+gg.nva,gg.nua+gg.nva);
 
 clear b tmp_a;
 
 %% Determine adjoint of Viscosity                                   
 nEff_adi = struct('f', rr.nEffn(:,j), 'dnEff',ones(gg.nha,1));   %Calculate main diagonal of D matrix (A = X2*D*X)
-nEffAD = ism_dim_Ddiag_ADnEff(gg.S_h*C(:),nEff_adi,aa,pp,gg,oo);
+nEffAD = ism_dim_Ddiag_ADnEff(C,nEff_adi,aa,pp,gg,oo);
 nEff_Ddiag = sparse(nEffAD.dnEff_location(:,1),nEffAD.dnEff_location(:,2), nEffAD.dnEff, nEffAD.dnEff_size(1), nEffAD.dnEff_size(2));
 
 
@@ -151,7 +146,7 @@ end
 clear nEff_adi nEffAD nEff_Ddiag tmp;
 
 %% Determine adjoint of Basal Slip
-C_adi = struct('f', gg.S_h*C(:), 'dC',ones(gg.nha,1));   %Calculate main diagonal of D matrix (A = X2*D*X)
+C_adi = struct('f', C, 'dC',ones(gg.nha,1));   %Calculate main diagonal of D matrix (A = X2*D*X)
 CAD = ism_dim_Ddiag_ADc(C_adi,rr.nEffn(:,j),aa,pp,gg,oo);
 C_Ddiag = sparse(CAD.dC_location(:,1),CAD.dC_location(:,2), CAD.dC, CAD.dC_size(1), CAD.dC_size(2));
 
@@ -163,20 +158,26 @@ adjC(i) = tmp(:)'*adjA(:);
 end
 
 
-if oo.hybrid
-flag = 0;
-C_adi = struct('f', gg.S_h*C(:), 'dC',ones(gg.nha,1));   %Calculate main diagonal of D matrix (A = X2*D*X)
+if oo.hybrid,                       %Move from C effective to C basal
+flag = 1;
+C_adi = struct('f', C, 'dC',ones(gg.nha,1));   
 CAD = ism_cslip_form_ADc(flag,F2,C_adi,aa,pp,gg,oo );
 C_form = sparse(CAD.dC_location(:,1),CAD.dC_location(:,2), CAD.dC, CAD.dC_size(1), CAD.dC_size(2));
 
 adjC = C_form'*adjC;
 end
 
-if oo.hybrid
-adjC = adjC.*(1+(pp.c13*gg.S_h*Cb(:)).*F2).^-2; %Move from C effective to C basal
-end
+% if oo.hybrid  %% Note redundant to above? Commented on Nov 12
+% adjC = adjC.*(1+(pp.c13*Cb).*F2).^-2; %Move from C effective to C basal
+% end
 
-runC = runC + adjC;
+
+
+C_alpha = ism_slidinglaw_dalpha([],rr.uvn(:,j),rr.Cbn(:,max(j-1,1)),rr.F2n(:,j),vv,aa,pp,gg,oo);
+C_alpha = spdiags(C_alpha,0,gg.nha,gg.nha);
+adjalpha = C_alpha'*adjC;
+
+runalpha = runalpha + adjalpha;
 
 
 clear C_adi CAD C_Ddiag tmp;
@@ -185,8 +186,8 @@ clear C_adi CAD C_Ddiag tmp;
 end
 
 disp('Finished looping through picard iterations [Adjoint]')
-rr.adjC = gg.S_h'*adjC;
-rr.runC = gg.S_h'*runC;
+rr.adjalpha = adjalpha;
+rr.runalpha = runalpha;
 
 end
 

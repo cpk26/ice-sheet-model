@@ -1,4 +1,4 @@
-function [aa] = ism_slidinglaw_init(B2, vv,aa,pp,gg,oo)
+function [alpha] = ism_slidinglaw_linearinit(B2,N,vv,aa,pp,gg,oo)
 %% Field Equations for SSA velocities 
 % Inputs:
 %   v     	solution struct
@@ -15,20 +15,21 @@ if ~isfield(oo,'slidinglaw'), oo.slidinglaw = 'linear'; end
 
 %% Linear
 if strcmp(oo.slidinglaw, 'linear')                              
-    aa.B2 = B2;
+    alpha = B2;
     
 else                                          
     
 %% Non Linear
 
 %Setup variables
-N = max(gg.S_h*aa.N(:),0);
-U = sqrt( (gg.c_uh*vv.u).^2 + (gg.c_vh*vv.v).^2 );
+N = max(N,0);
+U = vv.U;
+
 
 %% Basal velocities in the case of hybrid ice sheet model
 if oo.hybrid
-F2 = ism_falpha(2,vv.U,vv.nEff_lyrs,vv,aa,pp,gg,oo );
-tmpa = (1 + pp.c13*B2(:).*F2);
+F2 = ism_falpha(2,vv.uv,vv.nEff_lyrs,vv,aa,pp,gg,oo );
+tmpa = (1 + pp.c13*B2.*F2);
 Ub = U./tmpa;
 else
 Ub = U;
@@ -47,32 +48,30 @@ if strcmp(oo.slidinglaw, 'weertman')            %6a of Hewitt (2012)
     F = pp.c14 .*(N.^p .* Ub.^q);
     F = F .* (abs(Ub).^-1); 
     
-    mu = B2./F;
+    alpha = B2./F;
 
 elseif strcmp(oo.slidinglaw, 'schoof')              %6b of Hewitt (2012)
     n = pp.n_Glen;
     F = pp.c15 .* N .* (Ub./ (pp.c16.*Ub + pp.c17.*N.^n)).^(1/n); 
     F = F .* (abs(Ub).^-1); 
-    mu = B2./F;
+    alpha = B2./F;
 end
 
 %% Reshape
-mu = reshape(gg.S_h'*mu,gg.nJ,gg.nI);
-
+alpha = reshape(gg.S_h'*alpha,gg.nJ,gg.nI);
+N = reshape(gg.S_h'*N,gg.nJ,gg.nI);
 
 % Fill regions where N (effective pressure) < eps
-eps = 1e4/pp.N;
-mask = dd.N<eps;
+eps = 1e4/pp.phi;
+mask = N<eps;
 mask(gg.next) =0;
 
-mu(mask) = NaN;
-mu = inpaint_nans(mu);
-mu(gg.next)=0;
+alpha(mask) = NaN;
+alpha = inpaint_nans(alpha);
 
-aa.mu = mu;
+%% Reshape for output
+alpha = gg.S_h*alpha(:);
 
-%% Save
-aa.mu = mu;
 
 end
 
