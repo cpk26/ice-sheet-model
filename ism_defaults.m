@@ -29,7 +29,8 @@ if ~isfield(pd,'lambda_b'), pd.lambda_b = 1; end;                  % Bed roughne
 
 if ~isfield(pd,'n_rp'), pd.n_rp = 10^-5/(pd.ty); end;              % Effective Viscosity regularization parameter (m/s) (Arthern et al, 2015)
 if ~isfield(pd,'C_rp'), pd.C_rp = 10^2; end;                       % Basal Slipperiness regularation parameter for SIA (to avoid vel=Inf)
-if ~isfield(pd,'U_rp'), pd.U_rp = .001/pd.ty; end;                 % Velocity regularization parameter for inversion s.t. there are no zero vels
+if ~isfield(pd,'U_rp'), pd.U_rp = .01/pd.ty; end;                 % Velocity regularization parameter for inversion s.t. there are no zero vels
+if ~isfield(pd,'N_rp'), pd.N_rp = 0.1*pd.g*pd.rho_i; end;               % Effective pressure regularization 
 if ~isfield(pd,'mdR'), pd.mdR = 0; end;                            % Limit maximum deformational velocity to a fraction of surface velocity in ism_inverse_sia.
                                                                    % This acts to smooth the initial guess of C
 if ~isfield(pd,'L_vel'), pd.L_vel = 1; end                         % Velocity mismatch regularization parameter (Tikhonov reg)
@@ -44,11 +45,11 @@ if ~isfield(oo,'hybrid'), oo.hybrid = 1; end                       %Approximatio
 if ~isfield(oo,'slidinglaw'), oo.slidinglaw = 'linear'; end        %linear, weertman, or schoof. 
 if ~isfield(oo,'nl'), oo.nl = 50; end                              %Number of vertical layers to use for Simpson's Rule
 if ~isfield(oo,'inv_meth'), oo.inv_meth = 'AD'; end                %Inversion Method, either LM or AD
-if ~isfield(oo,'savePicIter'), oo.savePicIter = 0; end             %Flag to save intermediate arrays in picard iterations
+if ~isfield(oo,'savePicIter'), oo.adj_iter = 0; end                %Flag to save intermediate arrays in picard iterations
 if ~isfield(oo,'inv_opt'), oo.inv_opt = 'lbfgs'; end               %Inversion acoeff optimization algorithm: 'gd'/'lbfgs': gradientDescent/lBFGS 
 if ~isfield(oo,'inv_cst'), oo.inv_msft = 'abs'; end                %Least square solution using absolute or relative error
 if ~isfield(oo,'inv_iter'), oo.inv_iter = 75; end                  %Maximum number of inversion iterations
-if ~isfield(oo,'inv_funcEval'), oo.inv_funcEval = 200; end         %Maximum number of function evaluations allowed for minFunc()
+if ~isfield(oo,'inv_funcEval'), oo.inv_funcEval = 150; end         %Maximum number of function evaluations allowed for minFunc()
 if ~isfield(oo,'inv_progTol'), oo.inv_progTol = 1e-10; end         %Progress Tolerance for minFunc()
 if ~isfield(oo,'norm'), oo.norm = 2; end                           %solution norm for testing convergence. see norm()
 if ~isfield(oo,'Cdisc'), oo.Cdisc = 'grid'; end                    %Discritization of C slip coefficient. Either 'dct2' or 'grid'

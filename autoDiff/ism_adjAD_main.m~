@@ -137,15 +137,15 @@ nEff_Ddiag = sparse(nEffAD.dnEff_location(:,1),nEffAD.dnEff_location(:,2), nEffA
 
 
 adjnEff = zeros(gg.nha,1);
-matDim = nEffAD.dnEff_size(1);
+
 parfor i = 1:gg.nha
-tmp = X2*spdiags(nEff_Ddiag(:,i),0,matDim,matDim)*X;
+tmp = X2*spdiags(nEff_Ddiag(:,i),0,nEffAD.dnEff_size(1),nEffAD.dnEff_size(1))*X;
 adjnEff(i) = tmp(:)'*adjA(:);
 
 end
 
 toc
-clear nEff_adi nEffAD nEff_Ddiag tmp matDim;
+clear nEff_adi nEffAD nEff_Ddiag tmp;
 
 %% Determine adjoint of Basal Slip
 C_adi = struct('f', C, 'dC',ones(gg.nha,1));   %Calculate main diagonal of D matrix (A = X2*D*X)
@@ -154,9 +154,8 @@ C_Ddiag = sparse(CAD.dC_location(:,1),CAD.dC_location(:,2), CAD.dC, CAD.dC_size(
 
 
 adjC = zeros(gg.nha,1);
-matDim = CAD.dC_size(1);
 parfor i = 1:gg.nha
-tmp = X2*spdiags(C_Ddiag(:,i),0,matDim,matDim)*X;
+tmp = X2*spdiags(C_Ddiag(:,i),0,CAD.dC_size(1),CAD.dC_size(1))*X;
 adjC(i) = tmp(:)'*adjA(:);
 end
 

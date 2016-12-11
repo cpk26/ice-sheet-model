@@ -9,9 +9,15 @@ function [vv2, rr] = ism_deism(vv,aa,pp,gg,oo )
 % Outputs:
 %   vv2     struct containing new solution variables
 
-numIter = oo.pic_iter;                      %Solver parameters
-sstream_norm = zeros(numIter,1);
-eq_norm = zeros(numIter,1);
+numPicIter = oo.pic_iter;                      %Solver parameters
+numAdjIter = oo.adj_iter;
+
+adjFlag = (numAdjIter > 0);
+adjIterThresh = numPicIter - numAdjIter;
+adjIterPtr = 1;
+
+sstream_norm = zeros(numPicIter,1);
+eq_norm = zeros(numPicIter,1);
 
 
 
@@ -39,21 +45,21 @@ else alpha = vv.alpha; end;
 
 
 rr = struct();                              %Preallocate arrays if we are saving picard iterations
-if isequal(oo.savePicIter,1)
-    rr.An = cell(1,numIter);
-    rr.uvn = zeros(gg.nua+gg.nva,numIter+1);
-    rr.nEffn = zeros(gg.nha,numIter);
+if numAdjIter > 0
+    rr.An = cell(1,numAdjIter);
+    rr.uvn = zeros(gg.nua+gg.nva,numAdjIter+1);
+    rr.nEffn = zeros(gg.nha,numAdjIter);
     if oo.hybrid; 
-        rr.nEff_lyrsn = cell(1,numIter);
-        rr.F2n = zeros(gg.nha,numIter+1);
-        rr.Cbn = zeros(gg.nha,numIter+1); end
+        rr.nEff_lyrsn = cell(1,numAdjIter);
+        rr.F2n = zeros(gg.nha,numAdjIter+1);
+        rr.Cbn = zeros(gg.nha,numAdjIter+1); end
 end
 
-if isequal(oo.savePicIter,1),   %Save initial velocity/viscosity; 
+if isequal(adjIterThresh,0)   %Save initial velocity/viscosity; 
 rr.uvn(:,1) = uv; 
 rr.nEffn(:,1) = nEff(:);
 rr.Cbn(:,1) = Cb(:); 
-rr.Cn(:,1) = C(:); 
+%rr.Cn(:,1) = C(:); 
 if oo.hybrid
 rr.nEff_lyrsn{1} = nEff_lyrs;
 rr.F2n(:,1) = vv.F2(:); end;
@@ -61,7 +67,7 @@ end
 
         
 %% Picard Iterations
-for j = 1:numIter
+for j = 1:numPicIter
 
     
 
@@ -73,8 +79,9 @@ sstream_norm(j) = norm(RHS-LHS*uv)./norm(RHS); %iteration norm (using last itera
 
 uv = Inf(size(LHS,2),1);                                                 %Velocity vector, full length   
 
-if isequal(oo.savePicIter,1),                               %Save
-rr.An{j} = LHS;  
+if adjFlag && j >= adjIterThresh,   %Save
+rr.An{adjIterPtr} = LHS;  
+adjIterPtr = adjIterPtr + 1;    %Increment
 end                        
 
 %% Apply Boundary Conditions
@@ -180,7 +187,9 @@ v = uv(gg.nua+1:end);
 %% Viscosity, effective basal drag    
     
 if oo.hybrid                                            %Determine viscosity, basal slipperiness appropriately
-
+% if j == 9
+%     disp('test')
+% end
 [nEff, nEff_lyrs] = ism_visc_di(uv,nEff_lyrs,C,aa,pp,gg,oo); %Updated Viscosity
 F2 = ism_falpha(2,uv,nEff_lyrs,vv,aa,pp,gg,oo );
 [Cb] = ism_slidinglaw(alpha,vv.uv,Cb,F2,vv,aa,pp,gg,oo);
@@ -194,14 +203,14 @@ end             %SSA Viscosity
 
 
 
-if isequal(oo.savePicIter,1),
-    rr.uvn(:,j+1) = uv; 
-    rr.nEffn(:,j+1) = nEff(:);
-    rr.Cbn(:,j+1) = Cb;
-    rr.Cn(:,j+1) = C;
+if adjFlag && j >= adjIterThresh-1
+    rr.uvn(:,adjIterPtr) = uv; 
+    rr.nEffn(:,adjIterPtr) = nEff(:);
+    rr.Cbn(:,adjIterPtr) = Cb;
+    %rr.Cn(:,adjIterPtr) = C;
     if oo.hybrid; 
-        rr.F2n(:,j+1) = F2; 
-    rr.nEff_lyrsn{j+1} = nEff_lyrs;
+        rr.F2n(:,adjIterPtr) = F2; 
+    rr.nEff_lyrsn{adjIterPtr} = nEff_lyrs;
     end
 end                %Save Intermediate velocity array
 

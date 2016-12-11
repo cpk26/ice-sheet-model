@@ -48,6 +48,7 @@ pp.G = pd.G;
 pp.n_rp = pd.n_rp/(ps.u/ps.x);
 pp.C_rp = pd.C_rp;
 pp.U_rp = pd.U_rp/ps.u;
+pp.N_rp = pd.N_rp/ps.phi;
 pp.L_vel = pd.L_vel;
 pp.L_smooth = pd.L_smooth;  
 pp.mdR = pd.mdR;

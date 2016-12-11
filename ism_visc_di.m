@@ -38,7 +38,7 @@ exy = 0.5*(gg.dhu_y*u + gg.dhv_x*v);
 
 
 %% Depth Integrated Viscosity
-parfor k =[0:nl]
+for k =[0:nl]
 
 
 %% Viscosity of Current Layer
@@ -56,6 +56,34 @@ nEff_l = edeff.^((1-n)/n);
 end
 
 nEff_lyrs(:,k+1) = nEff_l;
+
+% M  = exx.^2 + eyy.^2 + exx.*eyy + exy.^2 + pp.n_rp.^2;
+% L1 = 0.25*(pp.c11*C.*u_h.*(s-tmpz)./(h)).^2;
+% L2 = 0.25*(pp.c11*C.*v_h.*(s-tmpz)./(h)).^2;
+% 
+% a1 = (L1 + L2)./(M);
+% a0 = -1./M;
+% 
+% Q = a1/3;
+% R = -a0/2;
+% 
+% D = Q.^3 + R.^2;
+% 
+% Sa = R + sqrt(D); 
+% Sb = ones(size(Sa)); 
+% Sb(Sa<0) = -1;
+% 
+% Ta = R - sqrt(D);
+% Tb = ones(size(Ta)); 
+% Tb(Ta<0) = -1;
+% 
+% S = Sb.*abs(Sa).^(1/3);
+% T = Tb.*abs(Ta).^(1/3);
+% 
+% nEff_l = S+T;
+% nEff_lyrs(:,k+1) = nEff_l;
+
+
 
 
 %% Running simpsons rule integration

@@ -36,6 +36,7 @@ options = struct();
 options.Method = 'lbfgs';
 options.Display = 'full';
 options.LS_init = 2;
+options.LS_type = 3; %Matlab
 options.Corr = 35;
 options.MaxIter = oo.inv_iter;
 options.MaxFunEvals = oo.inv_funcEval;

@@ -58,8 +58,8 @@ end
 
 %% DEISM
 
-oo.adj_iter = 0;                                     %Depth Integrated Model
-oo.pic_iter = 25; 
+oo.savePicIter = 0;                                     %Depth Integrated Model
+oo.pic_iter = 30; 
 [vv2, ~] = ism_deism(vv2,aa,pp,gg,oo );           
 
 if oo.hybrid
@@ -80,13 +80,11 @@ if nargout > 1 % gradient required
     
     %% Depth Integrated Model
     %Second DEISM call, save parameters for adjoint method
-    oo.adj_iter = 1;                                     %Save picard iterations
-    oo.pic_iter = 5;                                        %Reduced number of picard iteration
+    oo.savePicIter = 1;                                     %Save picard iterations
+    oo.pic_iter = 1;                                        %Reduced number of picard iteration
     
     vv2_orig = vv2;
     [vv2, rr] = ism_deism(vv2,aa,pp,gg,oo ); 
-    
-    oo.pic_iter = 1;
     
     if oo.hybrid, 
     C = vv2.Cb;                                                      %Use the correct Basal Drag

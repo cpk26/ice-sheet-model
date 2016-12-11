@@ -25,6 +25,8 @@ else
 N = max(N,0);
 U = vv.U;
 
+N = sqrt(N.^2 + pp.N_rp.^2);
+U = sqrt(U.^2 + pp.U_rp.^2);
 
 %% Basal velocities in the case of hybrid ice sheet model
 if oo.hybrid
@@ -34,6 +36,8 @@ Ub = U./tmpa;
 else
 Ub = U;
 end
+
+Ub = sqrt(Ub.^2 + pp.U_rp.^2);
   
 %% Handle different sliding laws
 % Test case for weertman/schoof, can delete
