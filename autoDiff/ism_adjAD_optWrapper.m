@@ -85,6 +85,7 @@ if nargout > 1 % gradient required
     
     vv2_orig = vv2;
     [vv2, rr] = ism_deism(vv2,aa,pp,gg,oo ); 
+    rr_orig = rr;
     
     oo.pic_iter = 1;
     
@@ -100,7 +101,8 @@ if nargout > 1 % gradient required
     % Adjoint variable Uf*
     U_adi = struct('f', vv2.uv, 'dU',ones(gg.nua+gg.nva,1));
     UAD = ism_inv_cost_ADu(U_adi,C,vv2.alpha,F1,F2,vv2,aa,pp,gg,oo);
-    rr.adjU = UAD.dU;
+    adjUf = UAD.dU;
+    rr.adjU = adjUf;
     
     %%Determine adjoint state of Cb_final* 
     C_adi = struct('f', C, 'dC',ones(gg.nha,1));
@@ -108,24 +110,55 @@ if nargout > 1 % gradient required
     rr.adjC = UAC.dC;
     
     %Determine adjoint state of Alpha_final* 
-    %Part 1
+    %Part a
     C_alpha = ism_slidinglaw_dalpha([],vv2.uv,rr.Cbn(:,end-1),rr.F2n(:,end),vv2,aa,pp,gg,oo);
     C_alpha = spdiags(C_alpha,0,gg.nha,gg.nha);
-    rr.adjalpha1 = C_alpha'*rr.adjC;
+    adjalpha1a = C_alpha'*rr.adjC;
     
-    %Part 2
+    %Part b
     alpha_adi = struct('f', vv2.alpha, 'dalpha',ones(gg.nha,1));
     AAD = ism_inv_cost_ADa(vv2.uv,C,alpha_adi,F1,F2,vv2,aa,pp,gg,oo);
-    rr.adjalpha2 = AAD.dalpha;
+    adjalpha1b = AAD.dalpha;
     
     %Combine
-    rr.runalpha =  rr.adjalpha1 + rr.adjalpha2;
+    adjalphaF =  adjalpha1a + adjalpha1b;
+    
+    
+    %Construct AFPI (Goldberg, 2016) or use single iteration
+    w = adjUf;
+    oo.adjAD_AFPI = 1;
+    
+    if oo.adjAD_AFPI                %AFPI
+    
+    %Set options
+    oo.adjAD_alpha = 0;
+    oo.adjAD_uv = 1;
+    
+    for j=1:3
+    rr.adjU = w;
+    tic
+    rr = ism_adjAD_main(vv2,rr,aa,pp,gg,oo );    
+    disp(['Elapsed Time (adjU): ', num2str(toc)])
+    w = rr.adjU + adjUf;
+    end
+    
+    end 
+    
+    rr.adjU = w;  
     
     %Determine adjoint variable Alpha_initial*
+    oo.adjAD_alpha = 1;
+    oo.adjAD_uv = 0;
+    tic
     rr = ism_adjAD_main(vv2,rr,aa,pp,gg,oo );
+    disp(['Elapsed Time (adjalpha): ', num2str(toc)])
+    adjalphaI = rr.runalpha;
+    
+    
     
     %Gradient of cst function w.r.t acoeff
-    gradN = (rr.runalpha.*exp(acoeff(:)));
+    adjalpha = adjalphaF + adjalphaI;
+    gradN = (adjalpha.*exp(acoeff(:)));
     
     %% For Manual Testing
 %     gradN = gradN/max(abs(gradN));

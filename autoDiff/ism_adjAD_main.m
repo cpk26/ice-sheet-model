@@ -9,19 +9,22 @@ function [rr] = ism_adjAD_main(vv,rr ,aa,pp,gg,oo )
 % Outputs:
 %   vv2     struct containing new solution variables
 
-numIter = oo.pic_iter;                               %Number of Picard Iterations
+numPicIter = oo.pic_iter;                                  %Number of Picard Iterations
+numAdjIter = oo.adj_iter;                                  %Number of Adjoint Iterations
 
-if isfield(rr,'runalpha'), runalpha = rr.runalpha;       %Variable accumalating the adjoint of alpha
-else runalpha = zeros(gg.nha,1); end;                    %initialize to rr.runalpha if provided
+runalpha = zeros(gg.nha,1);                                 %Variable accumalating the adjoint of alpha                   
 
 %Initiate Constant matrices
 X = [gg.du_x gg.dv_y; gg.du_x -gg.dv_y; gg.dhu_y gg.dhv_x; speye(gg.nua,gg.nua) sparse(gg.nua,gg.nva); sparse(gg.nva,gg.nua) speye(gg.nva,gg.nva)];
 X2 = [gg.dh_x gg.dh_x gg.duh_y speye(gg.nua,gg.nua) sparse(gg.nva,gg.nua)'; gg.dh_y -gg.dh_y gg.dvh_x sparse(gg.nua,gg.nva)' speye(gg.nva,gg.nva)];
-             
-disp('Adjoint Calculation')
-firstpass = 1;
 
-for j = numIter:-1:1
+%Initial Adjoint of U [from cost function for first iteration]
+adjU = rr.adjU; adjU_r = adjU;               
+
+disp('Adjoint Calculation')
+
+
+for j = numAdjIter:-1:1
 disp(['Inverse Picard Iteration: ', num2str(j)])
 
 %% Initiate Variables
@@ -29,6 +32,7 @@ Cb = rr.Cbn(:,j);                           %Basal Drag
 A_r = rr.An{j};                             %A matrix from current iteration (r indicates that it will be reduced during application of BC)
 A_sp = (rr.An{j} ~= 0);                     %Sparsity pattern
 uvf = rr.uvn(:,j+1);                        %Velocity from iteration n+1 (forward iteration)
+uv = rr.uvn(:,j);                           %Velocity from iteration n (current iteration)
 b = zeros(numel(uvf),1);                    %Preallocate  b array
 
 if oo.hybrid, 
@@ -37,26 +41,6 @@ C = Cb./(1 + (pp.c13*Cb).*(F2));
 
 end;
 
-if firstpass
-    adjU = rr.adjU; adjU_r = adjU;               %Adjoint of U from cost function for first iteration
-    firstpass = 0;    
-    
-else
-    U_adi = struct('f', uvf, 'dU',ones(gg.nua+gg.nva,1));             %Otherwise calculate from adjoint of viscosity
-    
-    if oo.hybrid
-    UAD = ism_visc_diSAD(U_adi,rr.nEff_lyrsn{j},C,aa,pp,gg,oo);    
-    U_visc = sparse(UAD.dU_location(:,1),UAD.dU_location(:,2), UAD.dU, UAD.dU_size(1), UAD.dU_size(2));        
-    else
-    UAD = ism_visc_AD(U_adi,vv,aa,pp,gg,oo);    
-    U_visc = sparse(UAD.dU_location(:,1),UAD.dU_location(:,2), UAD.dU, UAD.dU_size(1), UAD.dU_size(2));
-    end
-    
-    adjU = U_visc'*adjnEff; adjU_r = adjU;
-    clear U_adi UAD U_visc
-
-
-end
 
 %% Handle BC for A matrix and Velocity Array 
 
@@ -129,8 +113,10 @@ adjA = -spdiags(b,0,gg.nua+gg.nva,gg.nua+gg.nva)*A_sp*spdiags(uvf,0,gg.nua+gg.nv
 
 clear b tmp_a;
 
-%% Determine adjoint of Viscosity 
-tic
+%% Determine adjoint of Viscosity, then adjoint of uv
+if oo.adjAD_uv
+ 
+%Adjoint of Viscosity
 nEff_adi = struct('f', rr.nEffn(:,j), 'dnEff',ones(gg.nha,1));   %Calculate main diagonal of D matrix (A = X2*D*X)
 nEffAD = ism_dim_Ddiag_ADnEff(C,nEff_adi,aa,pp,gg,oo);
 nEff_Ddiag = sparse(nEffAD.dnEff_location(:,1),nEffAD.dnEff_location(:,2), nEffAD.dnEff, nEffAD.dnEff_size(1), nEffAD.dnEff_size(2));
@@ -144,10 +130,26 @@ adjnEff(i) = tmp(:)'*adjA(:);
 
 end
 
-toc
-clear nEff_adi nEffAD nEff_Ddiag tmp matDim;
+%Adjoint of Velocity
+U_adi = struct('f', uv, 'dU',ones(gg.nua+gg.nva,1));
+
+if oo.hybrid
+    UAD = ism_visc_diSAD(U_adi,rr.nEff_lyrsn{max(j-1,1)},C,aa,pp,gg,oo);
+    U_visc = sparse(UAD.dU_location(:,1),UAD.dU_location(:,2), UAD.dU, UAD.dU_size(1), UAD.dU_size(2));
+else
+    UAD = ism_visc_AD(U_adi,vv,aa,pp,gg,oo);
+    U_visc = sparse(UAD.dU_location(:,1),UAD.dU_location(:,2), UAD.dU, UAD.dU_size(1), UAD.dU_size(2));
+end
+
+adjU = U_visc'*adjnEff; adjU_r = adjU;
+rr.adjU = adjU;
+
+clear nEff_adi nEffAD nEff_Ddiag U_adi UAD U_visc adjnEff tmp matDim;
+end
 
 %% Determine adjoint of Basal Slip
+if oo.adjAD_alpha
+    
 C_adi = struct('f', C, 'dC',ones(gg.nha,1));   %Calculate main diagonal of D matrix (A = X2*D*X)
 CAD = ism_dim_Ddiag_ADc(C_adi,rr.nEffn(:,j),aa,pp,gg,oo);
 C_Ddiag = sparse(CAD.dC_location(:,1),CAD.dC_location(:,2), CAD.dC, CAD.dC_size(1), CAD.dC_size(2));
@@ -170,22 +172,24 @@ C_form = sparse(CAD.dC_location(:,1),CAD.dC_location(:,2), CAD.dC, CAD.dC_size(1
 adjC = C_form'*adjC;
 end
 
-
+%Go from C to alpha
 C_alpha = ism_slidinglaw_dalpha([],rr.uvn(:,j),rr.Cbn(:,max(j-1,1)),rr.F2n(:,j),vv,aa,pp,gg,oo);
 C_alpha = spdiags(C_alpha,0,gg.nha,gg.nha);
 adjalpha = C_alpha'*adjC;
 
 runalpha = runalpha + adjalpha;
 
+rr.runalpha = runalpha;
+rr.adjalpha = adjalpha;
 
 clear C_adi CAD C_Ddiag tmp;
 
+end
 
 end
 
 disp('Finished looping through picard iterations [Adjoint]')
-rr.adjalpha = adjalpha;
-rr.runalpha = runalpha;
+
 
 end
 
