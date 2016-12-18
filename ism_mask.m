@@ -82,12 +82,12 @@ S_c = spdiags(CC(:) == 1,[0],(gg.nI+1)*(gg.nJ+1),(gg.nI+1)*(gg.nJ+1)); S_c = S_c
 perBC = any(S_u_perBC(:)) || any(S_v_perBC(:));
 
 if perBC
-nperbc_ugrid = reshape(sum(S_u_perBC), gg.nJ, gg.nI+1);
-nperbc_vgrid = reshape(sum(S_v_perBC), gg.nJ+1, gg.nI);
+nperbc_ugrid = reshape(sparse(sum(S_u_perBC)), gg.nJ, gg.nI+1);
+nperbc_vgrid = reshape(sparse(sum(S_v_perBC)), gg.nJ+1, gg.nI);
 
 else
-nperbc_ugrid = zeros(gg.nJ,gg.nI+1);
-nperbc_vgrid = zeros(gg.nJ+1,gg.nI);
+nperbc_ugrid = sparse(gg.nJ,gg.nI+1);
+nperbc_vgrid = sparse(gg.nJ+1,gg.nI);
 
 end
 
@@ -95,17 +95,17 @@ end
 nbnd_ugrid = (gg.dh_x * (m(:) > 1) ~= 0); nbnd_ugrid = reshape(nbnd_ugrid, gg.nJ,gg.nI+1);
 nbnd_vgrid = (gg.dh_y * (m(:) > 1) ~= 0); nbnd_vgrid = reshape(nbnd_vgrid, gg.nJ +1,gg.nI);
 
-nbnd_ugrid = nbnd_ugrid + abs(nperbc_ugrid);
-nbnd_vgrid = nbnd_vgrid + abs(nperbc_vgrid);
+nbnd_ugrid = logical(nbnd_ugrid + abs(nperbc_ugrid));
+nbnd_vgrid = logical(nbnd_vgrid + abs(nperbc_vgrid));
 
 % Margin Boundary Nodes (u/v grid)
 if ~all(nmgn(:) == 0)
 gg.mgnBC = 1;
-nmgn_ugrid = (gg.c_hu*nmgn(:) ~= 0) & nbnd_ugrid(:); nmgn_ugrid = reshape(nmgn_ugrid, gg.nJ,gg.nI+1);
-nmgn_vgrid = (gg.c_hv*nmgn(:) ~= 0) & nbnd_vgrid(:); nmgn_vgrid = reshape(nmgn_vgrid, gg.nJ +1,gg.nI);
+nmgn_ugrid = (gg.c_hu*nmgn(:) ~= 0) & nbnd_ugrid(:); nmgn_ugrid = reshape(sparse(nmgn_ugrid), gg.nJ,gg.nI+1);
+nmgn_vgrid = (gg.c_hv*nmgn(:) ~= 0) & nbnd_vgrid(:); nmgn_vgrid = reshape(sparse(nmgn_vgrid), gg.nJ +1,gg.nI);
 else
-nmgn_ugrid = zeros(gg.nJ,gg.nI+1);
-nmgn_vgrid = zeros(gg.nJ+1,gg.nI);
+nmgn_ugrid = sparse(gg.nJ,gg.nI+1);
+nmgn_vgrid = sparse(gg.nJ+1,gg.nI);
 end
 
 % Fixed Boundary Nodes (u/v grid)

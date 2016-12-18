@@ -13,7 +13,7 @@ numPicIter = oo.pic_iter;                      %Solver parameters
 numAdjIter = oo.adj_iter;
 
 adjFlag = (numAdjIter > 0);
-adjIterThresh = numPicIter - numAdjIter;
+adjIterThresh = max(numPicIter - numAdjIter - 1, 0);
 adjIterPtr = 1;
 
 sstream_norm = zeros(numPicIter,1);
@@ -46,16 +46,18 @@ else alpha = vv.alpha; end;
 
 rr = struct();                              %Preallocate arrays if we are saving picard iterations
 if numAdjIter > 0
+    if isequal(numAdjIter,numPicIter), k = 1; %Save previous iteration if applicable
+    else, k = 2; end;
     rr.An = cell(1,numAdjIter);
-    rr.uvn = zeros(gg.nua+gg.nva,numAdjIter+1);
+    rr.uvn = zeros(gg.nua+gg.nva,numAdjIter+k);
     rr.nEffn = zeros(gg.nha,numAdjIter);
     if oo.hybrid; 
         rr.nEff_lyrsn = cell(1,numAdjIter);
-        rr.F2n = zeros(gg.nha,numAdjIter+1);
-        rr.Cbn = zeros(gg.nha,numAdjIter+1); end
+        rr.F2n = zeros(gg.nha,numAdjIter+k);
+        rr.Cbn = zeros(gg.nha,numAdjIter+k); end
 end
 
-if isequal(adjIterThresh,0)   %Save initial velocity/viscosity; 
+if isequal(adjIterThresh, 0)   %Save initial velocity/viscosity; 
 rr.uvn(:,1) = uv; 
 rr.nEffn(:,1) = nEff(:);
 rr.Cbn(:,1) = Cb(:); 
@@ -79,7 +81,7 @@ sstream_norm(j) = norm(RHS-LHS*uv)./norm(RHS); %iteration norm (using last itera
 
 uv = Inf(size(LHS,2),1);                                                 %Velocity vector, full length   
 
-if adjFlag && j >= adjIterThresh,   %Save
+if adjFlag && j > adjIterThresh,   %Save
 rr.An{adjIterPtr} = LHS;  
 adjIterPtr = adjIterPtr + 1;    %Increment
 end                        
@@ -203,7 +205,7 @@ end             %SSA Viscosity
 
 
 
-if adjFlag && j >= adjIterThresh-1
+if adjFlag && j >= adjIterThresh
     rr.uvn(:,adjIterPtr) = uv; 
     rr.nEffn(:,adjIterPtr) = nEff(:);
     rr.Cbn(:,adjIterPtr) = Cb;

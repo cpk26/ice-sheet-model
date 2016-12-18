@@ -84,7 +84,7 @@ if nargout > 1 % gradient required
     %% Depth Integrated Model
     %Second DEISM call, save parameters for adjoint method
     oo.adj_iter = 1;                                     %Save picard iterations
-    oo.pic_iter = 1;                                        %Reduced number of picard iteration
+    oo.pic_iter = 25;                                        %Reduced number of picard iteration
     
     
     [vv2, rr] = ism_deism(vv2,aa,pp,gg,oo ); 
@@ -125,14 +125,14 @@ if nargout > 1 % gradient required
                         
     %Construct AFPI (Goldberg, 2016), otherwise use adjUf
     w = adjUf;
-    oo.adjAD_AFPI = 1;
-    nIter = 75;
+    oo.adjAD_AFPI = 0;
     
     if oo.adjAD_AFPI                %AFPI
     
     %Set options
     oo.adjAD_alpha = 0;
     oo.adjAD_uv = 1;
+    nIter = 10;
     wNorm = zeros(1,nIter+1);
     wNorm(1) = norm(adjUf);
     

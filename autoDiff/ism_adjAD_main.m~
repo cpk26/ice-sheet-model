@@ -130,13 +130,24 @@ adjnEff = zeros(gg.nha,1);
 matDim = nEffAD.dnEff_size(1);
 matDim2 = (gg.nua+gg.nva)^2;
 parfor i = 1:gg.nha
-adjnEff(i) = reshape(X2*spdiags(nEff_Ddiag(:,i),0,matDim,matDim)*X,matDim2,1)'*adjA;
+%tmp = X2*spdiags(nEff_Ddiag(:,i),0,matDim,matDim)*X;
+tic
+adjnEff(i) = reshape(X2*spdiags(nEff_Ddiag(:,i),0,matDim,matDim)*X,matDim2,1)'*adjA;toc
+tic
+adjnEff(i) = mtimesx(reshape(X2*spdiags(nEff_Ddiag(:,i),0,matDim,matDim)*X,matDim2,1),'T',adjA,'speed');toc
+
+
 end
 
-% parfor i = 1:gg.nha
-% tmp = X2*spdiags(nEff_Ddiag(:,i),0,matDim,matDim)*X;
-% adjnEff(i) = tmp(:)'*adjA;
-% end
+
+
+
+parfor i = 1:gg.nha
+    tic
+tmp = X2*spdiags(nEff_Ddiag(:,i),0,matDim,matDim)*X;
+adjnEff(i) = tmp(:)'*adjA;
+toc
+end
 
 %Adjoint of Velocity
 U_adi = struct('f', uv, 'dU',ones(gg.nua+gg.nva,1));
@@ -165,15 +176,10 @@ C_Ddiag = sparse(CAD.dC_location(:,1),CAD.dC_location(:,2), CAD.dC, CAD.dC_size(
 
 adjC = zeros(gg.nha,1);
 matDim = CAD.dC_size(1);
-matDim2 = (gg.nua+gg.nva)^2;
 parfor i = 1:gg.nha
-adjC(i) = reshape(X2*spdiags(C_Ddiag(:,i),0,matDim,matDim)*X,matDim2,1)'*adjA;
+tmp = X2*spdiags(C_Ddiag(:,i),0,matDim,matDim)*X;
+adjC(i) = tmp(:)'*adjA(:);
 end
-
-% parfor i = 1:gg.nha
-% tmp = X2*spdiags(C_Ddiag(:,i),0,matDim,matDim)*X;
-% adjC(i) = tmp(:)'*adjA(:);
-% end
 
 
 if oo.hybrid,                       %Move from C effective to C basal

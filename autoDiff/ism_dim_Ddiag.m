@@ -10,7 +10,6 @@ function [D_diag] = ism_dim_Ddiag(C,nEff,aa,pp,gg,oo)
 %   LHS     Left hand side. 
 %   RHS     Right hand side.
 
-
 %% Determine Basal Slipperines on U/V grids 
 
 Cslip_u = (gg.c_hu*C)./(gg.c_hu*(C > 0));            %Slipperiness on u,v grids
