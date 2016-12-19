@@ -163,12 +163,11 @@ gg.dhu_y = gg.c_ch*S_c*gg.du_y*S_u';
 
 
 gg.dvh_x = gg.dc_x*gg.c_hc;                                               %derivative of h in x direction from h-grid onto v-grid
-gg.duh_y = gg.dc_y*gg.c_hc;                                               %derivative of h in y direction from h-grid onto u-grid
+gg.duh_y = gg.dc_y*gg.c_hc;                                                  %derivative of h in y direction from h-grid onto u-grid
 
 
-%Non symmetric.
-%gg.dvh_x = gg.c_uv*gg.dh_x ;                                            %derivative of h in x direction from h-grid onto v-grid
-%gg.duh_y = gg.c_vu*gg.dh_y;                                             %derivative of h in y direction from h-grid onto u-grid
+%gg.dvh_x = gg.c_uv*gg.dh_x ;                                               %derivative of h in x direction from h-grid onto v-grid
+%gg.duh_y = gg.c_vu*gg.dh_y;                                                %derivative of h in y direction from h-grid onto u-grid
 
 
 

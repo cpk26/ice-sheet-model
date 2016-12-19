@@ -72,8 +72,8 @@ du_y = kron(speye(nI+1),dy_ij_per(nJ)); %derivative of u in y direction from u-g
 dh_x = kron(dx_ij_per(nI),speye(nJ)); %derivative of h in x direction from h-grid onto u-grid
 dh_y = kron(speye(nI),dy_ij_per(nJ)); %derivative of h in y direction from h-grid onto v-grid
 
-dc_x = kron(dx_ij(nI),speye(nJ+1)); %derivative of c in x direction from c-grid onto v-grid
-dc_y = kron(speye(nI+1), dy_ij(nJ)); %derivative of c in y direction from c-grid onto u-grid 
+dc_x = kron(dx_ij(nI),speye(nJ+1)); 
+dc_y = kron(speye(nI+1), dx_ij(nJ)); 
 
 
 gg.nIJ = nIJ; %Grid Details
