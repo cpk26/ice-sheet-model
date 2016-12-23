@@ -1,4 +1,4 @@
-function [dalpha] = ism_slidinglaw_dalpha(alpha,uv,Cb,F2,vv,aa,pp,gg,oo)
+function [Cb2] = ism_slidinglaw(alpha,uv,Cb,F2,vv,aa,pp,gg,oo)
 % Inputs:
 %   U     velocities
 %   Cb      basal drag
@@ -15,29 +15,31 @@ function [dalpha] = ism_slidinglaw_dalpha(alpha,uv,Cb,F2,vv,aa,pp,gg,oo)
 
 
 %% Linear
-
 if strcmp(oo.slidinglaw,'linear')  
-dalpha = ones(gg.nha,1);   
-
-
-else
+Cb2 = 1*alpha;    %1 is necessary for AD.
 
 %% Non Linear
+else
 
 %Setup variables
 u = uv(1:gg.nua);      
 v = uv(gg.nua+1:end); 
+U = ((gg.c_uh*u).^2 + (gg.c_vh*v).^2).^(1/2);
+
 
 N = max(aa.N,0);
-U = ( (gg.c_uh*u).^2 + (gg.c_vh*v).^2 ).^(1/2);
+N = sqrt(N.^2 + pp.N_rp.^2);
 
 %% Basal velocities in the case of hybrid ice sheet model
 if oo.hybrid
 tmpa = (1 + pp.c13*Cb(:).*F2);
 Ub = U./tmpa;
 else
-Ub = U;
+tmpa = 1;
+Ub = U./tmpa;
 end
+
+Ub = sqrt(Ub.^2 + pp.U_rp.^2);          %regularize, ensure > 0
 
 
 % %% Handle different sliding laws
@@ -45,15 +47,14 @@ if strcmp(oo.slidinglaw,'weertman')               %6a of Hewitt (2012)
     p = pp.p; 
     q = pp.q;
     
-    F = pp.c14 .*(N.^p .* Ub.^q);
-    dalpha = F .* (abs(Ub).^-1); 
-
-        
+    F = pp.c14 .*(N.^p .* Ub.^q);    
+    Cb2 = F ./ Ub;
+    
 elseif strcmp(oo.slidinglaw,'schoof')              %6b of Hewitt (2012)
     n = pp.n_Glen;
-    F = pp.c15 .* N .* (Ub./ (pp.c16.*Ub + pp.c17.*N.^n)).^(1/n); 
-    dalpha = F .* (abs(Ub).^-1); 
-    
+    F = pp.c15 .* N .* (Ub./(pp.c16.*Ub + pp.c17.*N.^n)).^(1/n); 
+    Cb2 = F ./ Ub;
+        
 end
 
 end

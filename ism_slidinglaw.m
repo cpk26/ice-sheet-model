@@ -15,14 +15,11 @@ function [Cb2] = ism_slidinglaw(alpha,uv,Cb,F2,vv,aa,pp,gg,oo)
 
 
 %% Linear
-
 if strcmp(oo.slidinglaw,'linear')  
-Cb2 = alpha;    %Static
-
-
-else
+Cb2 = 1*alpha;    %1 is necessary for AD.
 
 %% Non Linear
+else
 
 %Setup variables
 u = uv(1:gg.nua);      
@@ -35,10 +32,11 @@ N = sqrt(N.^2 + pp.N_rp.^2);
 
 %% Basal velocities in the case of hybrid ice sheet model
 if oo.hybrid
-tmpa = (1 + pp.c13*Cb(:).*F2);
+tmpa = (1 + (pp.c13*Cb(:)).*F2);
 Ub = U./tmpa;
 else
-Ub = U;
+tmpa = 1;
+Ub = U./tmpa;
 end
 
 Ub = sqrt(Ub.^2 + pp.U_rp.^2);          %regularize, ensure > 0
@@ -49,16 +47,15 @@ if strcmp(oo.slidinglaw,'weertman')               %6a of Hewitt (2012)
     p = pp.p; 
     q = pp.q;
     
-    F = alpha .* pp.c14 .*(N.^p .* Ub.^q);
-    absUB = abs(Ub);
-    Cb2 = F .* (absUB.^-1); 
-
-        
+    tmpa = alpha .*(N.^p .* Ub.^q);    
+    tmpb = pp.c14 ./ Ub;
+    Cb2 = tmpa.*tmpb;
+    
 elseif strcmp(oo.slidinglaw,'schoof')              %6b of Hewitt (2012)
     n = pp.n_Glen;
-    F = alpha*pp.c15 .* N .* (Ub./(pp.c16.*Ub + pp.c17.*N.^n)).^(1/n); 
-    absUB = abs(Ub);
-    Cb2 = F .* (absUB.^-1);
+    tmpa = alpha .* N .* (Ub./(pp.c16.*Ub + pp.c17.*N.^n)).^(1/n); 
+    tmpb = pp.c15 ./ Ub;
+    Cb2 = tmpa.*tmpb;
         
 end
 

@@ -3,8 +3,9 @@ function [] = ism_adjAD_generate( vv,aa, pp, gg, oo )
 %input sizes from current simulation
 
 %% Clear working directory of previously generated AD function
-fn = {'ism_slidinglaw_ADa', 'ism_inv_cost_ADu', 'ism_inv_cost_ADc', 'ism_inv_cost_ADa','ism_visc_AD',...
-    'ism_visc_diAD','ism_dim_Ddiag_ADc','ism_dim_Ddiag_ADnEff','ism_cslip_form_ADc', 'ism_visc_diSAD'};
+fn = {'ism_slidinglaw_ADu','ism_slidinglaw_ADa', 'ism_inv_cost_ADu', 'ism_inv_cost_ADc', 'ism_inv_cost_ADa','ism_visc_AD',...
+    'ism_visc_ADu','ism_visc_diAD','ism_visc_diSADu','ism_visc_diSADc','ism_dim_Ddiag_ADc',...
+    'ism_dim_Ddiag_ADnEff','ism_cslip_form_ADc', 'ism_visc_diSAD'};
 for j = 1:numel(fn)
     tmpA = char(strcat(fn(j), '.m')); tmpB = char(strcat(fn(j), '.mat'));
     if exist(tmpA, 'file'), delete(tmpA); end; 
@@ -13,6 +14,22 @@ end
 
 %% Apply Automatic Differentiation
 
+
+%Sliding Law w.r.t velocity
+U = adigatorCreateDerivInput([gg.nua+gg.nva,1], 'U');
+alpha = adigatorCreateAuxInput([gg.nha,1]);
+Cb = adigatorCreateAuxInput([gg.nha,1]);
+F2 = adigatorCreateAuxInput([gg.nha,1]);
+adigator('ism_slidinglaw', {alpha,U,Cb,F2,vv,aa,pp,gg,oo},'ism_slidinglaw_ADu')
+clear U Cb alpha F2;
+
+%Sliding Law w.r.t alpha
+alpha = adigatorCreateDerivInput([gg.nha,1], 'alpha');
+U = adigatorCreateAuxInput([gg.nua+gg.nva,1]);
+Cb = adigatorCreateAuxInput([gg.nha,1]);
+F2 = adigatorCreateAuxInput([gg.nha,1]);
+adigator('ism_slidinglaw', {alpha,U,Cb,F2,vv,aa,pp,gg,oo},'ism_slidinglaw_ADa')
+clear U Cb alpha F2;
 
 %Cost Function w.r.t velocity
 U = adigatorCreateDerivInput([gg.nua+gg.nva,1], 'U');
@@ -44,7 +61,7 @@ clear U C alpha F1 F2;
 
 %Viscosity w.r.t velocity
 U = adigatorCreateDerivInput([gg.nua+gg.nva,1], 'U');
-adigator('ism_visc', {U,vv,aa,pp,gg,oo},'ism_visc_AD')
+adigator('ism_visc', {U,vv,aa,pp,gg,oo},'ism_visc_ADu')
 clear U;
 
 if oo.hybrid
@@ -52,8 +69,16 @@ if oo.hybrid
 U = adigatorCreateDerivInput([gg.nua+gg.nva,1], 'U');
 nEff_lyrs = adigatorCreateAuxInput([gg.nha,oo.nl+1]);
 C = adigatorCreateAuxInput([gg.nha,1]);
-adigator('ism_visc_diS', {U,nEff_lyrs,C,aa,pp,gg,oo},'ism_visc_diSAD')
-clear z U nEff C;
+adigator('ism_visc_diS', {U,nEff_lyrs,C,aa,pp,gg,oo},'ism_visc_diSADu')
+clear U nEff C;
+
+%Depth Integrated Viscosity w.r.t C
+C = adigatorCreateDerivInput([gg.nha,1], 'C');
+U = adigatorCreateAuxInput([gg.nua+gg.nva,1]);
+nEff_lyrs = adigatorCreateAuxInput([gg.nha,oo.nl+1]);
+adigator('ism_visc_diS', {U,nEff_lyrs,C,aa,pp,gg,oo},'ism_visc_diSADc')
+clear U nEff C;
+
 end
 
 %Diagonal of A matrix w.r.t Basal slipperiness

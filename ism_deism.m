@@ -51,13 +51,14 @@ if numAdjIter > 0
     rr.An = cell(1,numAdjIter);
     rr.uvn = zeros(gg.nua+gg.nva,numAdjIter+k);
     rr.nEffn = zeros(gg.nha,numAdjIter);
-    if oo.hybrid; 
+    %if oo.hybrid; 
         rr.nEff_lyrsn = cell(1,numAdjIter);
         rr.F2n = zeros(gg.nha,numAdjIter+k);
-        rr.Cbn = zeros(gg.nha,numAdjIter+k); end
+        rr.Cbn = zeros(gg.nha,numAdjIter+k); %end
 end
 
 if isequal(adjIterThresh, 0)   %Save initial velocity/viscosity; 
+rr.alpha = alpha;
 rr.uvn(:,1) = uv; 
 rr.nEffn(:,1) = nEff(:);
 rr.Cbn(:,1) = Cb(:); 
@@ -189,9 +190,7 @@ v = uv(gg.nua+1:end);
 %% Viscosity, effective basal drag    
     
 if oo.hybrid                                            %Determine viscosity, basal slipperiness appropriately
-% if j == 9
-%     disp('test')
-% end
+
 [nEff, nEff_lyrs] = ism_visc_di(uv,nEff_lyrs,C,aa,pp,gg,oo); %Updated Viscosity
 F2 = ism_falpha(2,uv,nEff_lyrs,vv,aa,pp,gg,oo );
 [Cb] = ism_slidinglaw(alpha,vv.uv,Cb,F2,vv,aa,pp,gg,oo);
