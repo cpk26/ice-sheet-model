@@ -150,30 +150,30 @@ end
 
 adjU_n = U_visc'*adjnEff; 
 adjU = adjU + adjU_n;
-
-%Adjoint of C from viscosity, alpha from C [Hybrid only]
-if oo.hybrid
-%Adjoint of C from viscosity
-C_adi = struct('f', Cp, 'dC',ones(gg.nha,1));
-CAD = ism_visc_diSADc(rr.uvn(:,j),rr.nEff_lyrsn{max(j-1,1)},C_adi,aa,pp,gg,oo);
-U_C = sparse(CAD.dC_location(:,1),CAD.dC_location(:,2), CAD.dC, CAD.dC_size(1), CAD.dC_size(2));
-adjC_n = U_C'*adjnEff; 
-
-%Move from Ceff to C basal
-flag = 1;
-C_adi = struct('f', C, 'dC',ones(gg.nha,1));   
-CAD = ism_cslip_form_ADc(flag,rr.F2n(:,j),C_adi,aa,pp,gg,oo );
-C_form = sparse(CAD.dC_location(:,1),CAD.dC_location(:,2), CAD.dC, CAD.dC_size(1), CAD.dC_size(2));
-adjC_n = C_form'*adjC_n;
-
-%Determine adjoint of alpha from adjoint of C
-alpha_adi = struct('f', rr.alpha, 'dalpha',ones(gg.nha,1));
-AAD = ism_slidinglaw_ADa(alpha_adi,rr.uvn(:,j),rr.Cbn(:,max(j-1,1)),rr.F2n(:,j),vv,aa,pp,gg,oo);
-C_alpha = sparse(AAD.dalpha_location(:,1),AAD.dalpha_location(:,2), AAD.dalpha, AAD.dalpha_size(1), AAD.dalpha_size(2));
-adjalpha = C_alpha'*adjC_n;
-
-runalpha = runalpha + adjalpha;
-end
+% 
+% %Adjoint of C from viscosity, alpha from C [Hybrid only]
+% if oo.hybrid
+% %Adjoint of C from viscosity
+% C_adi = struct('f', Cp, 'dC',ones(gg.nha,1));
+% CAD = ism_visc_diSADc(rr.uvn(:,j),rr.nEff_lyrsn{max(j-1,1)},C_adi,aa,pp,gg,oo);
+% U_C = sparse(CAD.dC_location(:,1),CAD.dC_location(:,2), CAD.dC, CAD.dC_size(1), CAD.dC_size(2));
+% adjC_n = U_C'*adjnEff; 
+% 
+% %Move from Ceff to C basal
+% flag = 1;
+% C_adi = struct('f', C, 'dC',ones(gg.nha,1));   
+% CAD = ism_cslip_form_ADc(flag,rr.F2n(:,j),C_adi,aa,pp,gg,oo );
+% C_form = sparse(CAD.dC_location(:,1),CAD.dC_location(:,2), CAD.dC, CAD.dC_size(1), CAD.dC_size(2));
+% adjC_n = C_form'*adjC_n;
+% 
+% %Determine adjoint of alpha from adjoint of C
+% alpha_adi = struct('f', rr.alpha, 'dalpha',ones(gg.nha,1));
+% AAD = ism_slidinglaw_ADa(alpha_adi,rr.uvn(:,j),rr.Cbn(:,max(j-1,1)),rr.F2n(:,j),vv,aa,pp,gg,oo);
+% C_alpha = sparse(AAD.dalpha_location(:,1),AAD.dalpha_location(:,2), AAD.dalpha, AAD.dalpha_size(1), AAD.dalpha_size(2));
+% adjalpha = C_alpha'*adjC_n;
+% 
+% runalpha = runalpha + adjalpha;
+% end
 
 clear nEff_adi nEffAD nEff_Ddiag U_adi UAD U_visc adjnEff tmp matDim;
 end
@@ -215,14 +215,15 @@ adjalpha = C_alpha'*adjC_A;
 %Accumulate adjoints of alpha    
 runalpha = runalpha + adjalpha;
 
-%Determine adjoint of u from adjoint of C
-U_adi = struct('f', rr.uvn(:,j), 'dU',ones(gg.nua+gg.nva,1));
-UAD = ism_slidinglaw_ADu(rr.alpha,U_adi,rr.Cbn(:,max(j-1,1)),rr.F2n(:,j),vv,aa,pp,gg,oo);
-C_U = sparse(UAD.dU_location(:,1),UAD.dU_location(:,2), UAD.dU, UAD.dU_size(1), UAD.dU_size(2));
-adjU_C = C_U'*adjC_A;
-
-adjU = adjU + adjU_C;
-    
+% if ~strcmp(oo.slidinglaw,'linear')
+% %Determine adjoint of u from adjoint of C
+% U_adi = struct('f', rr.uvn(:,j), 'dU',ones(gg.nua+gg.nva,1));
+% UAD = ism_slidinglaw_ADu(rr.alpha,U_adi,rr.Cbn(:,max(j-1,1)),rr.F2n(:,j),vv,aa,pp,gg,oo);
+% C_U = sparse(UAD.dU_location(:,1),UAD.dU_location(:,2), UAD.dU, UAD.dU_size(1), UAD.dU_size(2));
+% adjU_C = C_U'*adjC_A;
+% 
+% adjU = adjU + adjU_C;
+% end
 
 clear C_adi CAD C_Ddiag tmp;
 
@@ -230,9 +231,10 @@ end
 
 %% Store Adjoints
 rr.runalpha = runalpha;
-
-adjU_r = adjU;
 rr.adjU = adjU;
+
+%% Update AdjU_r
+adjU_r = adjU;
 
 end
 

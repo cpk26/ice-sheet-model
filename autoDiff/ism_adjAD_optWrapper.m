@@ -13,7 +13,6 @@ function [cst,gradN] = ism_adjAD_optWrapper(acoeff,vv,aa, pp, gg, oo)
 
 vv_orig = vv;
 acoeff_orig = acoeff;
-
 vv2 = vv;
 
 %% Construct Basal Slip Field
@@ -68,8 +67,6 @@ end
 %% Cost
 cst_orig = cst;
 vv2_orig = vv2;
-F1_orig = F1;
-F2_orig = F2;
 
 %% Return gradient if optimization routine requests it
 
@@ -120,11 +117,13 @@ if nargout > 1 % gradient required
     
     %% Determine adjoint state of Uf* 
     %Part A
+    if ~strcmp(oo.slidinglaw, 'linear')
     U_adi = struct('f', vv2.uv, 'dU',ones(gg.nua+gg.nva,1));
     UAD = ism_slidinglaw_ADu(vv2.alpha,U_adi,rr.Cbn(:,end-1),rr.F2n(:,end),vv2,aa,pp,gg,oo);
     C_U = sparse(UAD.dU_location(:,1),UAD.dU_location(:,2), UAD.dU, UAD.dU_size(1), UAD.dU_size(2));
     adjU_a = C_U'*adjC;
-    
+    else adjU_a=0; end
+    adjU_a = 0;
     
     %Part B
     U_adi = struct('f', vv2.uv, 'dU',ones(gg.nua+gg.nva,1));
@@ -163,7 +162,7 @@ if nargout > 1 % gradient required
     
     %% Determine adjoint variable Alpha_initial*
     oo.adjAD_alpha = 1;
-    oo.adjAD_uv = 1;
+    oo.adjAD_uv = 0;
     tic
     rr = ism_adjAD_main([],rr,aa,pp,gg,oo );
     disp(['Elapsed Time (adjalpha): ', num2str(toc)])

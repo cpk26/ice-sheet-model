@@ -14,21 +14,21 @@ end
 
 %% Apply Automatic Differentiation
 
-
 %Sliding Law w.r.t velocity
-U = adigatorCreateDerivInput([gg.nua+gg.nva,1], 'U');
+uv = adigatorCreateDerivInput([gg.nua+gg.nva,1], 'U');
 alpha = adigatorCreateAuxInput([gg.nha,1]);
 Cb = adigatorCreateAuxInput([gg.nha,1]);
 F2 = adigatorCreateAuxInput([gg.nha,1]);
-adigator('ism_slidinglaw', {alpha,U,Cb,F2,vv,aa,pp,gg,oo},'ism_slidinglaw_ADu')
+adigator('ism_slidinglaw', {alpha,uv,Cb,F2,vv,aa,pp,gg,oo},'ism_slidinglaw_ADu')
 clear U Cb alpha F2;
+
 
 %Sliding Law w.r.t alpha
 alpha = adigatorCreateDerivInput([gg.nha,1], 'alpha');
-U = adigatorCreateAuxInput([gg.nua+gg.nva,1]);
+uv = adigatorCreateAuxInput([gg.nua+gg.nva,1]);
 Cb = adigatorCreateAuxInput([gg.nha,1]);
 F2 = adigatorCreateAuxInput([gg.nha,1]);
-adigator('ism_slidinglaw', {alpha,U,Cb,F2,vv,aa,pp,gg,oo},'ism_slidinglaw_ADa')
+adigator('ism_slidinglaw', {alpha,uv,Cb,F2,vv,aa,pp,gg,oo},'ism_slidinglaw_ADa')
 clear U Cb alpha F2;
 
 %Cost Function w.r.t velocity
