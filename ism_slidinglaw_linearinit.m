@@ -26,19 +26,19 @@ N = max(N,0);
 U = vv.U;
 
 N = sqrt(N.^2 + pp.N_rp.^2);
-U = sqrt(U.^2 + pp.U_rp.^2);
-
+  
 %% Basal velocities in the case of hybrid ice sheet model
+evFac = 1;
 if oo.hybrid
 F2 = ism_falpha(2,vv.uv,vv.nEff_lyrs,vv,aa,pp,gg,oo );
-tmpa = (1 + pp.c13*B2.*F2);
-Ub = U./tmpa;
-else
-Ub = U;
+evFac = (1 + (pp.c13*B2).*F2);
 end
 
-Ub = sqrt(Ub.^2 + pp.U_rp.^2);
-  
+Ub = sqrt((U./evFac).^2 + pp.U_rp.^2);          %regularize, ensure > 0
+
+
+
+
 %% Handle different sliding laws
 % Test case for weertman/schoof, can delete
 %   Ub = 100;
@@ -50,14 +50,14 @@ if strcmp(oo.slidinglaw, 'weertman')            %6a of Hewitt (2012)
     p = pp.p; q = pp.q;
     
     F = pp.c14 .*(N.^p .* Ub.^q);
-    F = F .* (abs(Ub).^-1); 
+    F = F .* (Ub.^-1); 
     
     alpha = B2./F;
 
 elseif strcmp(oo.slidinglaw, 'schoof')              %6b of Hewitt (2012)
     n = pp.n_Glen;
     F = pp.c15 .* N .* (Ub./ (pp.c16.*Ub + pp.c17.*N.^n)).^(1/n); 
-    F = F .* (abs(Ub).^-1); 
+    F = F .* (Ub.^-1); 
     alpha = B2./F;
 end
 

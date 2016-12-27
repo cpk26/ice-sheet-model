@@ -29,8 +29,8 @@ if ~isfield(pd,'lambda_b'), pd.lambda_b = 1; end;                  % Bed roughne
 
 if ~isfield(pd,'n_rp'), pd.n_rp = 10^-5/(pd.ty); end;              % Effective Viscosity regularization parameter (m/s) (Arthern et al, 2015)
 if ~isfield(pd,'C_rp'), pd.C_rp = 10^2; end;                       % Basal Slipperiness regularation parameter for SIA (to avoid vel=Inf)
-if ~isfield(pd,'U_rp'), pd.U_rp = .01/pd.ty; end;                 % Velocity regularization parameter for inversion s.t. there are no zero vels
-if ~isfield(pd,'N_rp'), pd.N_rp = 0.1*pd.g*pd.rho_i; end;               % Effective pressure regularization 
+if ~isfield(pd,'U_rp'), pd.U_rp = .01/pd.ty; end;                  % Velocity regularization parameter for inversion s.t. there are no zero vels
+if ~isfield(pd,'N_rp'), pd.N_rp = 0.1*pd.g*pd.rho_i; end;          % Effective pressure regularization 
 if ~isfield(pd,'mdR'), pd.mdR = 0; end;                            % Limit maximum deformational velocity to a fraction of surface velocity in ism_inverse_sia.
                                                                    % This acts to smooth the initial guess of C
 if ~isfield(pd,'L_vel'), pd.L_vel = 1; end                         % Velocity mismatch regularization parameter (Tikhonov reg)
