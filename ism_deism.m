@@ -116,7 +116,7 @@ tmp_b = [gg.S_u*aa.nfxd_uval(:); gg.S_v*aa.nfxd_vval(:)];                 %Vecto
 if oo.hybrid,                                     %Convert surface vel -> effective vel
 F1 = ism_falpha(1,uv,nEff_lyrs,vv,aa,pp,gg,oo );          %Calculate F alpha factors 
 F2 = ism_falpha(2,uv,nEff_lyrs,vv,aa,pp,gg,oo );
-tmp_c = (1 + pp.c13*(Cb).*F1)./(1 + pp.c13*(Cb).*F2);          %uvn -> uvs factor
+tmp_c = (1 + (pp.c13*Cb).*F1)./(1 + (pp.c13*Cb).*F2);          %uvn -> uvs factor
 tmpc_u = (gg.c_hu*tmp_c)./(gg.c_hu*(gg.S_h*gg.m(:)==2));    %Interpolate onto u/v grids
 tmpc_v = (gg.c_hv*tmp_c)./(gg.c_hv*(gg.S_h*gg.m(:)==2));    %Extrapolate at edges
 effVelFac = [tmpc_u; tmpc_v];            

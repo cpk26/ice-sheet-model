@@ -16,7 +16,6 @@ if ~isfield(oo,'nl'), oo.nl = 50; end                   %%Number of layers, must
 nl = oo.nl; 
 
 nEffrun = zeros(gg.nha,1);
-nEff_lyrs2 = zeros(gg.nha,nl+1);
 
 u = uv(1:gg.nua);        u_h = gg.c_uh*u;       %Setup velocity,topographic parameters
 v = uv(gg.nua+1:end);    v_h = gg.c_vh*v;

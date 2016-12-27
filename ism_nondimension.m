@@ -26,6 +26,7 @@ if ~isfield(ps,'phi'), ps.phi = pd.rho_i*pd.g*ps.z; end      %Effective Pressure
 if ~isfield(ps,'m'), ps.m = 10*10^(-3)/pd.td; end       %Melt rate
 if ~isfield(ps,'vis_i'),...                             %Ice viscosity 
     ps.vis_i = 0.5*ps.B*(ps.u/ps.x)^((1-pd.n_Glen)/pd.n_Glen); end; 
+if ~isfield(ps,'bd'), ps.bd = 1e10; end                 %Basal Drag scale
 
 
 pp = struct;
@@ -46,7 +47,7 @@ pp.rho_i = pd.rho_i;
 pp.rho_w = 1000;
 pp.G = pd.G;
 pp.n_rp = pd.n_rp/(ps.u/ps.x);
-pp.C_rp = pd.C_rp;
+pp.C_rp = pd.C_rp/ps.bd;
 pp.U_rp = pd.U_rp/ps.u;
 pp.N_rp = pd.N_rp/ps.phi;
 pp.L_vel = pd.L_vel;
@@ -55,9 +56,9 @@ pp.mdR = pd.mdR;
 pp.acoeff_nx = pd.acoeff_nx; 
 pp.acoeff_ny = pd.acoeff_ny; 
 
-pp.c1 = (pd.rho_i*pd.g*ps.z/ps.u) * (ps.z/ps.x);              %SIA
+pp.c1 = (pd.rho_i*pd.g*ps.z/(ps.bd*ps.u)) * (ps.z/ps.x);              %SIA
 pp.c2 = 0.5*pp.A*(ps.u^-1)*(pd.rho_i*pd.g*ps.z/ps.x)^pp.n_Glen * ps.z^(pp.n_Glen+1);
-pp.c3 = (ps.x^2)/(ps.z*ps.vis_i);                             %SSTREAM
+pp.c3 = ((ps.x^2)/ps.z)*(ps.bd/ps.vis_i);                             %SSTREAM
 pp.c4 = (ps.x*ps.z*pp.rho_i*pp.g)/(ps.vis_i*ps.u);
 pp.c5 = pp.rho_w/pp.rho_i;
 %pp.c5 = NaN;                                           %Inversion
@@ -66,9 +67,9 @@ pp.c7 = ps.u;
 pp.c8 = (ps.x^2)*ps.u;
 pp.c9 = (ps.x^2)*ps.u^2;
 pp.c10 = (ps.x^2);
-pp.c11 = (ps.x./ps.vis_i);
+pp.c11 = (ps.bd/pp.vis_i)*pp.x;
 pp.c12 = (ps.z*ps.vis_i*ps.u)/(ps.x^2);
-pp.c13 = (pp.z/pp.vis_i);                               %Hybrid
+pp.c13 = (ps.bd/pp.vis_i)*pp.z;                               %Hybrid
 pp.c14 = (ps.phi^pd.p)*(ps.u^pd.q)*(ps.u^-1);           %Sliding Law
 pp.c15 = ps.phi * ps.u^(1/pp.n_Glen)*(ps.u^-1);
 pp.c16 = ps.u;
