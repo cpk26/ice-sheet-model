@@ -55,6 +55,7 @@ pp.L_smooth = pd.L_smooth;
 pp.mdR = pd.mdR;
 pp.acoeff_nx = pd.acoeff_nx; 
 pp.acoeff_ny = pd.acoeff_ny; 
+pp.bd = ps.bd;
 
 pp.c1 = (pd.rho_i*pd.g*ps.z/(ps.bd*ps.u)) * (ps.z/ps.x);              %SIA
 pp.c2 = 0.5*pp.A*(ps.u^-1)*(pd.rho_i*pd.g*ps.z/ps.x)^pp.n_Glen * ps.z^(pp.n_Glen+1);
@@ -72,6 +73,8 @@ pp.c12 = (ps.z*ps.vis_i*ps.u)/(ps.x^2);
 pp.c13 = (ps.bd/pp.vis_i)*pp.z;                               %Hybrid
 pp.c14 = (ps.phi^pd.p)*(ps.u^pd.q)*(ps.u^-1);           %Sliding Law
 pp.c15 = ps.phi * ps.u^(1/pp.n_Glen)*(ps.u^-1);
+pp.c15 = ps.phi * ps.u*(ps.u^-1);
+
 pp.c16 = ps.u;
 pp.c17 = pp.lambda_b * pd.A * (ps.phi^pp.n_Glen);
 pp.c18 = ps.u.^2;                                       %Basal Melting

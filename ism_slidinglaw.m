@@ -49,8 +49,8 @@ if strcmp(oo.slidinglaw,'weertman')               %6a of Hewitt (2012)
     
 elseif strcmp(oo.slidinglaw,'schoof')              %6b of Hewitt (2012)
     n = pp.n_Glen;
-    AA = alpha .* N .* (Ub./(pp.c16.*Ub + pp.c17.*N.^n)).^(1/n); 
-    BB = pp.c15 ./ Ub;
+    AA =  N .* (Ub./(pp.c16.*Ub + pp.c17.*N.^n)).^(1/n); 
+    BB = (pp.c15.*alpha) ./ Ub;
     Cb2 = AA.*BB;
         
 end

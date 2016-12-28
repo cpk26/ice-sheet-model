@@ -58,13 +58,13 @@ if pp.L_smooth > 0
 in_u = ((gg.c_hu*gg.S_h*ones(gg.nIJ,1)) == 1);      %Interior nodes on ugrid
 in_u(gg.S_u*gg.nperbc_ugrid(:) > 0) = 0;            %Handle BC
 in_u(gg.S_u*gg.nfxd_ugrid(:) > 0) = 0;         
-C1 = (1/pp.x)*in_u.*(gg.dh_x*alpha);                   %gradient of alpha coefficients, x-dir/ugrid
+C1 = (1/pp.x)*in_u.*(gg.dh_x*(pp.bd*alpha));                   %gradient of alpha coefficients, x-dir/ugrid
 
 
 in_v = ((gg.c_hv*gg.S_h*ones(gg.nIJ,1)) == 1);      %Interior nodes on vgrid 
 in_v(gg.S_v*gg.nperbc_vgrid(:) > 0) = 0;            %Handle BC
 in_v(gg.S_v*gg.nfxd_vgrid(:) > 0) = 0;              %Handle BC         
-C2 = (1/pp.x)*in_v.*(gg.dh_y*alpha);                    %gradient of alpha coefficients, y-dir/vgrid
+C2 = (1/pp.x)*in_v.*(gg.dh_y*(pp.bd*alpha));                    %gradient of alpha coefficients, y-dir/vgrid
 
 tik = 0.5*pp.c10*(sum(C1(:).^2) + sum(C2(:).^2))*gg.dx*gg.dy;
 cst = cst + pp.L_smooth*tik;
