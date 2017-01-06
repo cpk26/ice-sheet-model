@@ -24,10 +24,7 @@ else
 u = uv(1:gg.nua);      
 v = uv(gg.nua+1:end); 
 U = ((gg.c_uh*u).^2 + (gg.c_vh*v).^2).^(1/2);
-
-
-N = max(aa.N,0);
-N = sqrt(N.^2 + pp.N_rp.^2);
+N = aa.N;
 
 %% Basal velocities in the case of hybrid ice sheet model
 evFac = 1;

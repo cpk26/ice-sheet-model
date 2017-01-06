@@ -26,7 +26,7 @@ if ~isfield(ps,'phi'), ps.phi = pd.rho_i*pd.g*ps.z; end      %Effective Pressure
 if ~isfield(ps,'m'), ps.m = 10*10^(-3)/pd.td; end       %Melt rate
 if ~isfield(ps,'vis_i'),...                             %Ice viscosity 
     ps.vis_i = 0.5*ps.B*(ps.u/ps.x)^((1-pd.n_Glen)/pd.n_Glen); end; 
-if ~isfield(ps,'bd'), ps.bd = 1e10; end                 %Basal Drag scale
+if ~isfield(ps,'bd'), ps.bd = 1; end                 %Basal Drag scale
 
 
 pp = struct;

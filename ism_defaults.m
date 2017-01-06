@@ -56,7 +56,7 @@ if ~isfield(oo,'inv_opt'), oo.inv_opt = 'lbfgs'; end               %Inversion ac
 if ~isfield(oo,'inv_cst'), oo.inv_msft = 'abs'; end                %Least square solution using absolute or relative error
 if ~isfield(oo,'inv_iter'), oo.inv_iter = 75; end                  %Maximum number of inversion iterations
 if ~isfield(oo,'inv_funcEval'), oo.inv_funcEval = 150; end         %Maximum number of function evaluations allowed for minFunc()
-if ~isfield(oo,'inv_progTol'), oo.inv_progTol = 1e-10; end         %Progress Tolerance for minFunc()
+if ~isfield(oo,'inv_progTolFrac'), oo.inv_progTolFrac = .01; end   %Progress Tolerance for minFunc() as a fraction of original cost
 if ~isfield(oo,'norm'), oo.norm = 2; end                           %solution norm for testing convergence. see norm()
 if ~isfield(oo,'Cdisc'), oo.Cdisc = 'grid'; end                    %Discritization of C slip coefficient. Either 'dct2' or 'grid'
 

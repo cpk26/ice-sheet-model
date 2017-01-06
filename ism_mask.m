@@ -18,7 +18,7 @@ if ~isfield(dd,'nfxd'), dd.nfxd = zeros(size(m)); end;
 if ~isfield(dd,'nntks'), dd.nntks = (m==3); end;
 
 %% Categorize nodes (h-grid)
-nbnd = bwperim(m>1,4);                      %Boundary Cells
+nbnd = bwperim(m==2,4);                      %Boundary Cells
 nin = (m == 2) & ~nbnd;                     %Interior Cells
 nfxd = dd.nfxd;                             %Direchlet BC Cells
 nmgn = zeros(size(m));                      %Ice Margin Cells (sans direchlet bc nodes)
@@ -71,7 +71,9 @@ AA = padarray(single(m==2),[1,1], 'symmetric');      %Symmetric padding for mask
 AA2 = padarray(single(dd.h>0),[1,1], 'replicate');      %Extend ice mask
 BB = conv2(AA,[1 1; 1 1]/4, 'valid');                   %Identify margin of mask
 BB2 = conv2(AA2,[1 1; 1 1]/4, 'valid');                 %Identify ice edge margin
-CC = BB > 0 & BB2 == 1;
+%CC = BB > 0 & BB2 == 1;
+%CC = BB > 0;
+CC = (BB == 1);
 S_c = spdiags(CC(:) == 1,[0],(gg.nI+1)*(gg.nJ+1),(gg.nI+1)*(gg.nJ+1)); S_c = S_c(any(S_c,2),:); 
 
 
@@ -109,11 +111,11 @@ nmgn_vgrid = sparse(gg.nJ+1,gg.nI);
 end
 
 % Fixed Boundary Nodes (u/v grid)
-% nfxd_ugrid = (gg.c_hu*nfxd(:) == 0.5); nfxd_ugrid = reshape(nfxd_ugrid, gg.nJ,gg.nI+1);
-% nfxd_vgrid = (gg.c_hv*nfxd(:) == 0.5); nfxd_vgrid = reshape(nfxd_vgrid, gg.nJ+1,gg.nI);
+nfxd_ugrid = (gg.c_hu*nfxd(:) ~= 0); nfxd_ugrid = reshape(nfxd_ugrid, gg.nJ,gg.nI+1);
+nfxd_vgrid = (gg.c_hv*nfxd(:) ~= 0); nfxd_vgrid = reshape(nfxd_vgrid, gg.nJ+1,gg.nI);
 
-nfxd_ugrid = (gg.c_hu*nfxd(:) >0); nfxd_ugrid = reshape(nfxd_ugrid, gg.nJ,gg.nI+1);
-nfxd_vgrid = (gg.c_hv*nfxd(:) >0); nfxd_vgrid = reshape(nfxd_vgrid, gg.nJ+1,gg.nI);
+% nfxd_ugrid = (gg.c_hu*nfxd(:) >0); nfxd_ugrid = reshape(nfxd_ugrid, gg.nJ,gg.nI+1);
+% nfxd_vgrid = (gg.c_hv*nfxd(:) >0); nfxd_vgrid = reshape(nfxd_vgrid, gg.nJ+1,gg.nI);
 
 
 %% Mask Operators
@@ -133,43 +135,19 @@ gg.c_hv = S_v*gg.c_hv*S_h';
 
 gg.du_x = S_h*gg.du_x*S_u';                                                %Finite Difference Operators
 gg.dv_y = S_h*gg.dv_y*S_v';
+
+gg.dh_x = S_u*gg.dh_x*S_h';                                             
+gg.dh_y = S_v*gg.dh_y*S_h';
+
 gg.dc_x = S_v*gg.dc_x*S_c';
 gg.dc_y = S_u*gg.dc_y*S_c';
 
 
-%% For Free Slip BC and Adjoint method
-% Mu = ones(gg.nu,1) - (nbnd_ugrid(:) & nfxd_ugrid(:)); Mu = spdiags(Mu, 0, gg.nu,gg.nu);    %masks (force to be zero) dh_x/dh_y
-% Mv = ones(gg.nv,1) - (nbnd_vgrid(:) & nfxd_vgrid(:)); Mv = spdiags(Mv, 0, gg.nv,gg.nv);    %across the mask boundary at all boundary u/v
-%                                                                                            %nodes except the ice margin. Note, for fxd nodes
-%                                                                                            %this is the outermost node
-% gg.dh_x = S_u*Mu*gg.dh_x*S_h';
-% gg.dh_y = S_v*Mv*gg.dh_y*S_h';
-
-gg.dh_x = S_u*gg.dh_x*S_h';                                             %Sans masking at border
-gg.dh_y = S_v*gg.dh_y*S_h';
-
-cnbnd1 = (gg.dv_x*S_v'*S_v*ones(gg.nv,1) ~= 0);                            %c-nodes where dv_x/du_y are across mask boundary
-cnbnd2 = (gg.du_y*S_u'*S_u*ones(gg.nu,1) ~= 0);
-
-%% For Free Slip BC and Adjoint method
-% Mc1 = ones(gg.nc,1) - (cnbnd1); Mc1 = spdiags(Mc1, 0, gg.nc,gg.nc);        %masks (force to be zero) du_y/dv_x
-% Mc2 = ones(gg.nc,1) - (cnbnd2); Mc2 = spdiags(Mc2, 0, gg.nc,gg.nc);        %across the mask boundary at all c-nodes determined above
-% 
-% gg.dhv_x = gg.c_ch*S_c*Mc1*gg.dv_x*S_v';                                   %derivative of v in x-direction from v grid onto h-grid
-% gg.dhu_y = gg.c_ch*S_c*Mc2*gg.du_y*S_u';                                   %derivative of u in y-direction from u grid onto h-grid
-
-gg.dhv_x = gg.c_ch*S_c*gg.dv_x*S_v';                                      %Sans masking at border
+gg.dhv_x = gg.c_ch*S_c*gg.dv_x*S_v';                                      
 gg.dhu_y = gg.c_ch*S_c*gg.du_y*S_u'; 
-
 
 gg.dvh_x = gg.dc_x*gg.c_hc;                                               %derivative of h in x direction from h-grid onto v-grid
 gg.duh_y = gg.dc_y*gg.c_hc;                                               %derivative of h in y direction from h-grid onto u-grid
-
-
-%Non symmetric.
-%gg.dvh_x = gg.c_uv*gg.dh_x ;                                            %derivative of h in x direction from h-grid onto v-grid
-%gg.duh_y = gg.c_vu*gg.dh_y;                                             %derivative of h in y direction from h-grid onto u-grid
-
 
 
 %% Assign variables to output structure
@@ -180,7 +158,7 @@ gg.nua = full(sum(S_u(:)));
 gg.nva = full(sum(S_v(:)));
 
 gg.nbnd = nbnd;                      
-gg.nin = nin;                       
+gg.nin = double(nin);                       
 gg.nfxd = nfxd;                                 
 gg.nmgn = nmgn;                    
 gg.nperbc = nperbc;

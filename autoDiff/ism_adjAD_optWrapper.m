@@ -123,7 +123,7 @@ if nargout > 1 % gradient required
     C_U = sparse(UAD.dU_location(:,1),UAD.dU_location(:,2), UAD.dU, UAD.dU_size(1), UAD.dU_size(2));
     adjU_a = C_U'*adjC;
     else adjU_a=0; end
-    adjU_a = 0;
+    %adjU_a = 0;
     
     %Part B
     U_adi = struct('f', vv2.uv, 'dU',ones(gg.nua+gg.nva,1));
@@ -135,10 +135,9 @@ if nargout > 1 % gradient required
 
     %% Construct AFPI (Goldberg, 2016) if option set, otherwise use adjUf
     w = adjUf;
-    oo.adjAD_AFPI = 0;
-    nIter = 75;
+    nIter = oo.adjAD_afpi_iter;
     
-    if oo.adjAD_AFPI                %AFPI
+    if oo.adjAD_afpi                %AFPI
     
     %Set options
     oo.adjAD_alpha = 1;
@@ -162,7 +161,9 @@ if nargout > 1 % gradient required
     
     %% Determine adjoint variable Alpha_initial*
     oo.adjAD_alpha = 1;
-    oo.adjAD_uv = 0;
+    if oo.hybrid; oo.adjAD_uv = 1;
+    else oo.adjAD_uv = 0; end
+    
     tic
     rr = ism_adjAD_main([],rr,aa,pp,gg,oo );
     disp(['Elapsed Time (adjalpha): ', num2str(toc)])
@@ -179,7 +180,7 @@ if nargout > 1 % gradient required
 %     cst_orig = cst;
 %     acoeff = acoeff_orig - gradN;
 
-end
+ end
 
 end   
 

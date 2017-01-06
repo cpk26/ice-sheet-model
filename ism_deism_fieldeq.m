@@ -11,9 +11,14 @@ function [LHS, RHS] = ism_deism_fieldeq(C,nEff,aa,pp,gg,oo)
 %   RHS     Right hand side.
 
 
-nha = full(gg.nha);                               %number of active h/u/v grid nodes
-nua = full(gg.nua);
-nva = full(gg.nva);
+% nha = full(gg.nha);                               %number of active h/u/v grid nodes
+% nua = full(gg.nua);
+% nva = full(gg.nva);
+
+nha = gg.nha;
+nua = gg.nua;
+nva = gg.nva;
+
 
 %% Variables (Non-Dimensionalized)
 
@@ -30,11 +35,6 @@ Cslip_vdiag = spdiags(Cslip_v(:),0,nva,nva);
 nEff_diag = spdiags(nEff(:),0,nha,nha);                                  
 
 
-%% Surface Gradient
-Sx = aa.Sx;
-Sy = aa.Sy;
-
-
 %% Field equations for velocities
 X = [gg.du_x gg.dv_y; gg.du_x -gg.dv_y; gg.dhu_y gg.dhv_x; speye(nua,nua) sparse(nua,nva); sparse(nva,nua) speye(nva,nva)];
 X2 = [gg.dh_x gg.dh_x gg.duh_y speye(nua,nua) sparse(nva,nua)'; gg.dh_y -gg.dh_y gg.dvh_x sparse(nua,nva)' speye(nva,nva)];
@@ -42,15 +42,7 @@ D = blkdiag(3*nEff_diag*h_diag, nEff_diag*h_diag, nEff_diag*h_diag, -pp.c3*Cslip
 
 LHS = X2*D*X;                              %LHS
 
-A1 = gg.c_hu*h_diag*gg.S_h*Sx;             %Driving Stress
-A2 = (gg.c_hu*gg.S_h*(aa.h(:) > 0));       %Interpolate within mask, extrap at edges             
-f1a = pp.c4*(A1./A2);   
-
-A1 = gg.c_hv*h_diag*gg.S_h*Sy;           
-A2 = (gg.c_hv*gg.S_h*(aa.h(:) > 0));
-f1b = pp.c4*(A1./A2);   
-
-RHS = [f1a;f1b];
+RHS = aa.DRIVSTRESS;
 
 
 

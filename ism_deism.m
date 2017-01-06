@@ -33,17 +33,6 @@ end
 if strcmp(oo.pT, 'forward'), alpha = aa.alpha;  
 else alpha = vv.alpha; end;
 
-
-% if strcmp(oo.pT, 'forward');                %Forward/Inverse Problem Setup
-%     alpha = aa.alpha; 
-%     if oo.hybrid, Cb = vv.Cb; C = vv.C; nEff = vv.nEff; nEff_lyrs = vv.nEff_lyrs; F2 = vv.F2;
-%     else Cb = aa.Cb; C = Cb; nEff = vv.nEff; end; end
-% if strcmp(oo.pT, 'inverse'); 
-%     alpha = vv.alpha;
-%     if oo.hybrid, Cb = vv.Cb; C = vv.C; nEff = vv.nEff; nEff_lyrs = vv.nEff_lyrs; F2 = vv.F2;
-%     else Cb = vv.Cb; C = Cb; nEff = vv.nEff; end; end
-
-
 rr = struct();                              %Preallocate arrays if we are saving picard iterations
 if numAdjIter > 0
     if isequal(numAdjIter,numPicIter), k = 1; %Save previous iteration if applicable

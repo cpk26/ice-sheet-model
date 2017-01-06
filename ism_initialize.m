@@ -53,8 +53,17 @@ Sx(logical(gg.nmgn)) = ddx(logical(gg.nmgn)); %Update gradient at ice margin
 Sy(logical(gg.nmgn)) = -ddy(logical(gg.nmgn));
 Sy = -Sy(:); 
 
-aa.Sx = Sx;     %Save
-aa.Sy = Sy;
+A1 = gg.c_hu*gg.S_h*(aa.h(:).*Sx);             %Driving Stress
+A2 = (gg.c_hu*gg.S_h*(aa.h(:) > 0));       %Interpolate within mask, extrap at edges             
+DSa = pp.c4*(A1./A2);   
+
+A1 = gg.c_hv*gg.S_h*(aa.h(:).*Sy);           
+A2 = (gg.c_hv*gg.S_h*(aa.h(:) > 0));
+DSb = pp.c4*(A1./A2);   
+
+aa.DRIVSTRESS = [DSa;DSb];
+
+
 
 
 

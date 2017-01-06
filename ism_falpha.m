@@ -9,14 +9,13 @@ function [ F ] = ism_falpha(alpha,uv,nEff_lyrs,vv,aa,pp,gg,oo )
 % Outputs:
 %   F     F integral
 
-if ~isfield(oo,'nl'), oo.nl = 50; end                   %%Number of layers, must even so vl+1 is odd.
 nl = oo.nl;      
 
 Frun = zeros(gg.nha,1);                 %Value in each layer
 sp = gg.S_h *aa.h(:)/nl;                %Depth of each layer
 
-u = uv(1:gg.nua); u_h = gg.c_uh*u;       %Setup velocity,topographic parameters
-v = uv(gg.nua+1:end); v_h = gg.c_vh*v;
+u = uv(1:gg.nua);                   %Setup velocity,topographic parameters
+v = uv(gg.nua+1:end); 
 s = gg.S_h*aa.s(:);
 b = gg.S_h*aa.b(:);
 h = gg.S_h*aa.h(:);
