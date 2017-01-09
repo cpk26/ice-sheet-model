@@ -150,7 +150,8 @@ else                                                %SSA
 vv2.C = vv2.Cb;
 nEff = ism_visc(uv,vv2,aa,pp,gg,oo);         
 vv2.nEff = nEff;   
-vv2.F2 =[];
+vv2.F1 =zeros(gg.nha,1);
+vv2.F2 =zeros(gg.nha,1);
 end
 
 

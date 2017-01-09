@@ -37,13 +37,15 @@ rr = struct();                              %Preallocate arrays if we are saving
 if numAdjIter > 0
     if isequal(numAdjIter,numPicIter), k = 1; %Save previous iteration if applicable
     else, k = 2; end;
+    
     rr.An = cell(1,numAdjIter);
     rr.uvn = zeros(gg.nua+gg.nva,numAdjIter+k);
     rr.nEffn = zeros(gg.nha,numAdjIter);
-    %if oo.hybrid; 
-        rr.nEff_lyrsn = cell(1,numAdjIter);
-        rr.F2n = zeros(gg.nha,numAdjIter+k);
-        rr.Cbn = zeros(gg.nha,numAdjIter+k); %end
+    rr.nEff_lyrsn = cell(1,numAdjIter);
+    rr.F2n = zeros(gg.nha,numAdjIter+k);
+    rr.Cbn = zeros(gg.nha,numAdjIter+k); 
+    rr.Cn = zeros(gg.nha,numAdjIter+k);
+    
 end
 
 if isequal(adjIterThresh, 0)   %Save initial velocity/viscosity; 
@@ -51,7 +53,7 @@ rr.alpha = alpha;
 rr.uvn(:,1) = uv; 
 rr.nEffn(:,1) = nEff(:);
 rr.Cbn(:,1) = Cb(:); 
-%rr.Cn(:,1) = C(:); 
+rr.Cn(:,1) = C(:); 
 if oo.hybrid
 rr.nEff_lyrsn{1} = nEff_lyrs;
 rr.F2n(:,1) = vv.F2(:); end;
@@ -181,6 +183,7 @@ v = uv(gg.nua+1:end);
 if oo.hybrid                                            %Determine viscosity, basal slipperiness appropriately
 
 [nEff, nEff_lyrs] = ism_visc_di(uv,nEff_lyrs,C,aa,pp,gg,oo); %Updated Viscosity
+F1 = ism_falpha(1,uv,nEff_lyrs,vv,aa,pp,gg,oo );
 F2 = ism_falpha(2,uv,nEff_lyrs,vv,aa,pp,gg,oo );
 [Cb] = ism_slidinglaw(alpha,vv.uv,Cb,F2,vv,aa,pp,gg,oo);
 
@@ -197,9 +200,9 @@ if adjFlag && j >= adjIterThresh
     rr.uvn(:,adjIterPtr) = uv; 
     rr.nEffn(:,adjIterPtr) = nEff(:);
     rr.Cbn(:,adjIterPtr) = Cb;
-    %rr.Cn(:,adjIterPtr) = C;
+    rr.Cn(:,adjIterPtr) = C;
     if oo.hybrid; 
-        rr.F2n(:,adjIterPtr) = F2; 
+    rr.F2n(:,adjIterPtr) = F2; 
     rr.nEff_lyrsn{adjIterPtr} = nEff_lyrs;
     end
 end                %Save Intermediate velocity array
@@ -236,6 +239,7 @@ vv.C = C;
 if oo.hybrid
 vv.Cb = Cb;
 vv.nEff_lyrs = nEff_lyrs; 
+vv.F1 = F1;
 vv.F2 = F2; 
 else
 vv.Cb = C;

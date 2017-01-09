@@ -30,15 +30,7 @@ vv2.acoeff = ism_alpha_acoeff(vv.alpha, vv, pp, gg, oo);
 [vv2] = ism_deism(vv2,aa,pp,gg,oo );          %SSA 
 
 %% Initial Cost
-if oo.hybrid
-F1 = ism_falpha(1,vv2.uv,vv2.nEff_lyrs,vv2,aa,pp,gg,oo );          %Calculate F alpha factors [Hybrid]
-F2 = ism_falpha(2,vv2.uv,vv2.nEff_lyrs,vv2,aa,pp,gg,oo );
-cst = ism_inv_cost(vv2.uv,vv2.Cb,vv2.alpha,F1,F2,vv2,aa,pp,gg, oo);  %Current misfit
-
-else
-cst = ism_inv_cost(vv2.uv,vv2.Cb,vv2.alpha,[],[],vv2,aa,pp,gg, oo);  %Current misfit
-end
-
+[cst] = ism_inv_cost(vv2.uv,vv2.Cb,vv2.alpha,vv2.F1,vv2.F2,vv2,aa,pp,gg, oo);
 
 %% Optimization Options
 
@@ -57,8 +49,10 @@ options.progTol = 1e-7;
 
 
 if strcmp(oo.inv_meth, 'AD')
-ism_adjAD_generate( vv2,aa, pp, gg, oo );
+%ism_adjAD_generate( vv2,aa, pp, gg, oo );
+ism_adjAD_generate2( vv2,aa, pp, gg, oo );
 
+disp(['Initial Cost: ', num2str(cst,'%10.2e\n')])
 if strcmp(oo.inv_opt,'gd')
 [vv2.acoeff,cst,exitflag,output] = ism_steepDesc(@(x)ism_adjAD_optWrapper(x,vv2,aa, pp, gg, oo),vv2.acoeff(:));
 elseif strcmp(oo.inv_opt,'lbfgs')

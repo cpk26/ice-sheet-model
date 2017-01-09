@@ -43,7 +43,7 @@ if ~isfield(oo,'pT'), oo.pT = 'forward'; end                       %problem type
 if ~isfield(oo,'pic_iter'), oo.pic_iter = 15; end;                 %number of picard iterations iterations
 if ~isfield(oo,'pic_tol'), oo.pic_tol = 1e-6; end;                 %termination condition on tolerance of norm changes in picard iter
 if ~isfield(oo,'hybrid'), oo.hybrid = 1; end                       %Approximation: 1 for hybrid, else default to SSA
-if ~isfield(oo,'slidinglaw'), oo.slidinglaw = 'linear'; end        %linear, weertman, or schoof. 
+if ~isfield(oo,'slidinglaw'), oo.slidinglaw = 1; end        %1:linear, 2:weertman, or 3:schoof. 
 if ~isfield(oo,'nl'), oo.nl = 50; end                              %Number of vertical layers to use for Simpson's Rule
 if ~isfield(oo,'inv_meth'), oo.inv_meth = 'AD'; end                %Inversion Method, either LM or AD
 if ~isfield(oo,'adj_iter'), oo.adj_iter = 0; end                   %Flag to save intermediate arrays in picard iterations
@@ -53,12 +53,12 @@ if ~isfield(oo,'adjAD_AFPI'), oo.adjAD_afpi = 0; end               %Apply Adjoin
 if ~isfield(oo,'adjAD_AFPI_iter'), oo.adjAD_afpi_iter = 75; end    %Number of AFPI iterations
 if ~isfield(oo,'adjAD_AFPI_tol'),oo.adjAD_afpi_tol=oo.pic_tol; end %Tolerance termination condition
 if ~isfield(oo,'inv_opt'), oo.inv_opt = 'lbfgs'; end               %Inversion acoeff optimization algorithm: 'gd'/'lbfgs': gradientDescent/lBFGS 
-if ~isfield(oo,'inv_cst'), oo.inv_msft = 'abs'; end                %Least square solution using absolute or relative error
+if ~isfield(oo,'inv_cst'), oo.inv_msft = 1; end                %Least square solution using 1:absolute,2:relative,3:log,4:wls
 if ~isfield(oo,'inv_iter'), oo.inv_iter = 75; end                  %Maximum number of inversion iterations
 if ~isfield(oo,'inv_funcEval'), oo.inv_funcEval = 150; end         %Maximum number of function evaluations allowed for minFunc()
 if ~isfield(oo,'inv_progTolFrac'), oo.inv_progTolFrac = .01; end   %Progress Tolerance for minFunc() as a fraction of original cost
 if ~isfield(oo,'norm'), oo.norm = 2; end                           %solution norm for testing convergence. see norm()
-if ~isfield(oo,'Cdisc'), oo.Cdisc = 'grid'; end                    %Discritization of C slip coefficient. Either 'dct2' or 'grid'
+if ~isfield(oo,'Cdisc'), oo.Cdisc = 'grid'; end                    %Discritization of C slip coefficient. Either 'dct2' or 'grid' %OBSOLETE
 
                                                
 
