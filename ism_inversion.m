@@ -39,11 +39,11 @@ options = struct();
 options.Method = 'lbfgs';
 options.Display = 'full';
 options.LS_init = 3; %Double previous stepsize for intitial step guess
-options.LS_type = 1; %Custom Armijo backtracking
+options.LS_type = 1; %Wolfe Backtracking
 options.Corr = 35;
 options.MaxIter = oo.inv_iter;
 options.MaxFunEvals = oo.inv_funcEval;
-options.progTol = 1e-7;
+options.progTolFunc = 0.1;
  
 %% Optimization
 
@@ -56,7 +56,7 @@ disp(['Initial Cost: ', num2str(cst,'%10.2e\n')])
 if strcmp(oo.inv_opt,'gd')
 [vv2.acoeff,cst,exitflag,output] = ism_steepDesc(@(x)ism_adjAD_optWrapper(x,vv2,aa, pp, gg, oo),vv2.acoeff(:));
 elseif strcmp(oo.inv_opt,'lbfgs')
-[vv2.acoeff,cst,exitflag,output] = minFunc(@(x)ism_adjAD_optWrapper(x,vv2,aa, pp, gg, oo),vv2.acoeff(:),options);
+[vv2.acoeff,cst,exitflag,output] = minFunc_cpk(@(x)ism_adjAD_optWrapper(x,vv2,aa, pp, gg, oo),vv2.acoeff(:),options);
 else
 error('Optimization method not specified')
 end  
@@ -71,6 +71,7 @@ vv2.output = output;
 % else vv2.C = ism_cslip_field(vv2, pp, gg, oo); end;
 
 vv2.alpha = ism_alpha_field(vv2.acoeff,vv2, pp, gg, oo);
+vv2.uv = zeros(gg.nua + gg.nva,1);
 if oo.hybrid
 vv2.Cb = ism_slidinglaw(vv2.alpha,vv2.uv,vv2.Cb,vv2.F2,vv2,aa,pp,gg,oo);
 else vv2.Cb = ism_slidinglaw(vv2.alpha,vv2.uv,vv2.Cb,[],vv2,aa,pp,gg,oo); end;

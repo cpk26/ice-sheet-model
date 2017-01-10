@@ -1,4 +1,4 @@
-function [Cb2] = ism_slidinglaw(alpha,uv,Cb,F2,vv,aa,pp,gg,oo)
+function [Cb2] = adi_slidinglaw(alpha,uv,C,F2,vv,aa,pp,gg,oo)
 % Inputs:
 %   U     velocities
 %   Cb      basal drag
@@ -29,13 +29,15 @@ N = aa.N;
 %% Basal velocities in the case of hybrid ice sheet model
 evFac = 1;
 if oo.hybrid
-evFac = (1 + (pp.c13*Cb).*F2);
+AA = (pp.c13*C).*F2;
+evFac = (1 + AA./(1-AA) );
+
 end
 
 Ub = sqrt((U./evFac).^2 + pp.U_rp.^2);          %regularize, ensure > 0
 
 
-% %% Handle different sliding laws
+%% Handle different sliding laws
 if isequal(oo.slidinglaw,2)               %6a of Hewitt (2012)
     p = pp.p; 
     q = pp.q;
@@ -46,7 +48,7 @@ if isequal(oo.slidinglaw,2)               %6a of Hewitt (2012)
     
 elseif isequal(oo.slidinglaw,3)              %6b of Hewitt (2012)
     n = pp.n_Glen;
-    AA =  N .* abs(Ub./(pp.c16.*Ub + pp.c17.*(N.^n))).^(1/n); 
+    AA =  N .* (Ub./(pp.c16.*Ub + pp.c17.*N.^n)).^(1/n); 
     BB = (pp.c15.*alpha) ./ Ub;
     Cb2 = AA.*BB;
         

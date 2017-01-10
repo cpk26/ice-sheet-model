@@ -14,7 +14,7 @@ if ~isfield(oo,'slidinglaw'), oo.slidinglaw = 'linear'; end
 
 
 %% Linear
-if strcmp(oo.slidinglaw, 'linear')                              
+if isequal(oo.slidinglaw, 1)                              
     aa.B2 = B2;
     
 else                                          
@@ -41,7 +41,7 @@ end
 %   B2 = 1e10;
 %   
 
-if strcmp(oo.slidinglaw, 'weertman')            %6a of Hewitt (2012)
+if isequal(oo.slidinglaw, 2)            %6a of Hewitt (2012)
     p = pp.p; q = pp.q;
     
     F = pp.c14 .*(N.^p .* Ub.^q);
@@ -49,7 +49,7 @@ if strcmp(oo.slidinglaw, 'weertman')            %6a of Hewitt (2012)
     
     mu = B2./F;
 
-elseif strcmp(oo.slidinglaw, 'schoof')              %6b of Hewitt (2012)
+elseif isequal(oo.slidinglaw, 3)              %6b of Hewitt (2012)
     n = pp.n_Glen;
     F = pp.c15 .* N .* (Ub./ (pp.c16.*Ub + pp.c17.*N.^n)).^(1/n); 
     F = F .* (abs(Ub).^-1); 

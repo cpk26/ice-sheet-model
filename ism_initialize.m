@@ -85,10 +85,10 @@ vv2.v = v(:);
 Cb = gg.S_h*C(:); 
 vv2.Cb = Cb;
 
-if isequal(oo.slidinglaw, 'linear')  
+if isequal(oo.slidinglaw, 1)  
 alpha = gg.S_h*C(:);
 else
-alpha = dd.alpha;
+alpha = dd.alpha(:);
 aa.N =gg.S_h*dd.N(:)/pp.phi; end
 
 if strcmp(oo.pT, 'forward'), aa.alpha = alpha; 

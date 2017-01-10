@@ -72,8 +72,8 @@ pp.c11 = (ps.bd/pp.vis_i)*pp.x;
 pp.c12 = (ps.z*ps.vis_i*ps.u)/(ps.x^2);
 pp.c13 = (ps.bd/pp.vis_i)*pp.z;                               %Hybrid
 pp.c14 = (ps.phi^pd.p)*(ps.u^pd.q)*(ps.u^-1);           %Sliding Law
-pp.c15 = ps.phi * ps.u^(1/pp.n_Glen)*(ps.u^-1);
-pp.c15 = ps.phi * ps.u*(ps.u^-1);
+pp.c15 = ps.phi * (ps.u^(1/pp.n_Glen))*(ps.u^-1);
+%pp.c15 = ps.phi * ps.u*(ps.u^-1);
 
 pp.c16 = ps.u;
 pp.c17 = pp.lambda_b * pd.A * (ps.phi^pp.n_Glen);

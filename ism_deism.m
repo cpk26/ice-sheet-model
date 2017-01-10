@@ -185,13 +185,13 @@ if oo.hybrid                                            %Determine viscosity, ba
 [nEff, nEff_lyrs] = ism_visc_di(uv,nEff_lyrs,C,aa,pp,gg,oo); %Updated Viscosity
 F1 = ism_falpha(1,uv,nEff_lyrs,vv,aa,pp,gg,oo );
 F2 = ism_falpha(2,uv,nEff_lyrs,vv,aa,pp,gg,oo );
-[Cb] = ism_slidinglaw(alpha,vv.uv,Cb,F2,vv,aa,pp,gg,oo);
+[Cb] = ism_slidinglaw(alpha,uv,Cb,F2,vv,aa,pp,gg,oo);
 
 C = Cb(:)./(1 + (pp.c13*Cb).*(F2));                    %Effective Basal Slipperiness
 
 else
 nEff = ism_visc(uv,vv,aa,pp,gg,oo);
-[C] = ism_slidinglaw(alpha,vv.uv,Cb,[],vv,aa,pp,gg,oo);
+[C] = ism_slidinglaw(alpha,uv,Cb,[],vv,aa,pp,gg,oo);
 end             %SSA Viscosity
 
 
