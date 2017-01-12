@@ -38,26 +38,44 @@ v_h = v_h*pp.ty*pp.u;
 U_h = U_h*pp.ty*pp.u; 
 
 figure()                                         %Plot Solution vs known
+subplot(1,4,1)
 rX = dd.x(:)/dd.L; 
 rY = dd.y(:)/dd.L;
 rUx = reshape(u_h,gg.nJ,gg.nI);
 X = linspace(0,1,gg.nI);
 Y = 0.25;
-Ux = griddata(rX,rY,rUx,X,Y);
-plot(X,Ux,'b.','LineWidth',1); hold on;
-
+Ux = griddata(rX,rY,rUx,rX,Y);
+plot(X,Ux,'b+','LineWidth',1); hold on;
 rUx_ismip = reshape(dd.vx/pp.u,gg.nJ,gg.nI);
-Ux_ismip = griddata(rX,rY,rUx_ismip,X,Y);
+Ux_ismip = griddata(rX,rY,rUx_ismip,rX,Y);
+
+
 plot(X,Ux_ismip,'k.-','LineWidth',1);
+ylabel('Surface Velocity (ma^{-1})')
+xlabel('Normalized x')  
 
-figure
-plot(vv.output.trace.fval)
-
-figure;
-plot(100*abs(Ux_ismip-Ux)./Ux_ismip)
-
+subplot(1,4,2)                                      %error 
+plot(Ux_ismip-Ux)
+ylabel('Surface Velocity Difference (ma^{-1})')  
+xlabel('Normalized x') 
 
 
+subplot(1,4,3)                                      %Convergence
+loglog(vv.output.trace.fval)
+ylabel('Cost Function')
+xlabel('Iteration')
+grid on
+
+subplot(1,4,4)                                      %Convergence
+rC = reshape(vv.alpha,gg.nJ,gg.nI);
+C = griddata(rX,rY,rC,rX,Y);
+plot(X,C,'b+','LineWidth',1); hold on;
+
+rC_ismip = reshape(dd.alpha,gg.nJ,gg.nI);
+C_ismip = griddata(rX,rY,rC_ismip,rX,Y);
+
+
+plot(X,C_ismip,'k.-','LineWidth',1);
 
 
 end

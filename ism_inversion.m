@@ -26,7 +26,6 @@ vv2.acoeff = ism_alpha_acoeff(vv.alpha, vv, pp, gg, oo);
 
  
 %% Solve Initial Forward problem
-%[vv2] = ism_sia(aa.s,aa.h,vv2.C,vv2,pp,gg,oo);  %SIA [can remove]
 [vv2] = ism_deism(vv2,aa,pp,gg,oo );          %SSA 
 
 %% Initial Cost
@@ -38,12 +37,11 @@ vv2.acoeff = ism_alpha_acoeff(vv.alpha, vv, pp, gg, oo);
 options = struct();
 options.Method = 'lbfgs';
 options.Display = 'full';
-options.LS_init = 3; %Double previous stepsize for intitial step guess
-options.LS_type = 1; %Wolfe Backtracking
-options.Corr = 35;
+options.LS_type = 0; %Armijo Backtracking
+options.Corr = 45;
 options.MaxIter = oo.inv_iter;
 options.MaxFunEvals = oo.inv_funcEval;
-options.progTolFunc = 0.1;
+options.progTolFunc = 0.000001;
  
 %% Optimization
 
