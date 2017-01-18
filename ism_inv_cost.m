@@ -32,8 +32,8 @@ elseif isequal(oo.inv_cst,3)                        %Log
     co = sqrt( (aa.u).^2 + (aa.v).^2 ) + vn;
     cst = pp.c10*0.5*sum( (log(cm./co)).^2 );
 elseif isequal(oo.inv_cst,4)                        %Weighted least squares 
-    cu = ( ((gg.c_uh*u.*esf)-aa.u)./(0.03*abs(aa.u)+aa.erru) ).^2;
-    cv = ( ((gg.c_vh*v.*esf)-aa.v)./(0.03*abs(aa.v)+aa.errv) ).^2;  
+    cu = (((gg.c_uh*u.*esf)-aa.u).^2)./(0.03*abs(aa.u)+aa.erru);
+    cv = (((gg.c_vh*v.*esf)-aa.v).^2)./(0.03*abs(aa.v)+aa.errv);  
     cst = pp.c10*0.5*sum( [cu; cv] )*gg.dx*gg.dy;
 end
 

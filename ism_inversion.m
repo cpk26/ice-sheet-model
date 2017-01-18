@@ -41,7 +41,7 @@ options.LS_type = 0; %Armijo Backtracking
 options.Corr = 45;
 options.MaxIter = oo.inv_iter;
 options.MaxFunEvals = oo.inv_funcEval;
-options.progTolFunc = 0.000001;
+options.progTolFunc = oo.inv_progTolFrac*cst;
  
 %% Optimization
 

@@ -144,7 +144,6 @@ LHS(DEL2,:) = [];
 RHS(DEL2,:) = [];
 
 %% Solve 
-
 uvm = LHS\RHS;               %Solve modified field equations
 
 %% Return to original velocity vector
