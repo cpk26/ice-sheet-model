@@ -89,7 +89,9 @@ if isequal(oo.slidinglaw, 1)
 alpha = gg.S_h*C(:);
 else
 alpha = dd.alpha(:);
-aa.N =gg.S_h*dd.N(:)/pp.phi; end
+N =gg.S_h*dd.N(:);
+aa.N = sqrt(N.^2 + pp.N_rp.^2)/pp.phi; 
+end
 
 if strcmp(oo.pT, 'forward'), aa.alpha = alpha; 
 else
