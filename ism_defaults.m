@@ -26,11 +26,13 @@ if ~isfield(pd,'B'), pd.B = pd.A^(-1/pd.n_Glen); end;              % Ice stiffne
 if ~isfield(pd,'p'), pd.p = 1/3; end;                              % Power of effective pressure in weertman sliding law
 if ~isfield(pd,'q'), pd.q = 1/3; end;                              % Power of velocity in weertman sliding law
 if ~isfield(pd,'lambda_b'), pd.lambda_b = 1; end;                  % Bed roughness length for schoof sliding law
+if ~isfield(pd,'mu_b'), pd.mu_b = 0.16; end;                       % Limiting bed slope for schoof sliding law
+
 
 if ~isfield(pd,'n_rp'), pd.n_rp = 10^-5/(pd.ty); end;              % Effective Viscosity regularization parameter (m/s) (Arthern et al, 2015)
 if ~isfield(pd,'C_rp'), pd.C_rp = 10^2; end;                       % Basal Slipperiness regularation parameter for SIA (to avoid vel=Inf)
 if ~isfield(pd,'U_rp'), pd.U_rp = .01/pd.ty; end;                  % Velocity regularization parameter for inversion s.t. there are no zero vels
-if ~isfield(pd,'N_rp'), pd.N_rp = 5e3; end;          % Effective pressure regularization 
+if ~isfield(pd,'N_rp'), pd.N_rp = 1e2; end;                        % Effective pressure regularization 
 if ~isfield(pd,'mdR'), pd.mdR = 0; end;                            % Limit maximum deformational velocity to a fraction of surface velocity in ism_inverse_sia.
                                                                    % This acts to smooth the initial guess of C
 if ~isfield(pd,'L_vel'), pd.L_vel = 1; end                         % Velocity mismatch regularization parameter (Tikhonov reg)

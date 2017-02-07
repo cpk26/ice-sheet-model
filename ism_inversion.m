@@ -69,7 +69,8 @@ vv2.output = output;
 % else vv2.C = ism_cslip_field(vv2, pp, gg, oo); end;
 
 vv2.alpha = ism_alpha_field(vv2.acoeff,vv2, pp, gg, oo);
-vv2.uv = zeros(gg.nua + gg.nva,1);
+%vv2.uv = zeros(gg.nua + gg.nva,1);
+[vv2] = ism_sia(aa.s,aa.h,gg.S_h'*vv2.Cb,vv2, pp,gg,oo);    %SIA
 if oo.hybrid
 vv2.Cb = ism_slidinglaw(vv2.alpha,vv2.uv,vv2.Cb,vv2.F2,vv2,aa,pp,gg,oo);
 else vv2.Cb = ism_slidinglaw(vv2.alpha,vv2.uv,vv2.Cb,[],vv2,aa,pp,gg,oo); end;

@@ -41,6 +41,7 @@ pp.ty = pd.ty;
 pp.p = pd.p;
 pp.q = pd.q;
 pp.lambda_b =  pd.lambda_b;
+pp.mu_b = pd.mu_b;
 pp.phi = ps.phi;
 pp.vis_i = ps.vis_i;
 pp.rho_i = pd.rho_i;
@@ -73,10 +74,12 @@ pp.c12 = (ps.z*ps.vis_i*ps.u)/(ps.x^2);
 pp.c13 = (ps.bd/pp.vis_i)*pp.z;                               %Hybrid
 pp.c14 = (ps.phi^pd.p)*(ps.u^pd.q)*(ps.u^-1);           %Sliding Law
 pp.c15 = ps.phi * (ps.u^(1/pp.n_Glen))*(ps.u^-1);
-%pp.c15 = ps.phi * ps.u*(ps.u^-1);
-
 pp.c16 = ps.u;
 pp.c17 = pp.lambda_b * pd.A * (ps.phi^pp.n_Glen);
+pp.c20 = pp.mu_b*ps.phi * (ps.u^(1/pp.n_Glen))*(ps.u^-1);
+pp.c21 = pd.A * (ps.phi^pp.n_Glen);
+
+
 pp.c18 = ps.u.^2;                                       %Basal Melting
 pp.c19 = pp.rho_w*pd.L*ps.m;
 

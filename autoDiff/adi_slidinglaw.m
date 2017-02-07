@@ -51,6 +51,14 @@ elseif isequal(oo.slidinglaw,3)              %6b of Hewitt (2012)
     AA =  N .* (Ub./(pp.c16.*Ub + pp.c17.*N.^n)).^(1/n); 
     BB = (pp.c15.*alpha) ./ Ub;
     Cb2 = AA.*BB;
+    
+elseif isequal(oo.slidinglaw,4)              %6b of Hewitt (2012); lambda_b
+    n = pp.n_Glen;
+    AA =  N .* (Ub./(pp.c16.*Ub + pp.c21.*alpha.*(N.^n))).^(1/n); 
+    BB = pp.c20./Ub;
+    Cb2 = AA.*BB;
+        
+end
         
 end
 

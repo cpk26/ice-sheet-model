@@ -46,6 +46,14 @@ elseif isequal(oo.slidinglaw, 3)              %6b of Hewitt (2012)
     F = pp.c15 .* N .* (Ub./ (pp.c16.*Ub + pp.c17.*N.^n)).^(1/n); 
     F = F .* (Ub.^-1); 
     alpha = B2./F;
+    
+elseif isequal(oo.slidinglaw, 4)              %6b of Hewitt (2012)
+    n = pp.n_Glen;
+    F1 = (B2/(pp.c20.*N)).^n;
+    F2 = pp.c16*Ub;
+    F3 = pp.c21*(N.^n);
+    alpha = (Ub./F1 - F2).*(1./F3);
+    
 end
 
 %% Reshape
@@ -59,7 +67,7 @@ mask = N<eps;
 mask(gg.next) =0;
 
 alpha(mask) = NaN;
-alpha = inpaint_nans(alpha);
+alpha = inpaint_nans(alpha,4);
 
 %% Reshape for output
 alpha = gg.S_h*alpha(:);

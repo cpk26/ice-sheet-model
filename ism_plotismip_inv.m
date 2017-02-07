@@ -47,23 +47,26 @@ rUx_ismip = reshape(dd.vx/pp.u,gg.nJ,gg.nI);
 Ux_ismip = griddata(rX,rY,rUx_ismip,rX,Y);
 
 plot(X,Ux_ismip,'k.-','LineWidth',1);
-ylabel('Surface velocity (ma^{-1})')
-xlabel('Normalized x') 
+ylabel('U_s (m yr^{-1})') 
+xlabel('x (normalized)') 
+text(0.05,.9,'a','Units','normalized', 'FontWeight','bold', 'FontSize', 12)
 
 
 
 
 subplot(2,2,2)                                      %error 
 plot(X,Ux_ismip-Ux)
-ylabel('Surface velocity difference (ma^{-1})')  
-xlabel('Normalized x') 
+ylabel('U_s (m yr^{-1})')  
+xlabel('x (normalized)') 
+text(0.05,.9,'b','Units','normalized', 'FontWeight','bold', 'FontSize', 12)
 
 
 subplot(2,2,3)                                      %Convergence
 loglog(vv.output.trace.fval)
-ylabel('Cost function')
+ylabel('J')
 xlabel('Iteration')
 grid on
+text(0.05,.9,'c','Units','normalized', 'FontWeight','bold', 'FontSize', 12)
 
 subplot(2,2,4)                                      %Basal Drag
 rC = reshape(vv.alpha,gg.nJ,gg.nI);
@@ -75,7 +78,8 @@ C_ismip = griddata(rX,rY,rC_ismip,rX,Y);
 
 
 plot(X,C_ismip,'k.-','LineWidth',1);
-xlabel('Normalized x') 
+xlabel('x (normalized)') 
+text(0.05,.9,'d','Units','normalized', 'FontWeight','bold', 'FontSize', 12)
 
 
 
