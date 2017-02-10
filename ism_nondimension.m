@@ -75,9 +75,8 @@ pp.c13 = (ps.bd/pp.vis_i)*pp.z;                               %Hybrid
 pp.c14 = (ps.phi^pd.p)*(ps.u^pd.q)*(ps.u^-1);           %Sliding Law
 pp.c15 = ps.phi * (ps.u^(1/pp.n_Glen))*(ps.u^-1);
 pp.c16 = ps.u;
-pp.c17 = pp.lambda_b * pd.A * (ps.phi^pp.n_Glen);
-pp.c20 = pp.mu_b*ps.phi * (ps.u^(1/pp.n_Glen))*(ps.u^-1);
-pp.c21 = pd.A * (ps.phi^pp.n_Glen);
+pp.c17 = pp.lambda_b * pd.A_b * (ps.phi^pp.n_Glen);
+
 
 
 pp.c18 = ps.u.^2;                                       %Basal Melting
