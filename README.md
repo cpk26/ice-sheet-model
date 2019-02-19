@@ -1,4 +1,4 @@
-# Depth Integrated Ice Sheet Model (DEISM)
+# DEpth integrated Ice Sheet Model (DEISM)
 This repository contains the code for the ice sheet model I wrote during my PhD thesis. The model is written in Matlab, implements the ice flow equations derived in [1], and is numerically based on [2]. The model uses automatic differentiation to perform inversions for basal drag. The model has been tested on the ISMIP-HOM experiments to verify its implementation. For full details of the model, see [3] or [4].
 
 # Implementation
